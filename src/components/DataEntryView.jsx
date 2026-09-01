@@ -139,11 +139,7 @@ export default function DataEntryView() {
               </div>
             </div>
 
-            {/* Readonly Geografis Info Notice */}
-            <div className="geo-lock-notice font-mono">
-              <Lock size={14} className="text-emerald" />
-              <span>Koordinat & Pusat Wilayah Terkunci Otomatis (Geo-Reference Pemkot Bogor)</span>
-            </div>
+
 
             <div className="form-grid-2col">
               <div className="form-field-group">
