@@ -17,17 +17,7 @@ export default function Header({
   return (
     <header className="app-header">
       <div className="header-left">
-        <button
-          className="sidebar-toggle-icon-btn"
-          onClick={onToggleCollapse}
-          title={isCollapsed ? 'Buka Sidebar' : 'Tutup Sidebar'}
-        >
-          {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-        </button>
 
-        <button className="menu-toggle-btn" onClick={onToggleSidebar} aria-label="Buka Menu Mobile">
-          <Menu size={22} />
-        </button>
 
 
       </div>
