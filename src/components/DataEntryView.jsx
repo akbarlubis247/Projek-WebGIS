@@ -55,7 +55,7 @@ export default function DataEntryView() {
       <div className="page-header">
         <div>
           <h1>Entri Data Spasial & Indikator (Manual & CSV)</h1>
-          <p>Formulir pembaruan data survei lapangan NutriMap Kabupaten Bogor bagi surveyor dan verifikator.</p>
+          <p>Formulir pembaruan data survei lapangan NutriMap Kota Bogor bagi surveyor dan verifikator.</p>
         </div>
       </div>
 

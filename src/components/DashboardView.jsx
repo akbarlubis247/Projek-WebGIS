@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
 import {
-  Users,
   Utensils,
   Droplets,
   HeartPulse,
-  TrendingUp,
   AlertOctagon,
   ChevronRight,
   ArrowUpRight,
   ArrowDownRight,
   MapPin,
-  Building2,
-  FileSpreadsheet,
-  Download,
-  Filter,
-  CheckCircle2
+  CheckCircle2,
+  Download
 } from 'lucide-react';
 import {
   AreaChart,
@@ -23,24 +18,22 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar
+  ResponsiveContainer
 } from 'recharts';
 import MapView from './MapView';
 import {
-  KABUPATEN_BOGOR_STATS,
-  KECAMATAN_DATA,
+  KOTA_BOGOR_STATS,
+  KECAMATAN_KOTA_BOGOR,
   MONTHLY_TREND,
   FOOD_SECURITY_CATEGORIES
 } from '../data/bogorData';
 
 export default function DashboardView({ onNavigate, onSelectKecamatan }) {
-  const [selectedKec, setSelectedKec] = useState(KECAMATAN_DATA[0]);
+  const [selectedKec, setSelectedKec] = useState(KECAMATAN_KOTA_BOGOR[0]);
 
   // Priority count
-  const highRiskCount = KECAMATAN_DATA.filter(k => k.prioritas === 'Tinggi' || k.prioritas === 'Sangat Tinggi').length;
-  const safeCount = KECAMATAN_DATA.filter(k => k.panganStatus === 'Sangat Aman' || k.panganStatus === 'Aman').length;
+  const highRiskCount = KECAMATAN_KOTA_BOGOR.filter(k => k.prioritas === 'Tinggi' || k.prioritas === 'Sangat Tinggi').length;
+  const safeCount = KECAMATAN_KOTA_BOGOR.filter(k => k.panganStatus === 'Sangat Aman' || k.panganStatus === 'Aman').length;
 
   return (
     <div className="dashboard-page animate-fade-in">
@@ -48,9 +41,9 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
       <div className="dash-hero">
         <div className="hero-content">
           <div className="hero-badge">
-            <CheckCircle2 size={14} /> Official SIG Kabupaten Bogor 2026
+            <CheckCircle2 size={14} /> Official SIG Kota Bogor 2026
           </div>
-          <h1>NutriMap Kabupaten Bogor</h1>
+          <h1>NutriMap Kota Bogor</h1>
           <p>
             Sistem Informasi Geografis Pemantauan Ketahanan Pangan, Akses Air Bersih, dan Penanganan Stunting Terpadu.
           </p>
@@ -67,12 +60,12 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="hero-stats-mini">
           <div className="h-stat-card">
             <span>Indeks Ketahanan Pangan</span>
-            <strong>{KABUPATEN_BOGOR_STATS.skorIKP} / 100</strong>
+            <strong>{KOTA_BOGOR_STATS.skorIKP} / 100</strong>
             <small className="good"><ArrowUpRight size={14} /> +1.8% tahun ini</small>
           </div>
           <div className="h-stat-card">
             <span>Prevalensi Stunting</span>
-            <strong>{KABUPATEN_BOGOR_STATS.prevalensiStunting}</strong>
+            <strong>{KOTA_BOGOR_STATS.prevalensiStunting}</strong>
             <small className="good"><ArrowDownRight size={14} /> -2.4% target 2026</small>
           </div>
         </div>
@@ -84,8 +77,8 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><Utensils size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Ketahanan Pangan (IKP)</span>
-            <h3 className="sc-value">{safeCount} dari 15 Wilayah</h3>
-            <span className="sc-desc font-mono">Skor Rata-Rata: 75.8 (Kategori Baik)</span>
+            <h3 className="sc-value">{safeCount} dari 6 Kecamatan</h3>
+            <span className="sc-desc font-mono">Skor Rata-Rata: 85.2 (Kategori Baik)</span>
           </div>
         </div>
 
@@ -93,8 +86,8 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><Droplets size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Akses Air Bersih Layak</span>
-            <h3 className="sc-value">{KABUPATEN_BOGOR_STATS.aksesAirBersih}</h3>
-            <span className="sc-desc font-mono">Target PDAM: 88% Tahun 2027</span>
+            <h3 className="sc-value">{KOTA_BOGOR_STATS.aksesAirBersih}</h3>
+            <span className="sc-desc font-mono">Target PDAM Tirta Pakuan: 95%</span>
           </div>
         </div>
 
@@ -102,8 +95,8 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><HeartPulse size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Prevalensi Stunting</span>
-            <h3 className="sc-value">{KABUPATEN_BOGOR_STATS.prevalensiStunting}</h3>
-            <span className="sc-desc font-mono">3 Kecamatan Prioritas Khusus</span>
+            <h3 className="sc-value">{KOTA_BOGOR_STATS.prevalensiStunting}</h3>
+            <span className="sc-desc font-mono">2 Kecamatan Prioritas Khusus</span>
           </div>
         </div>
 
@@ -112,7 +105,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-info">
             <span className="sc-label">Intervensi Prioritas</span>
             <h3 className="sc-value">{highRiskCount} Kecamatan</h3>
-            <span className="sc-desc font-mono">Nanggung, Pamijahan, Leuwiliang</span>
+            <span className="sc-desc font-mono">Bogor Selatan, Bogor Barat</span>
           </div>
         </div>
       </div>
@@ -124,7 +117,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="dash-card-head">
             <div>
               <h2>Peta Persebaran Kerawanan Pangan & Stunting</h2>
-              <p>Visualisasi spasial 15 Kecamatan terpilih di Kabupaten Bogor</p>
+              <p>Visualisasi spasial 6 Kecamatan di Kota Bogor</p>
             </div>
             <button className="link-btn" onClick={() => onNavigate('map-explorer')}>
               Layar Penuh <ChevronRight size={16} />
@@ -175,7 +168,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
               </div>
               <div className="pm-item">
                 <span>Prevalensi Stunting</span>
-                <strong className={selectedKec.stunting > 20 ? 'text-danger' : ''}>{selectedKec.stunting}%</strong>
+                <strong className={selectedKec.stunting > 15 ? 'text-danger' : ''}>{selectedKec.stunting}%</strong>
               </div>
               <div className="pm-item">
                 <span>Angka Kemiskinan</span>
@@ -210,7 +203,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="dash-card-head">
             <div>
               <h2>Tren Indikator Utama (8 Bulan Terakhir)</h2>
-              <p>Perkembangan IKP, Stunting, dan Akses Air Bersih Kabupaten Bogor</p>
+              <p>Perkembangan IKP, Stunting, dan Akses Air Bersih Kota Bogor</p>
             </div>
           </div>
           <div style={{ width: '100%', height: 260 }}>
@@ -244,23 +237,23 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="dash-card-head">
             <div>
               <h2>Kecamatan Butuh Intervensi</h2>
-              <p>Peringkat kerawanan tertinggi di Kabupaten Bogor</p>
+              <p>Peringkat kerawanan tertinggi di Kota Bogor</p>
             </div>
             <button className="link-btn" onClick={() => onNavigate('priority-areas')}>
               Semua <ChevronRight size={16} />
             </button>
           </div>
           <div className="ranking-list">
-            {KECAMATAN_DATA.filter(k => k.prioritas === 'Sangat Tinggi' || k.prioritas === 'Tinggi')
+            {KECAMATAN_KOTA_BOGOR.filter(k => k.prioritas === 'Sangat Tinggi' || k.prioritas === 'Tinggi' || k.prioritas === 'Sedang')
               .slice(0, 4)
               .map((kec, idx) => (
                 <div key={kec.id} className="rank-item" onClick={() => setSelectedKec(kec)}>
                   <div className="rank-num">0{idx + 1}</div>
                   <div className="rank-info">
                     <strong>Kecamatan {kec.nama}</strong>
-                    <small>Stunting {kec.stunting}% | Air Bersih {kec.airBersih}%</small>
+                    <span>Pusat: {kec.pusat} • Stunting: {kec.stunting}%</span>
                   </div>
-                  <span className={`status-badge ${kec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <span className={`status-pill-sm ${kec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
                     {kec.panganStatus}
                   </span>
                 </div>

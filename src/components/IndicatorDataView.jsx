@@ -46,8 +46,8 @@ export default function IndicatorDataView() {
     <div className="view-container animate-fade-in">
       <div className="page-header">
         <div>
-          <h1>Data Indikator NutriMap Bogor</h1>
-          <p>Tabel lengkap indikator spasial ketahanan pangan, sanitasi air, dan kesehatan balita Kabupaten Bogor.</p>
+          <h1>Data Indikator NutriMap Kota Bogor</h1>
+          <p>Tabel lengkap indikator spasial ketahanan pangan, sanitasi air, dan kesehatan balita Kota Bogor.</p>
         </div>
         <div className="export-action-group">
           <button className="outline-btn-sm" onClick={handleExportCSV}>

@@ -1,18 +1,18 @@
 import React from 'react';
 import { AlertTriangle, AlertOctagon, ShieldAlert, CheckCircle, ArrowRight, Download } from 'lucide-react';
-import { KECAMATAN_DATA } from '../data/bogorData';
+import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
 export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
   // Sort priority: Sangat Tinggi > Tinggi > Sedang > Rendah > Sangat Rendah
   const priorityOrder = { 'Sangat Tinggi': 1, 'Tinggi': 2, 'Sedang': 3, 'Rendah': 4, 'Sangat Rendah': 5 };
-  const sortedList = [...KECAMATAN_DATA].sort((a, b) => priorityOrder[a.prioritas] - priorityOrder[b.prioritas]);
+  const sortedList = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => priorityOrder[a.prioritas] - priorityOrder[b.prioritas]);
 
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
         <div>
           <h1>Prioritas Wilayah Intervensi SIG</h1>
-          <p>Pemetaan tingkat urgensi penanganan masalah pangan, kesehatan, dan infrastruktur air di Kabupaten Bogor.</p>
+          <p>Pemetaan tingkat urgensi penanganan masalah pangan, kesehatan, dan infrastruktur air di Kota Bogor.</p>
         </div>
         <button className="primary-btn-sm" onClick={() => alert('Mengunduh Matrix Intervensi Prioritas (PDF)...')}>
           <Download size={16} /> Unduh Matrix Prioritas (PDF)
@@ -24,25 +24,25 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
         <div className="stat-card rose">
           <div className="sc-icon"><AlertOctagon size={22} /></div>
           <div className="sc-info">
-            <span className="sc-label">Prioritas 1 (Sangat Tinggi)</span>
+            <span className="sc-label">Prioritas 1 (Sangat Tinggi / Waspada)</span>
             <h3 className="sc-value">1 Kecamatan</h3>
-            <span className="sc-desc">Nanggung (Skor IKP 46.2, Stunting 31.2%)</span>
+            <span className="sc-desc">Bogor Selatan (Skor IKP 74.2, Stunting 19.8%)</span>
           </div>
         </div>
         <div className="stat-card amber">
           <div className="sc-icon"><AlertTriangle size={22} /></div>
           <div className="sc-info">
-            <span className="sc-label">Prioritas 2 (Tinggi)</span>
-            <h3 className="sc-value">4 Kecamatan</h3>
-            <span className="sc-desc">Leuwiliang, Pamijahan, Rumpin, Tenjo</span>
+            <span className="sc-label">Prioritas 2 (Tinggi / Perhatian)</span>
+            <h3 className="sc-value">1 Kecamatan</h3>
+            <span className="sc-desc">Bogor Barat (Skor IKP 78.6, Stunting 17.5%)</span>
           </div>
         </div>
         <div className="stat-card cyan">
           <div className="sc-icon"><CheckCircle size={22} /></div>
           <div className="sc-info">
-            <span className="sc-label">Prioritas 3 (Sedang/Rendah)</span>
-            <h3 className="sc-value">10 Kecamatan</h3>
-            <span className="sc-desc">Program Pemeliharaan & Pemantauan Rutin</span>
+            <span className="sc-label">Prioritas 3 (Aman & Sangat Aman)</span>
+            <h3 className="sc-value">4 Kecamatan</h3>
+            <span className="sc-desc">Bogor Tengah, Bogor Utara, Bogor Timur, Tanah Sareal</span>
           </div>
         </div>
       </div>

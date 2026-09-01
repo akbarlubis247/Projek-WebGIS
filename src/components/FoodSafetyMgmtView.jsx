@@ -46,7 +46,7 @@ export default function FoodSafetyMgmtView() {
         <div className="dash-card-head">
           <div>
             <h2>Log Hasil Inspeksi Keamanan Pangan Terbaru</h2>
-            <p>Data pemeriksaan berkala oleh Dinas Ketahanan Pangan & Satgas Pangan Kabupaten Bogor</p>
+            <p>Data pemeriksaan berkala oleh Dinas Ketahanan Pangan & Satgas Pangan Kota Bogor</p>
           </div>
         </div>
         <div className="table-wrap">
