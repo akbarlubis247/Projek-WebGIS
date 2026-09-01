@@ -29,13 +29,7 @@ export default function Header({
           <Menu size={22} />
         </button>
 
-        <div className="breadcrumb-trail">
-          <span className="bc-root">Kota Bogor</span>
-          <ChevronRight size={14} className="bc-divider" />
-          <span className="bc-category">{currentMenuItem.category}</span>
-          <ChevronRight size={14} className="bc-divider" />
-          <span className="bc-current">{currentMenuItem.label}</span>
-        </div>
+
       </div>
 
       <div className="header-right">
