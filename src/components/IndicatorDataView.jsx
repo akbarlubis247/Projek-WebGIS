@@ -45,16 +45,13 @@ export default function IndicatorDataView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Data Indikator NutriMap Kota Bogor</h1>
-          <p>Tabel lengkap indikator spasial ketahanan pangan, sanitasi air, dan kesehatan balita Kota Bogor.</p>
-        </div>
+        <h1>Data Indikator NutriMap Kota Bogor</h1>
         <div className="export-action-group">
-          <button className="outline-btn-sm" onClick={handleExportCSV}>
-            <FileSpreadsheet size={16} /> Unduh CSV
+          <button className="btn-export-excel" onClick={handleExportCSV}>
+            <FileSpreadsheet size={16} /> Unduh CSV / Excel
           </button>
-          <button className="primary-btn-sm" onClick={handleExportPDF}>
-            <FileText size={16} /> Cetak PDF / Laporan
+          <button className="btn-export-pdf" onClick={handleExportPDF}>
+            <FileText size={16} /> Export PDF / Laporan
           </button>
         </div>
       </div>

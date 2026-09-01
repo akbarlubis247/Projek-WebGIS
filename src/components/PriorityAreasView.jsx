@@ -1,22 +1,23 @@
 import React from 'react';
-import { AlertTriangle, AlertOctagon, ShieldAlert, CheckCircle, ArrowRight, Download } from 'lucide-react';
+import { AlertTriangle, AlertOctagon, ShieldAlert, CheckCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
 export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
-  // Sort priority: Sangat Tinggi > Tinggi > Sedang > Rendah > Sangat Rendah
   const priorityOrder = { 'Sangat Tinggi': 1, 'Tinggi': 2, 'Sedang': 3, 'Rendah': 4, 'Sangat Rendah': 5 };
   const sortedList = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => priorityOrder[a.prioritas] - priorityOrder[b.prioritas]);
 
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Prioritas Wilayah Intervensi SIG</h1>
-          <p>Pemetaan tingkat urgensi penanganan masalah pangan, kesehatan, dan infrastruktur air di Kota Bogor.</p>
+        <h1>Prioritas Wilayah Intervensi SIG</h1>
+        <div className="export-action-group">
+          <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Matrix Prioritas Kota Bogor...')}>
+            <FileSpreadsheet size={16} /> Unduh CSV / Excel
+          </button>
+          <button className="btn-export-pdf" onClick={() => alert('Mengunduh Matrix Intervensi Prioritas (PDF)...')}>
+            <FileText size={16} /> Export PDF / Laporan
+          </button>
         </div>
-        <button className="primary-btn-sm" onClick={() => alert('Mengunduh Matrix Intervensi Prioritas (PDF)...')}>
-          <Download size={16} /> Unduh Matrix Prioritas (PDF)
-        </button>
       </div>
 
       {/* Priority Matrix Summary Cards */}
@@ -62,48 +63,48 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
                 <th>Peringkat</th>
                 <th>Kecamatan</th>
                 <th>Tingkat Prioritas</th>
-                <th>Status Pangan</th>
+                <th>Skor IKP</th>
                 <th>Stunting</th>
-                <th>Air Bersih</th>
-                <th>Kemiskinan</th>
-                <th>Aksi Intervensi</th>
+                <th>Akses Air</th>
+                <th>Rekomendasi Program Intervensi</th>
+                <th>Aksi Spasial</th>
               </tr>
             </thead>
             <tbody>
               {sortedList.map((kec, idx) => (
-                <tr key={kec.id} className={kec.prioritas === 'Sangat Tinggi' ? 'row-alert' : ''}>
+                <tr key={kec.id}>
+                  <td><b>#0{idx + 1}</b></td>
                   <td>
-                    <span className="rank-badge">#{idx + 1}</span>
-                  </td>
-                  <td>
-                    <b>{kec.nama}</b>
+                    <strong>Kecamatan {kec.nama}</strong>
                     <br />
-                    <small className="muted">Pusat: {kec.pusat}</small>
+                    <small className="text-muted">Pusat: {kec.pusat}</small>
                   </td>
                   <td>
-                    <span className={`priority-pill ${kec.prioritas.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <span className={`status-pill ${kec.prioritas.toLowerCase().replace(/\s+/g, '-')}`}>
                       {kec.prioritas}
                     </span>
                   </td>
-                  <td>
-                    <span className={`badge ${kec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {kec.panganStatus}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={kec.stunting > 25 ? 'text-danger fw-bold' : ''}>{kec.stunting}%</span>
-                  </td>
+                  <td><b>{kec.panganSkor}</b> / 100</td>
+                  <td className={kec.stunting > 15 ? 'text-danger font-bold' : ''}>{kec.stunting}%</td>
                   <td>{kec.airBersih}%</td>
-                  <td>{kec.tingkatKemiskinan}</td>
+                  <td>
+                    <small className="font-mono">
+                      {kec.prioritas === 'Sangat Tinggi'
+                        ? 'Bantuan Beras + Program PMT Stunting Intensif + Perluasan PDAM'
+                        : kec.prioritas === 'Tinggi'
+                        ? 'Peningkatan Faskes + Monitoring Pasar Tradisional'
+                        : 'Pemeliharaan Logistik & Sanitasi Terpadu'}
+                    </small>
+                  </td>
                   <td>
                     <button
-                      className="table-action-btn"
+                      className="primary-btn-sm"
                       onClick={() => {
                         if (onSelectKecamatan) onSelectKecamatan(kec);
                         onNavigate('map-explorer');
                       }}
                     >
-                      Buka Peta Spasial <ArrowRight size={14} />
+                      Focus Peta
                     </button>
                   </td>
                 </tr>

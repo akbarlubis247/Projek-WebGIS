@@ -53,10 +53,7 @@ export default function DataEntryView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Entri Data Spasial & Indikator (Manual & CSV)</h1>
-          <p>Formulir pembaruan data survei lapangan NutriMap Kota Bogor bagi surveyor dan verifikator.</p>
-        </div>
+        <h1>Entri Data Spasial & Indikator (Manual & CSV)</h1>
       </div>
 
       {submitted && (

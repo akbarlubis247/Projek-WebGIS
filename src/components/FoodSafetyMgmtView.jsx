@@ -1,18 +1,20 @@
 import React from 'react';
-import { ShieldCheck, Search, CheckCircle, AlertTriangle, Download, FileText } from 'lucide-react';
+import { ShieldCheck, Search, CheckCircle, AlertTriangle, FileSpreadsheet, FileText } from 'lucide-react';
 import { SECURITY_AUDITS } from '../data/bogorData';
 
 export default function FoodSafetyMgmtView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Manajemen Keamanan Pangan (Export PDF/CSV)</h1>
-          <p>Hasil sidak laboratorium, residu kimia pestisida, dan pengawasan kualitas bahan segar di pasar tradisional Bogor.</p>
+        <h1>Manajemen Keamanan Pangan</h1>
+        <div className="export-action-group">
+          <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Log Keamanan Pangan...')}>
+            <FileSpreadsheet size={16} /> Unduh CSV / Excel
+          </button>
+          <button className="btn-export-pdf" onClick={() => alert('Export Log Keamanan Pangan Kota Bogor (PDF)...')}>
+            <FileText size={16} /> Export PDF / Laporan
+          </button>
         </div>
-        <button className="primary-btn-sm" onClick={() => alert('Export Log Keamanan Pangan PDF...')}>
-          <Download size={16} /> Unduh Laporan Pengawasan (PDF)
-        </button>
       </div>
 
       <div className="stat-cards-grid">
@@ -28,15 +30,15 @@ export default function FoodSafetyMgmtView() {
           <div className="sc-icon"><CheckCircle size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Uji Lab Residu Pestisida</span>
-            <h3 className="sc-value">Batas Safe (BMR)</h3>
-            <span className="sc-desc">Laboratorium Uji Terpadu IPB</span>
+            <h3 className="sc-value">120 Sampel Sayur</h3>
+            <span className="sc-desc">Tingkat Keamanan 98% Layak Konsumsi</span>
           </div>
         </div>
-        <div className="stat-card amber">
+        <div className="stat-card rose">
           <div className="sc-icon"><AlertTriangle size={22} /></div>
           <div className="sc-info">
-            <span className="sc-label">Peringatan Kios Pasar</span>
-            <h3 className="sc-value">2 Kasus Formalin</h3>
+            <span className="sc-label">Temuan Pengawet Berbahaya</span>
+            <h3 className="sc-value">2 Pelanggaran</h3>
             <span className="sc-desc">Telah Diberikan Pembinaan & Sanksi</span>
           </div>
         </div>
@@ -58,24 +60,20 @@ export default function FoodSafetyMgmtView() {
                 <th>Tanggal</th>
                 <th>Jenis Pengujian</th>
                 <th>Hasil Laboratorium</th>
-                <th>Petugas Pemeriksa</th>
                 <th>Status Audit</th>
+                <th>Petugas Pemeriksa</th>
               </tr>
             </thead>
             <tbody>
-              {SECURITY_AUDITS.map((item) => (
-                <tr key={item.id}>
-                  <td className="font-mono text-muted">{item.id}</td>
-                  <td><b>{item.lokasi}</b></td>
-                  <td>{item.tanggal}</td>
-                  <td>{item.jenis}</td>
-                  <td>{item.hasil}</td>
-                  <td>{item.pemeriksa}</td>
-                  <td>
-                    <span className={`badge ${item.status === 'Terverifikasi' ? 'sangat-aman' : 'waspada'}`}>
-                      {item.status}
-                    </span>
-                  </td>
+              {SECURITY_AUDITS.map((audit) => (
+                <tr key={audit.id}>
+                  <td><b>{audit.id}</b></td>
+                  <td><strong>{audit.lokasi}</strong></td>
+                  <td>{audit.tanggal}</td>
+                  <td>{audit.jenis}</td>
+                  <td><span className="text-emerald font-bold">{audit.hasil}</span></td>
+                  <td><span className="status-pill aman">{audit.status}</span></td>
+                  <td><small className="text-muted">{audit.pemeriksa}</small></td>
                 </tr>
               ))}
             </tbody>

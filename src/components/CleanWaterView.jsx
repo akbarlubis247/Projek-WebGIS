@@ -1,5 +1,5 @@
 import React from 'react';
-import { Droplets, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import { Droplets, CheckCircle, AlertCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
@@ -9,13 +9,15 @@ export default function CleanWaterView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Detail Akses Air Bersih & Sanitasi</h1>
-          <p>Pemantauan cakupan perpipaan PDAM Tirta Pakuan, sumur terlindung, dan kualitas sanitasi Kota Bogor.</p>
+        <h1>Detail Akses Air Bersih & Sanitasi</h1>
+        <div className="export-action-group">
+          <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Data Air Bersih Kota Bogor...')}>
+            <FileSpreadsheet size={16} /> Unduh CSV / Excel
+          </button>
+          <button className="btn-export-pdf" onClick={() => alert('Export Data Air Bersih Kota Bogor (PDF)...')}>
+            <FileText size={16} /> Export PDF / Laporan
+          </button>
         </div>
-        <button className="primary-btn-sm" onClick={() => alert('Export Data Air Bersih Kota Bogor (PDF)...')}>
-          <Download size={16} /> Export Data Sanitasi (PDF)
-        </button>
       </div>
 
       <div className="stat-cards-grid">

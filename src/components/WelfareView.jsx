@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeartPulse, Users, ShieldAlert, Award, Download } from 'lucide-react';
+import { HeartPulse, Users, ShieldAlert, Award, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
@@ -9,13 +9,15 @@ export default function WelfareView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Detail Kesejahteraan & Prevalensi Stunting</h1>
-          <p>Pemantauan tingkat stunting balita, kemiskinan ekstrem, dan penyaluran bantuan sosial Kota Bogor.</p>
+        <h1>Detail Kesejahteraan & Prevalensi Stunting</h1>
+        <div className="export-action-group">
+          <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Data Stunting Kota Bogor...')}>
+            <FileSpreadsheet size={16} /> Unduh CSV / Excel
+          </button>
+          <button className="btn-export-pdf" onClick={() => alert('Mengunduh Laporan Stunting Kota Bogor (PDF)...')}>
+            <FileText size={16} /> Export PDF / Laporan
+          </button>
         </div>
-        <button className="primary-btn-sm" onClick={() => alert('Mengunduh Laporan Stunting Kota Bogor (PDF)...')}>
-          <Download size={16} /> Export Data Stunting (PDF)
-        </button>
       </div>
 
       <div className="stat-cards-grid">

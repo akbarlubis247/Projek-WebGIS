@@ -1,5 +1,5 @@
 import React from 'react';
-import { Utensils, ShieldCheck, AlertTriangle, Download } from 'lucide-react';
+import { Utensils, ShieldCheck, AlertTriangle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
@@ -9,13 +9,15 @@ export default function FoodSecurityView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <div>
-          <h1>Detail Ketahanan Pangan (IKP)</h1>
-          <p>Pemantauan Indeks Ketahanan Pangan, ketersediaan beras, dan stabilitas harga pasar Kota Bogor.</p>
+        <h1>Detail Ketahanan Pangan (IKP)</h1>
+        <div className="export-action-group">
+          <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Data Ketahanan Pangan...')}>
+            <FileSpreadsheet size={16} /> Unduh CSV / Excel
+          </button>
+          <button className="btn-export-pdf" onClick={() => alert('Mencetak Laporan PDF Ketahanan Pangan Kota Bogor...')}>
+            <FileText size={16} /> Export PDF / Laporan
+          </button>
         </div>
-        <button className="primary-btn-sm" onClick={() => alert('Mencetak Laporan PDF Ketahanan Pangan Kota Bogor...')}>
-          <Download size={16} /> Export Laporan IKP (PDF)
-        </button>
       </div>
 
       {/* Overview Cards */}
