@@ -201,13 +201,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
               </motion.button>
             </form>
 
-            {/* Confidentiality Notice */}
-            <div className="security-notice-box">
-              <ShieldAlert size={20} className="text-indigo" />
-              <p>
-                Sistem ini memproses data spasial konfidensial Pemerintah Kota Bogor. Akses tidak sah merupakan pelanggaran hukum.
-              </p>
-            </div>
+
           </div>
 
           {/* Form Panel Footer */}
