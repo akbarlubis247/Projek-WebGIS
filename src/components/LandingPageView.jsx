@@ -146,14 +146,7 @@ export default function LandingPageView({ onOpenLogin }) {
                 <MapPin size={20} /> Jelajahi Peta Spasial Interaktif
               </motion.button>
 
-              <motion.button
-                className="outline-btn hero-btn"
-                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onOpenLogin}
-              >
-                <LogIn size={20} /> Login Admin / SuperAdmin
-              </motion.button>
+
             </motion.div>
           </div>
 

@@ -25,7 +25,7 @@ export default function Header({
       <div className="header-right">
         {/* User Account / Login or Logout Button */}
         <div className="user-action-wrap">
-          {currentUser.isLoggedIn ? (
+          {currentUser.isLoggedIn && (
             <div className="header-user-badge">
               <div className="header-avatar">
                 {currentUser.name ? currentUser.name[0].toUpperCase() : 'A'}
@@ -46,10 +46,6 @@ export default function Header({
                 <span>Logout</span>
               </button>
             </div>
-          ) : (
-            <button className="primary-btn-sm" onClick={onLoginClick}>
-              <UserCheck size={16} /> Login Admin / SuperAdmin
-            </button>
           )}
         </div>
       </div>

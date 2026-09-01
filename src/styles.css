@@ -2795,6 +2795,27 @@ tr:hover td { background: #f8fafc; }
   font-family: var(--font-mono);
 }
 
+.kecamatan-map-select {
+  width: 100%;
+  padding: 10px 36px 10px 42px;
+  border: 1px solid #10b981;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #047857;
+  background: #f0fdf4;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.2s;
+}
+
+.kecamatan-map-select:focus {
+  outline: none;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+
 
 
 

@@ -36,18 +36,24 @@ export default function MapExplorerView({ onNavigate }) {
       {/* Top Filter Bar */}
       <div className="explorer-top-bar modern-top-bar">
         <div className="et-search modern-et-search">
-          <Search size={18} className="icon" />
-          <input
-            type="text"
-            placeholder="Cari kecamatan di Kota Bogor..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          {search && (
-            <button className="clear-search-btn" onClick={() => setSearch('')}>
-              ×
-            </button>
-          )}
+          <Building2 size={18} className="icon text-emerald" />
+          <select
+            className="kecamatan-map-select font-bold"
+            value={selectedKec ? selectedKec.id : ''}
+            onChange={(e) => {
+              const found = KECAMATAN_KOTA_BOGOR.find((k) => k.id === e.target.value);
+              if (found) {
+                setSelectedKec(found);
+                setShowDrawer(true);
+              }
+            }}
+          >
+            {KECAMATAN_KOTA_BOGOR.map((kec) => (
+              <option key={kec.id} value={kec.id}>
+                📍 Kecamatan {kec.nama} — Pusat: {kec.pusat}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="et-filters modern-et-filters">

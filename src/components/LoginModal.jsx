@@ -74,9 +74,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
 
   return (
     <div className="login-overlay-fullscreen animate-fade-in">
-      <div className="login-split-card animate-zoom-in">
-        {/* LEFT COLUMN: Dark Emerald Map Hero Panel */}
-        <div className="login-hero-panel">
+      <div className="login-split-card">
+        {/* LEFT COLUMN: Dark Emerald Map Hero Panel (Animasi dari Kiri) */}
+        <motion.div
+          className="login-hero-panel"
+          initial={{ x: -120, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
           {/* Watermark Contours Background Overlay */}
           <div className="topographic-pattern-overlay" />
           <div className="hero-top-watermark font-mono">
@@ -101,10 +106,15 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
           <div className="hero-bottom-watermark font-mono">
             Kota Bogor, Jawa Barat - Indonesia
           </div>
-        </div>
+        </motion.div>
 
-        {/* RIGHT COLUMN: Clean White Form Panel */}
-        <div className="login-form-panel">
+        {/* RIGHT COLUMN: Clean White Form Panel (Animasi dari Kanan) */}
+        <motion.div
+          className="login-form-panel"
+          initial={{ x: 120, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        >
           {/* Top Bar Link */}
           <div className="form-panel-top">
             <button className="back-to-public-btn" onClick={onClose}>
@@ -214,7 +224,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
               © 2026 NutriMap Bogor. v2.4.0-GIS
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

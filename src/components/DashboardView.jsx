@@ -40,9 +40,6 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
       {/* Hero Banner */}
       <div className="dash-hero">
         <div className="hero-content">
-          <div className="hero-badge">
-            <CheckCircle2 size={14} /> Official SIG Kota Bogor 2026
-          </div>
           <h1>NutriMap Kota Bogor</h1>
           <p>
             Sistem Informasi Geografis Pemantauan Ketahanan Pangan, Akses Air Bersih, dan Penanganan Stunting Terpadu.
