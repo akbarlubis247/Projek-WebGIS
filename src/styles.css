@@ -2061,19 +2061,352 @@ tr:hover td { background: #f8fafc; }
   color: #64748b;
 }
 
-@media (max-width: 1024px) {
-  .login-split-card {
-    grid-template-columns: 1fr;
-    height: auto;
-    min-height: 100vh;
-  }
-  .login-hero-panel {
-    display: none;
-  }
-  .login-form-panel {
-    padding: 32px 20px;
-  }
+/* ==========================================================================
+   Map Explorer & Floating Detail Drawer Modern Styling
+   ========================================================================== */
+.map-explorer-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }
+
+.modern-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+.modern-et-search {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+}
+
+.modern-et-search input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.88rem;
+  transition: all 0.2s;
+}
+
+.modern-et-search input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  outline: none;
+}
+
+.modern-et-search .icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.modern-et-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modern-select-pill select {
+  padding: 8px 16px 8px 36px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+.modern-select-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modern-select-pill svg {
+  position: absolute;
+  left: 12px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.modern-pill-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.modern-pill-btn.active {
+  background: #f0fdf4;
+  border-color: #10b981;
+  color: #047857;
+}
+
+.modern-primary-pill {
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.explorer-body {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  min-height: calc(100vh - 180px);
+}
+
+.map-wrapper {
+  flex: 1;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* Floating Detail Drawer */
+.modern-drawer {
+  width: 380px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100vh - 180px);
+}
+
+.drawer-head {
+  padding: 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.d-badge {
+  font-size: 0.72rem;
+  background: #0f172a;
+  color: #34d399;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.drawer-head h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 4px;
+}
+
+.d-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.d-close {
+  background: #e2e8f0;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+}
+
+.drawer-content {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modern-status-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsc-lbl {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.dsc-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.dsc-val.sangat-aman { color: #047857; }
+.dsc-val.aman { color: #055160; }
+.dsc-val.waspada { color: #92400e; }
+
+.dsc-meter {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 4px 0;
+}
+
+.dsc-meter-fill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 3px;
+}
+
+.d-desc-text {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.d-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ds-box {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-lbl {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.ds-val {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 2px;
+}
+
+.d-picker-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.dp-head {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.dp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modern-dp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.modern-dp-item.active {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.dp-icon {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.dp-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.dp-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dp-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.dp-status.sangat-aman { background: #d1fae5; color: #047857; }
+.dp-status.aman { background: #cff4fc; color: #055160; }
+.dp-status.waspada { background: #fef3c7; color: #92400e; }
+
 
 
 

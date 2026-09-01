@@ -1,31 +1,31 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Search,
   Filter,
   Layers,
   MapPin,
   X,
-  ChevronRight,
   Download,
   Info,
   Building2,
   Utensils,
   Droplets,
   HeartPulse,
-  Share2
+  Sparkles
 } from 'lucide-react';
 import MapView from './MapView';
-import { KECAMATAN_DATA, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
+import { KECAMATAN_KOTA_BOGOR, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
 
 export default function MapExplorerView({ onNavigate }) {
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
-  const [selectedKec, setSelectedKec] = useState(KECAMATAN_DATA[0]);
+  const [selectedKec, setSelectedKec] = useState(KECAMATAN_KOTA_BOGOR[0]);
   const [activeLayerFilter, setActiveLayerFilter] = useState('pangan');
   const [showDrawer, setShowDrawer] = useState(true);
 
   // Filtered dataset
-  const filteredList = KECAMATAN_DATA.filter((item) => {
+  const filteredList = KECAMATAN_KOTA_BOGOR.filter((item) => {
     const matchesSearch = item.nama.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = selectedStatus === 'Semua Status' || item.panganStatus === selectedStatus;
     return matchesSearch && matchesStatus;
@@ -34,21 +34,25 @@ export default function MapExplorerView({ onNavigate }) {
   return (
     <div className="map-explorer-page animate-fade-in">
       {/* Top Filter Bar */}
-      <div className="explorer-top-bar">
-        <div className="et-search">
+      <div className="explorer-top-bar modern-top-bar">
+        <div className="et-search modern-et-search">
           <Search size={18} className="icon" />
           <input
             type="text"
-            placeholder="Cari kecamatan di Kabupaten Bogor..."
+            placeholder="Cari kecamatan di Kota Bogor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {search && <button onClick={() => setSearch('')}>×</button>}
+          {search && (
+            <button className="clear-search-btn" onClick={() => setSearch('')}>
+              ×
+            </button>
+          )}
         </div>
 
-        <div className="et-filters">
-          <label className="filter-select">
-            <Filter size={16} />
+        <div className="et-filters modern-et-filters">
+          <label className="filter-select modern-select-pill">
+            <Filter size={15} />
             <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
               <option>Semua Status</option>
               {FOOD_SECURITY_CATEGORIES.map((cat) => (
@@ -59,19 +63,23 @@ export default function MapExplorerView({ onNavigate }) {
             </select>
           </label>
 
-          <button
-            className={`drawer-toggle-btn ${showDrawer ? 'active' : ''}`}
+          <motion.button
+            className={`drawer-toggle-btn modern-pill-btn ${showDrawer ? 'active' : ''}`}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
             onClick={() => setShowDrawer(!showDrawer)}
           >
-            <Info size={16} /> Detail Panel
-          </button>
+            <Info size={15} /> Detail Panel
+          </motion.button>
 
-          <button
-            className="export-btn-sm"
-            onClick={() => alert('Mengunduh data Spasial GeoJSON Kabupaten Bogor...')}
+          <motion.button
+            className="export-btn-sm modern-primary-pill"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => alert('Mengunduh data Spasial GeoJSON 6 Kecamatan Kota Bogor...')}
           >
-            <Download size={16} /> Export GeoJSON
-          </button>
+            <Download size={15} /> Export GeoJSON
+          </motion.button>
         </div>
       </div>
 
@@ -85,13 +93,18 @@ export default function MapExplorerView({ onNavigate }) {
               setShowDrawer(true);
             }}
             activeLayerFilter={activeLayerFilter}
-            height="calc(100vh - 170px)"
+            height="calc(100vh - 180px)"
           />
         </div>
 
         {/* Floating Detail Drawer */}
         {showDrawer && selectedKec && (
-          <div className="explorer-detail-drawer animate-slide-left">
+          <motion.div
+            className="explorer-detail-drawer modern-drawer animate-slide-left"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+          >
             <div className="drawer-head">
               <div>
                 <span className="d-badge font-mono">{selectedKec.id}</span>
@@ -105,15 +118,17 @@ export default function MapExplorerView({ onNavigate }) {
 
             <div className="drawer-content">
               {/* Status Header */}
-              <div className="d-status-card">
+              <div className="d-status-card modern-status-card">
                 <span className="dsc-lbl">Status Ketahanan Pangan</span>
                 <div className={`dsc-val ${selectedKec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
                   {selectedKec.panganStatus}
                 </div>
                 <div className="dsc-meter">
-                  <div
+                  <motion.div
                     className="dsc-meter-fill"
-                    style={{ width: `${selectedKec.panganSkor}%` }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${selectedKec.panganSkor}%` }}
+                    transition={{ duration: 0.8 }}
                   />
                 </div>
                 <small className="font-mono">Skor IKP: {selectedKec.panganSkor} / 100</small>
@@ -130,7 +145,7 @@ export default function MapExplorerView({ onNavigate }) {
                 </div>
                 <div className="ds-box">
                   <span className="ds-lbl">Air Bersih Layak</span>
-                  <span className="ds-val">{selectedKec.airBersih}%</span>
+                  <span className="ds-val text-cyan">{selectedKec.airBersih}%</span>
                 </div>
                 <div className="ds-box">
                   <span className="ds-lbl">Prevalensi Stunting</span>
@@ -155,20 +170,26 @@ export default function MapExplorerView({ onNavigate }) {
                 <span className="dp-head">Pilih Kecamatan Lain ({filteredList.length})</span>
                 <div className="dp-list">
                   {filteredList.map((item) => (
-                    <button
+                    <motion.button
                       key={item.id}
-                      className={`dp-item ${selectedKec.id === item.id ? 'active' : ''}`}
+                      className={`dp-item modern-dp-item ${selectedKec.id === item.id ? 'active' : ''}`}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedKec(item)}
                     >
-                      <MapPin size={14} />
-                      <span>{item.nama}</span>
-                      <small>{item.panganStatus}</small>
-                    </button>
+                      <MapPin size={14} className="dp-icon" />
+                      <div className="dp-meta">
+                        <span className="dp-name">{item.nama}</span>
+                        <small className={`dp-status ${item.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                          {item.panganStatus}
+                        </small>
+                      </div>
+                    </motion.button>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
