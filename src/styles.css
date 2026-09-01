@@ -2472,11 +2472,276 @@ tr:hover td { background: #f8fafc; }
   transition: all 0.2s;
 }
 
-.btn-export-excel:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+/* ==========================================================================
+   Data Entry View Modern Form & Bulk Upload CSS
+   ========================================================================== */
+.modern-entry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  width: 100%;
 }
+
+.modern-form-card,
+.modern-bulk-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-title-wrap h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.card-title-wrap p {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.modern-entry-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.modern-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modern-input-wrap.align-top {
+  align-items: flex-start;
+}
+
+.modern-input-wrap .f-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.modern-input-wrap .textarea-icon {
+  top: 14px;
+}
+
+.modern-input-wrap input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  color: #0f172a;
+  background: #f8fafc;
+  transition: all 0.2s;
+}
+
+.modern-input-wrap textarea {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  color: #0f172a;
+  background: #f8fafc;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.modern-input-wrap input:focus,
+.modern-input-wrap textarea:focus {
+  background: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  outline: none;
+}
+
+.save-spatial-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s;
+  margin-top: 6px;
+}
+
+.save-spatial-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* Bulk Upload Drag Zone */
+.modern-drop-zone {
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-lg);
+  padding: 40px 20px;
+  text-align: center;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.modern-drop-zone.active,
+.modern-drop-zone:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.drop-cloud-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.cloud-icon {
+  color: #10b981;
+}
+
+.modern-drop-zone h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.modern-drop-zone p {
+  font-size: 0.84rem;
+  color: #64748b;
+}
+
+.select-csv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  margin-top: 6px;
+}
+
+.select-csv-btn:hover {
+  border-color: #10b981;
+  color: #047857;
+}
+
+.file-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-md);
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.file-info strong {
+  font-size: 0.9rem;
+  color: #065f46;
+}
+
+.file-info small {
+  font-size: 0.75rem;
+  color: #047857;
+}
+
+.csv-template-box {
+  background: #f0f3ff;
+  border: 1px solid #e0e7ff;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.csv-template-box b {
+  font-size: 0.82rem;
+  color: #3730a3;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.csv-code-pill {
+  font-size: 0.76rem;
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+@media (max-width: 1024px) {
+  .modern-entry-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 
 
