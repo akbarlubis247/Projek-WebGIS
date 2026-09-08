@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Indikator NutriMap Kota Bogor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #EEF3F0;
+      color: #13221A;
+      padding: 36px 40px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .view-container {
+      width: 100%;
+      max-width: 1440px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #13221A;
+      letter-spacing: -0.02em;
+    }
+
+    .export-action-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-export-excel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #059669;
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-export-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #ffffff;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Table Container Card */
+    .dash-card {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+    }
+
+    /* Table Tools Header */
+    .table-tools-header {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .t-search {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .t-search svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94A3B8;
+    }
+
+    .t-search input {
+      width: 100%;
+      padding: 10px 14px 10px 42px;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #13221A;
+      background: #FFFFFF;
+      outline: none;
+    }
+
+    .t-search input::placeholder {
+      color: #94A3B8;
+    }
+
+    .t-filters {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .select-wrap svg.icon-start {
+      position: absolute;
+      left: 12px;
+      color: #64748B;
+      pointer-events: none;
+    }
+
+    .select-wrap svg.icon-arrow {
+      position: absolute;
+      right: 12px;
+      color: #94A3B8;
+      pointer-events: none;
+    }
+
+    .select-wrap select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 9px;
+      padding: 9px 36px 9px 34px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Table wrap & table */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead th {
+      background-color: #F8FAFC;
+      border-top: 1px solid #F1F5F9;
+      border-bottom: 1px solid #E2E8F0;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748B;
+      padding: 14px 24px;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody td {
+      padding: 16px 24px;
+      font-size: 13px;
+      color: #13221A;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    /* ID Audit Badge */
+    .audit-id-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #F1F5F9;
+      color: #475569;
+      padding: 4px 9px;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+    }
+
+    .kecamatan-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .kecamatan-name {
+      font-weight: 700;
+      color: #13221A;
+      font-size: 13.5px;
+    }
+
+    .kecamatan-center {
+      font-size: 11.5px;
+      color: #64748B;
+    }
+
+    .text-muted {
+      color: #64748B;
+    }
+
+    .text-danger {
+      color: #DC2626;
+      font-weight: 700;
+    }
+
+    /* Food Security Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .badge.sangat-aman {
+      background: #DCFCE7;
+      color: #15803D;
+      border: 1px solid #BBF7D0;
+    }
+
+    .badge.aman {
+      background: #DCFCE7;
+      color: #15803D;
+      border: 1px solid #BBF7D0;
+    }
+
+    .badge.waspada {
+      background: #FEF3C7;
+      color: #B45309;
+      border: 1px solid #FDE68A;
+    }
+
+    /* Priority Pills */
+    .priority-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .priority-pill.rendah {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+
+    .priority-pill.sedang {
+      background: #FEF3C7;
+      color: #D97706;
+      border: 1px solid #FDE68A;
+    }
+
+    .priority-pill.tinggi {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+    }
+
+    /* Pagination Footer */
+    .table-pagination {
+      padding: 16px 24px;
+      border-top: 1px solid #F1F5F9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .pagination-info {
+      font-size: 12.5px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .pagination-btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pagination-btn-arrow {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #E2E8F0;
+      border-radius: 7px;
+      background: #FFFFFF;
+      color: #94A3B8;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn-num {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #059669;
+      border-radius: 7px;
+      background: #059669;
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="view-container">
+    <!-- Header Section -->
+    <div class="page-header">
+      <h1>Data Indikator NutriMap Kota Bogor</h1>
+      <div class="export-action-group">
+        <button class="btn-export-excel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+            <path d="M8 13h2"></path>
+            <path d="M14 13h2"></path>
+            <path d="M8 17h2"></path>
+            <path d="M14 17h2"></path>
+          </svg>
+          Unduh CSV / Excel
+        </button>
+        <button class="btn-export-pdf">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+            <path d="M10 9H8"></path>
+            <path d="M16 13H8"></path>
+            <path d="M16 17H8"></path>
+          </svg>
+          Export PDF / Laporan
+        </button>
+      </div>
+    </div>
+
+    <!-- Table Container Card -->
+    <div class="dash-card">
+      <!-- Search & Filters Toolbar -->
+      <div class="table-tools-header">
+        <div class="t-search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Cari nama kecamatan atau desa...">
+        </div>
+
+        <div class="t-filters">
+          <!-- Filter 1: Status Pangan -->
+          <div class="select-wrap">
+            <svg class="icon-start" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <select>
+              <option>Semua Status Pangan</option>
+              <option>Sangat Aman</option>
+              <option>Aman</option>
+              <option>Waspada</option>
+              <option>Rawan</option>
+              <option>Sangat Rawan</option>
+            </select>
+            <svg class="icon-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <!-- Filter 2: Prioritas -->
+          <div class="select-wrap">
+            <svg class="icon-start" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+            <select>
+              <option>Semua Prioritas</option>
+              <option>Prioritas Sangat Tinggi</option>
+              <option>Prioritas Tinggi</option>
+              <option>Prioritas Sedang</option>
+              <option>Prioritas Rendah</option>
+            </select>
+            <svg class="icon-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Kode</th>
+              <th>Kecamatan</th>
+              <th>Jumlah Penduduk</th>
+              <th>Status Pangan</th>
+              <th>Skor IKP</th>
+              <th>Air Bersih</th>
+              <th>Stunting</th>
+              <th>Faskes</th>
+              <th>Kemiskinan</th>
+              <th>Prioritas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1: Bogor Tengah -->
+            <tr>
+              <td><span class="audit-id-badge">BOG-01</span></td>
+              <td>
+                <div class="kecamatan-cell">
+                  <span class="kecamatan-name">Kec. Bogor Tengah</span>
+                  <span class="kecamatan-center">Pusat: Kebun Raya / Sempur</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-mono">108.500</span> <span class="text-muted">jiwa</span>
+              </td>
+              <td><span class="badge sangat-aman">Sangat Aman</span></td>
+              <td>
+                <b class="font-mono">94.8</b> <small class="text-muted">/ 100</small>
+              </td>
+              <td><span class="font-mono">96.2%</span></td>
+              <td><span class="font-mono">8.4%</span></td>
+              <td><span class="font-mono">14 Unit</span></td>
+              <td><span class="font-mono">3.2%</span></td>
+              <td><span class="priority-pill rendah">Rendah</span></td>
+            </tr>
+
+            <!-- Row 2: Bogor Utara -->
+            <tr>
+              <td><span class="audit-id-badge">BOG-02</span></td>
+              <td>
+                <div class="kecamatan-cell">
+                  <span class="kecamatan-name">Kec. Bogor Utara</span>
+                  <span class="kecamatan-center">Pusat: Tanah Baru / Cibuluh</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-mono">192.400</span> <span class="text-muted">jiwa</span>
+              </td>
+              <td><span class="badge aman">Aman</span></td>
+              <td>
+                <b class="font-mono">88.5</b> <small class="text-muted">/ 100</small>
+              </td>
+              <td><span class="font-mono">91%</span></td>
+              <td><span class="font-mono">12.6%</span></td>
+              <td><span class="font-mono">10 Unit</span></td>
+              <td><span class="font-mono">5.1%</span></td>
+              <td><span class="priority-pill rendah">Rendah</span></td>
+            </tr>
+
+            <!-- Row 3: Bogor Selatan -->
+            <tr>
+              <td><span class="audit-id-badge">BOG-03</span></td>
+              <td>
+                <div class="kecamatan-cell">
+                  <span class="kecamatan-name">Kec. Bogor Selatan</span>
+                  <span class="kecamatan-center">Pusat: Batutulis / Bondongan</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-mono">210.800</span> <span class="text-muted">jiwa</span>
+              </td>
+              <td><span class="badge waspada">Waspada</span></td>
+              <td>
+                <b class="font-mono">74.2</b> <small class="text-muted">/ 100</small>
+              </td>
+              <td><span class="font-mono">81.5%</span></td>
+              <td><span class="font-mono text-danger">19.8%</span></td>
+              <td><span class="font-mono">8 Unit</span></td>
+              <td><span class="font-mono">8.9%</span></td>
+              <td><span class="priority-pill tinggi">Tinggi</span></td>
+            </tr>
+
+            <!-- Row 4: Bogor Timur -->
+            <tr>
+              <td><span class="audit-id-badge">BOG-04</span></td>
+              <td>
+                <div class="kecamatan-cell">
+                  <span class="kecamatan-name">Kec. Bogor Timur</span>
+                  <span class="kecamatan-center">Pusat: Tajur / Baranangsiang</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-mono">109.200</span> <span class="text-muted">jiwa</span>
+              </td>
+              <td><span class="badge aman">Aman</span></td>
+              <td>
+                <b class="font-mono">89.1</b> <small class="text-muted">/ 100</small>
+              </td>
+              <td><span class="font-mono">93.4%</span></td>
+              <td><span class="font-mono">11.2%</span></td>
+              <td><span class="font-mono">9 Unit</span></td>
+              <td><span class="font-mono">4.5%</span></td>
+              <td><span class="priority-pill rendah">Rendah</span></td>
+            </tr>
+
+            <!-- Row 5: Bogor Barat -->
+            <tr>
+              <td><span class="audit-id-badge">BOG-05</span></td>
+              <td>
+                <div class="kecamatan-cell">
+                  <span class="kecamatan-name">Kec. Bogor Barat</span>
+                  <span class="kecamatan-center">Pusat: Bubulak / Cilendek</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-mono">242.600</span> <span class="text-muted">jiwa</span>
+              </td>
+              <td><span class="badge waspada">Waspada</span></td>
+              <td>
+                <b class="font-mono">78.6</b> <small class="text-muted">/ 100</small>
+              </td>
+              <td><span class="font-mono">85%</span></td>
+              <td><span class="font-mono text-danger">17.5%</span></td>
+              <td><span class="font-mono">11 Unit</span></td>
+              <td><span class="font-mono">7.4%</span></td>
+              <td><span class="priority-pill sedang">Sedang</span></td>
+            </tr>
+
+            <!-- Row 6: Tanah Sareal -->
+            <tr>
+              <td><span class="audit-id-badge">BOG-06</span></td>
+              <td>
+                <div class="kecamatan-cell">
+                  <span class="kecamatan-name">Kec. Tanah Sareal</span>
+                  <span class="kecamatan-center">Pusat: Kebon Pedes / Kedung Badak</span>
+                </div>
+              </td>
+              <td>
+                <span class="font-mono">228.700</span> <span class="text-muted">jiwa</span>
+              </td>
+              <td><span class="badge aman">Aman</span></td>
+              <td>
+                <b class="font-mono">86.4</b> <small class="text-muted">/ 100</small>
+              </td>
+              <td><span class="font-mono">90.2%</span></td>
+              <td><span class="font-mono">13.8%</span></td>
+              <td><span class="font-mono">12 Unit</span></td>
+              <td><span class="font-mono">5.8%</span></td>
+              <td><span class="priority-pill rendah">Rendah</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="table-pagination">
+        <span class="pagination-info">Menampilkan 6 dari 6 kecamatan</span>
+        <div class="pagination-btns">
+          <button class="pagination-btn-arrow" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="pagination-btn-num">1</button>
+          <button class="pagination-btn-arrow" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

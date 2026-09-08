@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TableProperties, Search, Filter, Download, FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { TableProperties, Search, Filter, AlertTriangle, Download, FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { KECAMATAN_DATA, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
 
 export default function IndicatorDataView() {
@@ -85,6 +85,7 @@ export default function IndicatorDataView() {
             </label>
 
             <label className="select-wrap">
+              <AlertTriangle size={14} />
               <select value={filterPrioritas} onChange={e => setFilterPrioritas(e.target.value)}>
                 <option>Semua Prioritas</option>
                 <option value="Sangat Tinggi">Prioritas Sangat Tinggi</option>
@@ -117,25 +118,34 @@ export default function IndicatorDataView() {
               {filteredData.length > 0 ? (
                 filteredData.map(row => (
                   <tr key={row.id}>
-                    <td className="font-mono text-muted">{row.id}</td>
+                    <td><span className="audit-id-badge">{row.id}</span></td>
                     <td>
-                      <b>Kec. {row.nama}</b>
-                      <br />
-                      <small className="muted">{row.pusat}</small>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong>Kec. {row.nama}</strong>
+                        <small className="text-muted" style={{ fontSize: '0.72rem' }}>Pusat: {row.pusat}</small>
+                      </div>
                     </td>
-                    <td>{row.penduduk.toLocaleString('id-ID')} jiwa</td>
+                    <td>
+                      <span className="font-mono">{row.penduduk.toLocaleString('id-ID')}</span>{' '}
+                      <small className="text-muted">jiwa</small>
+                    </td>
                     <td>
                       <span className={`badge ${row.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
                         {row.panganStatus}
                       </span>
                     </td>
                     <td>
-                      <strong>{row.panganSkor}</strong> / 100
+                      <b className="font-mono">{row.panganSkor}</b>{' '}
+                      <small className="text-muted">/ 100</small>
                     </td>
-                    <td>{row.airBersih}%</td>
-                    <td className={row.stunting > 20 ? 'text-danger fw-bold' : ''}>{row.stunting}%</td>
-                    <td>{row.faskes} Unit</td>
-                    <td>{row.tingkatKemiskinan}</td>
+                    <td><span className="font-mono">{row.airBersih}%</span></td>
+                    <td>
+                      <span className={`font-mono ${row.stunting > 15 ? 'text-danger font-bold' : ''}`}>
+                        {row.stunting}%
+                      </span>
+                    </td>
+                    <td><span className="font-mono">{row.faskes}</span> Unit</td>
+                    <td><span className="font-mono">{row.tingkatKemiskinan}</span></td>
                     <td>
                       <span className={`priority-pill ${row.prioritas.toLowerCase().replace(/\s+/g, '-')}`}>
                         {row.prioritas}

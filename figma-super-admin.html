@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manajemen Akun & Hak Akses Admin - Super Admin NutriMap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #EEF3F0;
+      color: #13221A;
+      padding: 36px 40px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .superadmin-container {
+      width: 100%;
+      max-width: 1440px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Superadmin Hero Banner */
+    .superadmin-hero {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 26px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .sa-hero-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sa-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #F0FDF4;
+      color: #16A34A;
+      border: 1px solid #BBF7D0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      width: fit-content;
+    }
+
+    .sa-badge svg {
+      color: #16A34A;
+    }
+
+    .sa-hero-left h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #13221A;
+      letter-spacing: -0.02em;
+    }
+
+    .sa-hero-left p {
+      font-size: 13px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .sa-hero-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .primary-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #059669;
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25);
+    }
+
+    .logout-btn-large {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #ffffff;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Table Dashboard Card */
+    .dash-card {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+    }
+
+    .table-tools-header {
+      padding: 20px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .t-search {
+      position: relative;
+      flex: 1;
+      max-width: 420px;
+    }
+
+    .t-search svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94A3B8;
+    }
+
+    .t-search input {
+      width: 100%;
+      padding: 10px 14px 10px 42px;
+      border: 1px solid #CBD5E1;
+      border-radius: 9px;
+      font-size: 13px;
+      color: #13221A;
+      background: #FFFFFF;
+      outline: none;
+    }
+
+    .t-search input::placeholder {
+      color: #94A3B8;
+    }
+
+    .sa-total-badge {
+      font-size: 12.5px;
+      color: #64748B;
+      background: #F1F5F9;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .sa-total-badge strong {
+      color: #13221A;
+      font-weight: 700;
+    }
+
+    /* Table Styles */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead th {
+      background-color: #F8FAFC;
+      border-top: 1px solid #F1F5F9;
+      border-bottom: 1px solid #E2E8F0;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748B;
+      padding: 14px 28px;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody td {
+      padding: 16px 28px;
+      font-size: 13px;
+      color: #13221A;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+    }
+
+    .text-muted {
+      color: #64748B;
+    }
+
+    .text-emerald {
+      color: #059669;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #475569;
+      background: transparent;
+    }
+
+    /* Badge Status */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .badge.sangat-aman {
+      background: #DCFCE7;
+      color: #15803D;
+      border: 1px solid #BBF7D0;
+    }
+
+    /* Actions */
+    .sa-table-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .table-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #FFFFFF;
+    }
+
+    .edit-btn {
+      color: #334155;
+      border: 1px solid #CBD5E1;
+    }
+
+    .delete-btn {
+      color: #334155;
+      border: 1px solid #CBD5E1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="superadmin-container">
+    <!-- Superadmin Top Banner -->
+    <div class="superadmin-hero">
+      <div class="sa-hero-left">
+        <div class="sa-badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+          Portal Khusus Super Admin
+        </div>
+        <h1>Manajemen Akun & Hak Akses Admin</h1>
+        <p>Kelola daftar email dan kata sandi staff admin yang diberikan hak akses operasional SIG NutriMap Kota Bogor.</p>
+      </div>
+
+      <div class="sa-hero-right">
+        <button class="primary-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <line x1="19" y1="8" x2="19" y2="14"></line>
+            <line x1="22" y1="11" x2="16" y2="11"></line>
+          </svg>
+          Tambah Admin Baru
+        </button>
+
+        <button class="logout-btn-large">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Keluar (Logout)
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Stats & List Table Card -->
+    <div class="dash-card">
+      <div class="table-tools-header">
+        <div class="t-search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Cari admin berdasarkan nama atau email...">
+        </div>
+
+        <div class="sa-total-badge">
+          Total Admin Terdaftar: <strong>3 Akun</strong>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID ADMIN</th>
+              <th>NAMA LENGKAP ADMIN</th>
+              <th>ALAMAT EMAIL (LOGIN)</th>
+              <th>KATA SANDI</th>
+              <th>TANGGAL PENDAFTARAN</th>
+              <th>STATUS AKSES</th>
+              <th style="text-align: right;">AKSI PENGATURAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1: Dr. Ahmad Ridwan -->
+            <tr>
+              <td class="font-mono text-muted">ADM-001</td>
+              <td><b>Dr. Ahmad Ridwan</b></td>
+              <td class="font-mono text-emerald">admin@bogorkota.go.id</td>
+              <td class="font-mono text-muted">
+                <code>•••••••• (admin123password)</code>
+              </td>
+              <td class="text-muted">01 Sep 2026</td>
+              <td>
+                <span class="badge sangat-aman">Aktif</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="sa-table-actions">
+                  <button class="table-action-btn edit-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit
+                  </button>
+                  <button class="table-action-btn delete-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2: Siti Rahmawati, S.P. -->
+            <tr>
+              <td class="font-mono text-muted">ADM-002</td>
+              <td><b>Siti Rahmawati, S.P.</b></td>
+              <td class="font-mono text-emerald">siti.rahma@bogorkota.go.id</td>
+              <td class="font-mono text-muted">
+                <code>•••••••• (password123)</code>
+              </td>
+              <td class="text-muted">15 Agu 2026</td>
+              <td>
+                <span class="badge sangat-aman">Aktif</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="sa-table-actions">
+                  <button class="table-action-btn edit-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit
+                  </button>
+                  <button class="table-action-btn delete-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3: Budi Santoso, ST -->
+            <tr>
+              <td class="font-mono text-muted">ADM-003</td>
+              <td><b>Budi Santoso, ST</b></td>
+              <td class="font-mono text-emerald">budi.analis@bogorkota.go.id</td>
+              <td class="font-mono text-muted">
+                <code>•••••••• (password123)</code>
+              </td>
+              <td class="text-muted">20 Agu 2026</td>
+              <td>
+                <span class="badge sangat-aman">Aktif</span>
+              </td>
+              <td style="text-align: right;">
+                <div class="sa-table-actions">
+                  <button class="table-action-btn edit-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit
+                  </button>
+                  <button class="table-action-btn delete-btn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18"></path>
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                    </svg>
+                    Hapus
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

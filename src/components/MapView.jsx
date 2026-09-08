@@ -8,16 +8,38 @@ import {
   Utensils,
   Droplets,
   HeartPulse,
-  Building2
+  Building2,
+  Map as MapIcon
 } from 'lucide-react';
 import { KECAMATAN_KOTA_BOGOR, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
 
-export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLayerFilter, height = '520px' }) {
+// Basemap URL Providers (Clean & Free of Watermarks)
+const BASEMAP_PROVIDERS = {
+  light: {
+    name: 'Light',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap kontributor'
+  },
+  street: {
+    name: 'Street',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri & OpenStreetMap'
+  },
+  satellite: {
+    name: 'Satellite',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, Maxar, Earthstar'
+  }
+};
+
+export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLayerFilter, height = '560px' }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const markersRef = useRef([]);
   const circlesRef = useRef([]);
   const [activeLayer, setActiveLayer] = useState(activeLayerFilter || 'pangan');
+  const [activeBasemap, setActiveBasemap] = useState('light');
   const [selectedDetails, setSelectedDetails] = useState(null);
 
   // Initialize Leaflet Map
@@ -33,12 +55,14 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
       attributionControl: false
     });
 
-    // CartoDB Voyager tile layer
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Add Initial Basemap Tile Layer
+    const provider = BASEMAP_PROVIDERS.light;
+    const tileLayer = L.tileLayer(provider.url, {
       maxZoom: 19,
-      subdomains: 'abcd',
+      attribution: provider.attribution
     }).addTo(map);
 
+    tileLayerRef.current = tileLayer;
     mapInstanceRef.current = map;
 
     return () => {
@@ -49,7 +73,14 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
     };
   }, []);
 
-  // Update map markers when activeLayer or kecamatan data changes
+  // Update Basemap Tile Layer when activeBasemap changes
+  useEffect(() => {
+    if (!tileLayerRef.current) return;
+    const provider = BASEMAP_PROVIDERS[activeBasemap] || BASEMAP_PROVIDERS.light;
+    tileLayerRef.current.setUrl(provider.url);
+  }, [activeBasemap]);
+
+  // Update map markers when activeLayer changes
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -61,26 +92,26 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
     circlesRef.current = [];
 
     KECAMATAN_KOTA_BOGOR.forEach(kec => {
-      let color = '#10b981';
+      let color = '#16A34A';
       let radius = kec.penduduk / 500;
 
       if (activeLayer === 'pangan') {
         const cat = FOOD_SECURITY_CATEGORIES.find(c => c.label === kec.panganStatus);
-        color = cat ? cat.color : '#10b981';
+        color = cat ? cat.color : '#16A34A';
       } else if (activeLayer === 'air') {
-        color = kec.airBersih > 90 ? '#06b6d4' : kec.airBersih > 85 ? '#3b82f6' : '#f59e0b';
+        color = kec.airBersih >= 92 ? '#06B6D4' : kec.airBersih >= 85 ? '#0284C7' : '#F59E0B';
       } else if (activeLayer === 'stunting') {
-        color = kec.stunting < 10 ? '#10b981' : kec.stunting < 15 ? '#f59e0b' : '#ef4444';
+        color = kec.stunting < 10 ? '#16A34A' : kec.stunting < 15 ? '#F59E0B' : '#DC2626';
       } else if (activeLayer === 'faskes') {
-        color = kec.faskes > 10 ? '#8b5cf6' : '#ec4899';
+        color = kec.faskes > 10 ? '#15803D' : '#F59E0B';
       }
 
-      // Add Circle Buffer for area representation
+      // Add Circle Buffer for spatial footprint representation
       const circle = L.circle([kec.lat, kec.lng], {
         color: color,
         fillColor: color,
-        fillOpacity: 0.2,
-        radius: radius * 3.5,
+        fillOpacity: 0.16,
+        radius: radius * 3.4,
         weight: 1.5
       }).addTo(map);
       circlesRef.current.push(circle);
@@ -100,12 +131,12 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
 
       const marker = L.marker([kec.lat, kec.lng], { icon: customIcon }).addTo(map);
 
-      // Bind Popup with stylized HTML
+      // Bind Institutional Leaflet Popup
       const popupHtml = `
         <div class="leaflet-popup-card">
           <div class="l-pop-head">
             <strong>Kecamatan ${kec.nama}</strong>
-            <span class="l-pop-badge" style="background-color: ${color}20; color: ${color}; border: 1px solid ${color}60;">
+            <span class="l-pop-badge" style="background-color: ${color}15; color: ${color}; border: 1px solid ${color}40;">
               ${kec.panganStatus}
             </span>
           </div>
@@ -118,6 +149,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
           </div>
           <div class="l-pop-foot">
             <span class="l-pop-center">Pusat: ${kec.pusat}</span>
+            <span class="l-pop-faskes">Faskes: ${kec.faskes} Unit</span>
           </div>
         </div>
       `;
@@ -134,11 +166,11 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
 
   }, [activeLayer, onSelectKecamatan]);
 
-  // Center map if selectedKecamatan changes
+  // Center map when selectedKecamatan changes
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedKecamatan) return;
     mapInstanceRef.current.flyTo([selectedKecamatan.lat, selectedKecamatan.lng], 13, {
-      duration: 1.2
+      duration: 1.0
     });
   }, [selectedKecamatan]);
 
@@ -148,58 +180,109 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
 
   return (
     <div className="map-view-container" style={{ height }}>
-      {/* Map Element */}
+      {/* Map Canvas */}
       <div ref={mapRef} className="leaflet-map-canvas" />
 
-      {/* Floating Layer Controls */}
-      <div className="map-layer-selector">
-        <span className="layer-title">
-          <Layers size={14} /> Layer Tematik
-        </span>
-        <div className="layer-buttons">
-          <button
-            className={`layer-btn ${activeLayer === 'pangan' ? 'active' : ''}`}
-            onClick={() => setActiveLayer('pangan')}
-          >
-            <Utensils size={14} /> Ketahanan Pangan
-          </button>
-          <button
-            className={`layer-btn ${activeLayer === 'air' ? 'active' : ''}`}
-            onClick={() => setActiveLayer('air')}
-          >
-            <Droplets size={14} /> Air Bersih
-          </button>
-          <button
-            className={`layer-btn ${activeLayer === 'stunting' ? 'active' : ''}`}
-            onClick={() => setActiveLayer('stunting')}
-          >
-            <HeartPulse size={14} /> Prevalensi Stunting
-          </button>
-          <button
-            className={`layer-btn ${activeLayer === 'faskes' ? 'active' : ''}`}
-            onClick={() => setActiveLayer('faskes')}
-          >
-            <Building2 size={14} /> Faskes & Pasar
-          </button>
+      {/* Clean Layer & Basemap Control Panel */}
+      <div className="map-control-panel">
+        {/* Layer Selection */}
+        <div className="control-group">
+          <span className="control-group-title">
+            <Layers size={13} /> LAYERS
+          </span>
+          <div className="control-layer-list">
+            <label className={`layer-option ${activeLayer === 'pangan' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="map-layer"
+                checked={activeLayer === 'pangan'}
+                onChange={() => setActiveLayer('pangan')}
+              />
+              <span className="radio-mark" />
+              <span>Ketahanan Pangan</span>
+            </label>
+
+            <label className={`layer-option ${activeLayer === 'air' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="map-layer"
+                checked={activeLayer === 'air'}
+                onChange={() => setActiveLayer('air')}
+              />
+              <span className="radio-mark" />
+              <span>Akses Air Bersih</span>
+            </label>
+
+            <label className={`layer-option ${activeLayer === 'stunting' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="map-layer"
+                checked={activeLayer === 'stunting'}
+                onChange={() => setActiveLayer('stunting')}
+              />
+              <span className="radio-mark" />
+              <span>Prevalensi Stunting</span>
+            </label>
+
+            <label className={`layer-option ${activeLayer === 'faskes' ? 'active' : ''}`}>
+              <input
+                type="radio"
+                name="map-layer"
+                checked={activeLayer === 'faskes'}
+                onChange={() => setActiveLayer('faskes')}
+              />
+              <span className="radio-mark" />
+              <span>Fasilitas & Pasar</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="control-divider" />
+
+        {/* Basemap Selection */}
+        <div className="control-group">
+          <span className="control-group-title">
+            <MapIcon size={13} /> BASEMAP
+          </span>
+          <div className="control-basemap-list">
+            {Object.keys(BASEMAP_PROVIDERS).map((key) => (
+              <label key={key} className={`basemap-option ${activeBasemap === key ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name="basemap-layer"
+                  checked={activeBasemap === key}
+                  onChange={() => setActiveBasemap(key)}
+                />
+                <span className="radio-mark" />
+                <span>{BASEMAP_PROVIDERS[key].name}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Zoom Controls */}
+      {/* Map Zoom Tools */}
       <div className="map-zoom-tools">
-        <button onClick={handleZoomIn} title="Zoom Dalam">
-          <ZoomIn size={18} />
+        <button onClick={handleZoomIn} title="Perbesar Peta">
+          <ZoomIn size={16} />
         </button>
-        <button onClick={handleZoomOut} title="Zoom Luar">
-          <ZoomOut size={18} />
+        <button onClick={handleZoomOut} title="Perkecil Peta">
+          <ZoomOut size={16} />
         </button>
         <button onClick={handleResetView} title="Reset Posisi Kota Bogor">
-          <Maximize2 size={18} />
+          <Maximize2 size={16} />
         </button>
       </div>
 
-      {/* Map Legend Overlay */}
+      {/* Categorical Map Legend Overlay */}
       <div className="map-legend-card">
-        <span className="legend-head">Legenda Peta Kota Bogor</span>
+        <span className="legend-head">
+          {activeLayer === 'pangan' && 'Klasifikasi Ketahanan Pangan'}
+          {activeLayer === 'air' && 'Klasifikasi Akses Air Bersih'}
+          {activeLayer === 'stunting' && 'Klasifikasi Stunting Balita'}
+          {activeLayer === 'faskes' && 'Sebaran Fasilitas Kesehatan'}
+        </span>
+
         {activeLayer === 'pangan' && (
           <div className="legend-items">
             {FOOD_SECURITY_CATEGORIES.map(cat => (
@@ -210,29 +293,56 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
             ))}
           </div>
         )}
+
         {activeLayer === 'air' && (
           <div className="legend-items">
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#06b6d4' }} /> Akses Layak &gt;90%</div>
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#3b82f6' }} /> Akses Cukup 85-90%</div>
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#f59e0b' }} /> Akses Minim &lt;85%</div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#06B6D4' }} />
+              <span className="legend-lbl">Akses Layak (&gt;90%)</span>
+            </div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#0284C7' }} />
+              <span className="legend-lbl">Akses Cukup (85–90%)</span>
+            </div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#F59E0B' }} />
+              <span className="legend-lbl">Akses Waspada (&lt;85%)</span>
+            </div>
           </div>
         )}
+
         {activeLayer === 'stunting' && (
           <div className="legend-items">
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#10b981' }} /> Stunting Low &lt;10%</div>
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#f59e0b' }} /> Stunting Mod 10-15%</div>
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#ef4444' }} /> Stunting High &gt;15%</div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#16A34A' }} />
+              <span className="legend-lbl">Rendah (&lt;10%)</span>
+            </div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#F59E0B' }} />
+              <span className="legend-lbl">Sedang (10–15%)</span>
+            </div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#DC2626' }} />
+              <span className="legend-lbl">Tinggi (&gt;15%)</span>
+            </div>
           </div>
         )}
+
         {activeLayer === 'faskes' && (
           <div className="legend-items">
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#8b5cf6' }} /> Faskes Lengkap &gt;10</div>
-            <div className="legend-row"><span className="legend-color-dot" style={{ backgroundColor: '#ec4899' }} /> Faskes Terbatas ≤10</div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#15803D' }} />
+              <span className="legend-lbl">Faskes Lengkap (&gt;10 Unit)</span>
+            </div>
+            <div className="legend-row">
+              <span className="legend-color-dot" style={{ backgroundColor: '#F59E0B' }} />
+              <span className="legend-lbl">Faskes Terbatas (≤10 Unit)</span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Coordinate Indicator */}
+      {/* Map Coordinate Metadata Bar */}
       <div className="map-coord-bar">
         <span>Kota Bogor, Jawa Barat</span>
         <code>-6.5971° S, 106.7949° E</code>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manajemen Keamanan Pangan - NutriMap Kota Bogor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #EEF3F0;
+      color: #13221A;
+      padding: 36px 40px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .view-container {
+      width: 100%;
+      max-width: 1440px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #13221A;
+      letter-spacing: -0.02em;
+    }
+
+    .export-action-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-export-excel {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #059669;
+      color: #ffffff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
+    }
+
+    .btn-export-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #ffffff;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Stat Cards Grid */
+    .stat-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .stat-card.emerald {
+      background-color: #F0FDF4;
+      border: 1px solid #BBF7D0;
+    }
+
+    .stat-card.cyan {
+      background-color: #ECFEFF;
+      border: 1px solid #A5F3FC;
+    }
+
+    .stat-card.rose {
+      background-color: #FFF7ED;
+      border: 1px solid #FFEDD5;
+    }
+
+    .sc-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .stat-card.emerald .sc-icon {
+      color: #16A34A;
+    }
+
+    .stat-card.cyan .sc-icon {
+      color: #0891B2;
+    }
+
+    .stat-card.rose .sc-icon {
+      color: #EA580C;
+    }
+
+    .sc-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .sc-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #64748B;
+    }
+
+    .sc-value {
+      font-size: 21px;
+      font-weight: 800;
+      color: #13221A;
+      letter-spacing: -0.01em;
+    }
+
+    .sc-desc {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #64748B;
+      margin-top: 1px;
+    }
+
+    /* Table Dashboard Card */
+    .dash-card {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      overflow: hidden;
+    }
+
+    .dash-card-head {
+      padding: 24px 28px 20px;
+    }
+
+    .dash-card-head h2 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #13221A;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+
+    .dash-card-head p {
+      font-size: 12.5px;
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    thead th {
+      background-color: #F8FAFC;
+      border-top: 1px solid #F1F5F9;
+      border-bottom: 1px solid #E2E8F0;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748B;
+      padding: 13px 28px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #F1F5F9;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody td {
+      padding: 18px 28px;
+      font-size: 13px;
+      color: #13221A;
+      vertical-align: middle;
+    }
+
+    /* ID Audit Badge */
+    .audit-id-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #F1F5F9;
+      color: #475569;
+      padding: 5px 9px;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+    }
+
+    .location-text {
+      font-weight: 700;
+      color: #13221A;
+      font-size: 13px;
+    }
+
+    .date-text {
+      color: #475569;
+      font-size: 12.5px;
+    }
+
+    .type-text {
+      color: #475569;
+      font-size: 12.5px;
+    }
+
+    /* Lab Result Badge */
+    .audit-result-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 700;
+      font-size: 12px;
+      color: #16A34A;
+    }
+
+    .audit-result-tag svg {
+      flex-shrink: 0;
+    }
+
+    /* Status Pill */
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #DCFCE7;
+      color: #15803D;
+      border: 1px solid #BBF7D0;
+    }
+
+    /* Examiner Text */
+    .examiner-text {
+      font-size: 12px;
+      color: #64748B;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="view-container">
+    <!-- Header Section -->
+    <div class="page-header">
+      <h1>Manajemen Keamanan Pangan</h1>
+      <div class="export-action-group">
+        <button class="btn-export-excel">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+            <path d="M8 13h2"></path>
+            <path d="M14 13h2"></path>
+            <path d="M8 17h2"></path>
+            <path d="M14 17h2"></path>
+          </svg>
+          Unduh CSV / Excel
+        </button>
+        <button class="btn-export-pdf">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
+            <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
+            <path d="M10 9H8"></path>
+            <path d="M16 13H8"></path>
+            <path d="M16 17H8"></path>
+          </svg>
+          Export PDF / Laporan
+        </button>
+      </div>
+    </div>
+
+    <!-- 3 Stat Summary Cards -->
+    <div class="stat-cards-grid">
+      <!-- Card 1: Total Inspeksi -->
+      <div class="stat-card emerald">
+        <div class="sc-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+        </div>
+        <div class="sc-info">
+          <span class="sc-label">Total Inspeksi Pasar (2026)</span>
+          <h3 class="sc-value">48 Lokasi Pasar</h3>
+          <span class="sc-desc">96% Sampel Memenuhi Standar BPOM</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Uji Lab Residu -->
+      <div class="stat-card cyan">
+        <div class="sc-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="sc-info">
+          <span class="sc-label">Uji Lab Residu Pestisida</span>
+          <h3 class="sc-value">120 Sampel Sayur</h3>
+          <span class="sc-desc">Tingkat Keamanan 98% Layak Konsumsi</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Temuan Pengawet -->
+      <div class="stat-card rose">
+        <div class="sc-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div class="sc-info">
+          <span class="sc-label">Temuan Pengawet Berbahaya</span>
+          <h3 class="sc-value">2 Pelanggaran</h3>
+          <span class="sc-desc">Telah Diberikan Pembinaan & Sanksi</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="dash-card">
+      <div class="dash-card-head">
+        <h2>Log Hasil Inspeksi Keamanan Pangan Terbaru</h2>
+        <p>Data pemeriksaan berkala oleh Dinas Ketahanan Pangan & Satgas Pangan Kota Bogor</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Audit</th>
+              <th>Lokasi Inspeksi</th>
+              <th>Tanggal</th>
+              <th>Jenis Pengujian</th>
+              <th>Hasil Laboratorium</th>
+              <th>Status Audit</th>
+              <th>Petugas Pemeriksa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 -->
+            <tr>
+              <td><span class="audit-id-badge">AUD-KOTA-001</span></td>
+              <td><span class="location-text">Pasar Kebon Kembang (Anyar)</span></td>
+              <td><span class="date-text">28 Agu 2026</span></td>
+              <td><span class="type-text">Uji Sampel Daging & Daging Ayam</span></td>
+              <td>
+                <span class="audit-result-tag">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="16 10 11 15 8 12"></polyline>
+                  </svg>
+                  Lolos (Bebas Formalin)
+                </span>
+              </td>
+              <td><span class="status-pill">Terverifikasi</span></td>
+              <td><span class="examiner-text">Dinas Ketahanan Pangan Kota Bogor</span></td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr>
+              <td><span class="audit-id-badge">AUD-KOTA-002</span></td>
+              <td><span class="location-text">Pasar Bogor (Otista)</span></td>
+              <td><span class="date-text">25 Agu 2026</span></td>
+              <td><span class="type-text">Cek Residu Pestisida Sayuran</span></td>
+              <td>
+                <span class="audit-result-tag">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="16 10 11 15 8 12"></polyline>
+                  </svg>
+                  Batas Aman (0.01 ppm)
+                </span>
+              </td>
+              <td><span class="status-pill">Terverifikasi</span></td>
+              <td><span class="examiner-text">Lab Lingkungan Kota Bogor</span></td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr>
+              <td><span class="audit-id-badge">AUD-KOTA-003</span></td>
+              <td><span class="location-text">Pasar Jembatan Merah</span></td>
+              <td><span class="date-text">20 Agu 2026</span></td>
+              <td><span class="type-text">Pengawasan Ikan Asin Formalin</span></td>
+              <td>
+                <span class="audit-result-tag">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="16 10 11 15 8 12"></polyline>
+                  </svg>
+                  Lolos Bebas Pengawet
+                </span>
+              </td>
+              <td><span class="status-pill">Terverifikasi</span></td>
+              <td><span class="examiner-text">Satgas Pangan Kota</span></td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr>
+              <td><span class="audit-id-badge">AUD-KOTA-004</span></td>
+              <td><span class="location-text">Pasar Gunung Batu</span></td>
+              <td><span class="date-text">15 Agu 2026</span></td>
+              <td><span class="type-text">Inspeksi Stok Beras Cadangan Kota</span></td>
+              <td>
+                <span class="audit-result-tag">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="16 10 11 15 8 12"></polyline>
+                  </svg>
+                  Stok Aman (8.200 Ton)
+                </span>
+              </td>
+              <td><span class="status-pill">Terverifikasi</span></td>
+              <td><span class="examiner-text">Bappeda Kota Bogor</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

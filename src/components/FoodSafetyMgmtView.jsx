@@ -67,13 +67,18 @@ export default function FoodSafetyMgmtView() {
             <tbody>
               {SECURITY_AUDITS.map((audit) => (
                 <tr key={audit.id}>
-                  <td><b>{audit.id}</b></td>
+                  <td><span className="audit-id-badge">{audit.id}</span></td>
                   <td><strong>{audit.lokasi}</strong></td>
                   <td>{audit.tanggal}</td>
                   <td>{audit.jenis}</td>
-                  <td><span className="text-emerald font-bold">{audit.hasil}</span></td>
+                  <td>
+                    <span className={`audit-result-tag ${audit.hasil.includes('Lolos') || audit.hasil.includes('Aman') ? 'pass' : 'warning'}`}>
+                      <CheckCircle size={14} />
+                      {audit.hasil}
+                    </span>
+                  </td>
                   <td><span className="status-pill aman">{audit.status}</span></td>
-                  <td><small className="text-muted">{audit.pemeriksa}</small></td>
+                  <td><span className="text-muted" style={{ fontSize: '0.78rem' }}>{audit.pemeriksa}</span></td>
                 </tr>
               ))}
             </tbody>

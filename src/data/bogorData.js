@@ -135,11 +135,11 @@ export const INITIAL_ADMINS_LIST = [
 ];
 
 export const FOOD_SECURITY_CATEGORIES = [
-  { label: "Sangat Aman", color: "#10b981", count: 1, desc: "Skor IKP > 90. Akses pangan sangat mandiri" },
-  { label: "Aman", color: "#06b6d4", count: 3, desc: "Skor IKP 80-89. Akses air & pangan stabil" },
-  { label: "Waspada", color: "#f59e0b", count: 2, desc: "Skor IKP 70-79. Perlu perhatian stunting & sanitasi" },
-  { label: "Rawan", color: "#f97316", count: 0, desc: "Skor IKP 50-69. Memerlukan bantuan rutin" },
-  { label: "Sangat Rawan", color: "#ef4444", count: 0, desc: "Skor IKP < 50. Prioritas utama bantuan" },
+  { label: "Sangat Aman", color: "#16A34A", count: 1, desc: "Skor IKP > 90. Akses pangan sangat mandiri" },
+  { label: "Aman", color: "#22C55E", count: 3, desc: "Skor IKP 80-89. Akses air & pangan stabil" },
+  { label: "Waspada", color: "#F59E0B", count: 2, desc: "Skor IKP 70-79. Perlu perhatian stunting & sanitasi" },
+  { label: "Rawan", color: "#F97316", count: 0, desc: "Skor IKP 50-69. Memerlukan bantuan rutin" },
+  { label: "Sangat Rawan", color: "#DC2626", count: 0, desc: "Skor IKP < 50. Prioritas utama bantuan" },
 ];
 
 export const MONTHLY_TREND_KOTA = [

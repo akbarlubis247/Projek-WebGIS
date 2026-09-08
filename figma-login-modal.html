@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Modal / Panel Masuk - Figma Export</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --primary-green: #16A34A;
+      --dark-green: #15803D;
+      --primary-emerald: #10B981;
+      --primary-emerald-dark: #047857;
+
+      --radius-sm: 6px;
+      --radius-md: 8px;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #090d16;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Fullscreen Split Layout Card (55% Left Hero : 45% Right Form) */
+    .login-split-card {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 55% 45%;
+      background: #ffffff;
+    }
+
+    /* LEFT HERO PANEL (Dark Emerald) */
+    .login-hero-panel {
+      position: relative;
+      background: linear-gradient(145deg, #022c22 0%, #064e3b 60%, #0f172a 100%);
+      color: #ffffff;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Topographic Grid Watermark Texture */
+    .topographic-pattern-overlay {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(rgba(16, 185, 129, 0.22) 1.5px, transparent 1.5px),
+        radial-gradient(rgba(16, 185, 129, 0.12) 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+      background-position: 0 0, 16px 16px;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .hero-top-watermark {
+      font-size: 0.85rem;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.35);
+      font-weight: 700;
+      text-transform: uppercase;
+      z-index: 2;
+      font-family: var(--font-mono);
+    }
+
+    .hero-center-content {
+      max-width: 580px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin: auto 0;
+    }
+
+    .brand-hero-logo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .b-icon-glow {
+      width: 52px;
+      height: 52px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+      color: #10B981;
+    }
+
+    .brand-hero-logo h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-center-content h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-center-content p {
+      color: #a7f3d0;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .hero-bottom-watermark {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.05em;
+      z-index: 2;
+      font-family: var(--font-mono);
+    }
+
+    /* RIGHT FORM PANEL (Clean White) */
+    .login-form-panel {
+      background: #ffffff;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+    }
+
+    .form-panel-top {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .back-to-public-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .form-panel-body {
+      max-width: 440px;
+      width: 100%;
+      margin: auto auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Role Toggle Tabs (Staff Admin vs Super Admin) */
+    .split-role-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: var(--radius-md);
+    }
+
+    .s-tab {
+      padding: 9px;
+      border: none;
+      background: transparent;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #64748b;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .s-tab.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .form-head h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .form-head p {
+      color: #64748b;
+      font-size: 0.88rem;
+      line-height: 1.4;
+    }
+
+    .split-login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .input-with-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      color: #94a3b8;
+    }
+
+    .input-with-icon input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      color: #0f172a;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .forgot-pass-wrap {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -6px;
+    }
+
+    .forgot-pass-wrap a {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .dark-emerald-submit-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary-green);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 1px 2px rgba(23, 32, 51, 0.04);
+      text-decoration: none;
+    }
+
+    /* Bottom Footer */
+    .form-panel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid #f1f5f9;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .foot-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen Split Card Container -->
+  <div class="login-split-card">
+    
+    <!-- 1. LEFT HERO PANEL (55% Dark Emerald GIS Graphic) -->
+    <div class="login-hero-panel">
+      <!-- Watermark Contours Background Overlay -->
+      <div class="topographic-pattern-overlay"></div>
+
+      <!-- Top Watermark -->
+      <div class="hero-top-watermark font-mono">
+        BOGOR CITY - TOPOGRAPHIC & ADMINISTRATIVE MAP
+      </div>
+
+      <!-- Center Hero Content -->
+      <div class="hero-center-content">
+        <div class="brand-hero-logo">
+          <div class="b-icon-glow">
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <h2>NutriMap Bogor</h2>
+        </div>
+
+        <h1>Sistem Informasi Geografis & Analisis Indikator Kesejahteraan</h1>
+
+        <p>
+          Platform manajemen data spasial untuk pemetaan prioritas wilayah, ketahanan pangan, dan stunting Kota Bogor.
+        </p>
+      </div>
+
+      <!-- Bottom Watermark -->
+      <div class="hero-bottom-watermark font-mono">
+        Kota Bogor, Jawa Barat - Indonesia
+      </div>
+    </div>
+
+    <!-- 2. RIGHT FORM PANEL (45% White Form) -->
+    <div class="login-form-panel">
+      
+      <!-- Top Action Link -->
+      <div class="form-panel-top">
+        <a href="#beranda" class="back-to-public-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Kembali ke Beranda Publik</span>
+        </a>
+      </div>
+
+      <!-- Form Body Container -->
+      <div class="form-panel-body">
+        
+        <!-- Role Switching Tabs (Super Admin Active) -->
+        <div class="split-role-tabs">
+          <div class="s-tab">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <polyline points="16 11 18 13 22 9"></polyline>
+            </svg>
+            <span>Staff Admin</span>
+          </div>
+
+          <div class="s-tab active">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+            <span>Super Admin</span>
+          </div>
+        </div>
+
+        <!-- Form Heading -->
+        <div class="form-head">
+          <h2>Masuk ke Panel Super Admin</h2>
+          <p>Silakan masukkan kredensial Anda untuk mengelola data indikator dan wilayah.</p>
+        </div>
+
+        <!-- Inputs Form -->
+        <form class="split-login-form">
+          <div class="form-group">
+            <label>Email / Username</label>
+            <div class="input-with-icon">
+              <svg class="input-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <input type="email" value="superadmin@bogorkota.go.id" readonly />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Kata Sandi</label>
+            <div class="input-with-icon">
+              <svg class="input-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" value="superadmin123" readonly />
+            </div>
+          </div>
+
+          <div class="forgot-pass-wrap">
+            <a href="#lupa-sandi">Lupa kata sandi?</a>
+          </div>
+
+          <button type="button" class="dark-emerald-submit-btn">
+            <span>Masuk sebagai Super Admin</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </button>
+        </form>
+
+      </div>
+
+      <!-- Footer Bar -->
+      <div class="form-panel-footer">
+        <div class="foot-left">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+            <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+            <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+            <path d="M10 6h4"></path>
+            <path d="M10 10h4"></path>
+            <path d="M10 14h4"></path>
+            <path d="M10 18h4"></path>
+          </svg>
+          <span>Pemerintah Kota Bogor</span>
+        </div>
+        <div class="foot-right font-mono">
+          © 2026 NutriMap Bogor. v2.4.0-GIS
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

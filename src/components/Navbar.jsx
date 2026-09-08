@@ -19,7 +19,7 @@ export default function Navbar({ onOpenLogin }) {
 
     const targetEl = document.getElementById(sectionId);
     if (targetEl) {
-      const headerOffset = 80;
+      const headerOffset = 76;
       const elementPosition = targetEl.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -52,14 +52,14 @@ export default function Navbar({ onOpenLogin }) {
   return (
     <nav className="public-navbar">
       <div className="navbar-container">
-        {/* Brand Logo */}
+        {/* Brand Logo & Title */}
         <div className="nav-brand" onClick={() => handleNavClick('beranda')}>
-          <div className="brand-logo font-glow">
-            <Layers size={22} className="text-white" />
+          <div className="brand-logo-clean">
+            <Layers size={20} className="brand-icon" />
           </div>
           <div className="nav-brand-text">
             <span className="n-title">NutriMap Kota Bogor</span>
-            <span className="n-subtitle">SIG Ketahanan Pangan</span>
+            <span className="n-subtitle">Sistem Informasi Geografis Ketahanan Pangan</span>
           </div>
         </div>
 
@@ -74,9 +74,8 @@ export default function Navbar({ onOpenLogin }) {
                 className={`nav-item-link ${isActive ? 'active' : ''}`}
                 onClick={() => handleNavClick(item.id)}
               >
-                <Icon size={16} />
+                <Icon size={15} />
                 <span>{item.label}</span>
-                {isActive && <span className="active-dot" />}
               </button>
             );
           })}
@@ -84,23 +83,24 @@ export default function Navbar({ onOpenLogin }) {
 
         {/* Login Action & Mobile Toggle */}
         <div className="nav-actions">
-          <button className="primary-btn-sm nav-login-btn" onClick={onOpenLogin}>
-            <UserCheck size={16} /> Login Admin / SuperAdmin
+          <button id="login-admin-btn" className="nav-login-btn" onClick={onOpenLogin}>
+            <UserCheck size={16} />
+            <span>Login Admin / SuperAdmin</span>
           </button>
 
           <button
             className="mobile-nav-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle Navigation Menu"
+            aria-label="Toggle Menu Navigasi"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="mobile-nav-menu animate-slide-down">
+        <div className="mobile-nav-menu">
           {GUEST_NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -110,19 +110,19 @@ export default function Navbar({ onOpenLogin }) {
                 className={`m-nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => handleNavClick(item.id)}
               >
-                <Icon size={18} />
+                <Icon size={16} />
                 <span>{item.label}</span>
               </button>
             );
           })}
           <button
-            className="primary-btn m-login-btn"
+            className="m-login-btn"
             onClick={() => {
               onOpenLogin();
               setMobileMenuOpen(false);
             }}
           >
-            <UserCheck size={18} /> Login Admin / SuperAdmin
+            <UserCheck size={16} /> Login Admin / SuperAdmin
           </button>
         </div>
       )}
