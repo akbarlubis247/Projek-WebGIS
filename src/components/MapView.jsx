@@ -9,7 +9,8 @@ import {
   Droplets,
   HeartPulse,
   Building2,
-  Map as MapIcon
+  Map as MapIcon,
+  ChevronDown
 } from 'lucide-react';
 import { KECAMATAN_KOTA_BOGOR, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
 
@@ -42,6 +43,33 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
   const [activeBasemap, setActiveBasemap] = useState('light');
   const [selectedDetails, setSelectedDetails] = useState(null);
 
+  // Dropdown states
+  const [layerDropdownOpen, setLayerDropdownOpen] = useState(false);
+  const [basemapDropdownOpen, setBasemapDropdownOpen] = useState(false);
+  const layerDropdownRef = useRef(null);
+  const basemapDropdownRef = useRef(null);
+
+  const layerNames = {
+    pangan: 'Ketahanan Pangan',
+    air: 'Akses Air Bersih',
+    stunting: 'Prevalensi Stunting',
+    faskes: 'Fasilitas & Pasar'
+  };
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (layerDropdownRef.current && !layerDropdownRef.current.contains(e.target)) {
+        setLayerDropdownOpen(false);
+      }
+      if (basemapDropdownRef.current && !basemapDropdownRef.current.contains(e.target)) {
+        setBasemapDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapRef.current) return;
@@ -65,7 +93,21 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
     tileLayerRef.current = tileLayer;
     mapInstanceRef.current = map;
 
+    // Invalidate map size when container width dynamically expands or resizes
+    let resizeObserver;
+    if (window.ResizeObserver && mapRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      });
+      resizeObserver.observe(mapRef.current);
+    }
+
     return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -183,81 +225,119 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
       {/* Map Canvas */}
       <div ref={mapRef} className="leaflet-map-canvas" />
 
-      {/* Clean Layer & Basemap Control Panel */}
+      {/* Clean Layer & Basemap Control Dropdowns */}
       <div className="map-control-panel">
-        {/* Layer Selection */}
-        <div className="control-group">
-          <span className="control-group-title">
-            <Layers size={13} /> LAYERS
-          </span>
-          <div className="control-layer-list">
-            <label className={`layer-option ${activeLayer === 'pangan' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="map-layer"
-                checked={activeLayer === 'pangan'}
-                onChange={() => setActiveLayer('pangan')}
-              />
-              <span className="radio-mark" />
-              <span>Ketahanan Pangan</span>
-            </label>
+        {/* Layer Dropdown */}
+        <div className="map-dropdown-wrapper" ref={layerDropdownRef}>
+          <button
+            type="button"
+            className={`map-dropdown-btn ${layerDropdownOpen ? 'active' : ''}`}
+            onClick={() => {
+              setLayerDropdownOpen(!layerDropdownOpen);
+              setBasemapDropdownOpen(false);
+            }}
+          >
+            <Layers size={14} className="dropdown-icon" />
+            <span className="dropdown-label-prefix">Layer:</span>
+            <span className="dropdown-current-value">{layerNames[activeLayer]}</span>
+            <ChevronDown size={14} className={`dropdown-chevron ${layerDropdownOpen ? 'open' : ''}`} />
+          </button>
 
-            <label className={`layer-option ${activeLayer === 'air' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="map-layer"
-                checked={activeLayer === 'air'}
-                onChange={() => setActiveLayer('air')}
-              />
-              <span className="radio-mark" />
-              <span>Akses Air Bersih</span>
-            </label>
+          {layerDropdownOpen && (
+            <div className="map-dropdown-menu">
+              <div className="dropdown-menu-header">PILIH LAYER INDIKATOR</div>
+              <button
+                type="button"
+                className={`dropdown-menu-item ${activeLayer === 'pangan' ? 'selected' : ''}`}
+                onClick={() => {
+                  setActiveLayer('pangan');
+                  setLayerDropdownOpen(false);
+                }}
+              >
+                <span className="radio-mark" />
+                <Utensils size={14} className="item-icon text-primary-green" />
+                <span>Ketahanan Pangan</span>
+              </button>
 
-            <label className={`layer-option ${activeLayer === 'stunting' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="map-layer"
-                checked={activeLayer === 'stunting'}
-                onChange={() => setActiveLayer('stunting')}
-              />
-              <span className="radio-mark" />
-              <span>Prevalensi Stunting</span>
-            </label>
+              <button
+                type="button"
+                className={`dropdown-menu-item ${activeLayer === 'air' ? 'selected' : ''}`}
+                onClick={() => {
+                  setActiveLayer('air');
+                  setLayerDropdownOpen(false);
+                }}
+              >
+                <span className="radio-mark" />
+                <Droplets size={14} className="item-icon text-water-cyan" />
+                <span>Akses Air Bersih</span>
+              </button>
 
-            <label className={`layer-option ${activeLayer === 'faskes' ? 'active' : ''}`}>
-              <input
-                type="radio"
-                name="map-layer"
-                checked={activeLayer === 'faskes'}
-                onChange={() => setActiveLayer('faskes')}
-              />
-              <span className="radio-mark" />
-              <span>Fasilitas & Pasar</span>
-            </label>
-          </div>
+              <button
+                type="button"
+                className={`dropdown-menu-item ${activeLayer === 'stunting' ? 'selected' : ''}`}
+                onClick={() => {
+                  setActiveLayer('stunting');
+                  setLayerDropdownOpen(false);
+                }}
+              >
+                <span className="radio-mark" />
+                <HeartPulse size={14} className="item-icon text-danger" />
+                <span>Prevalensi Stunting</span>
+              </button>
+
+              <button
+                type="button"
+                className={`dropdown-menu-item ${activeLayer === 'faskes' ? 'selected' : ''}`}
+                onClick={() => {
+                  setActiveLayer('faskes');
+                  setLayerDropdownOpen(false);
+                }}
+              >
+                <span className="radio-mark" />
+                <Building2 size={14} className="item-icon text-muted" />
+                <span>Fasilitas & Pasar</span>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="control-divider" />
 
-        {/* Basemap Selection */}
-        <div className="control-group">
-          <span className="control-group-title">
-            <MapIcon size={13} /> BASEMAP
-          </span>
-          <div className="control-basemap-list">
-            {Object.keys(BASEMAP_PROVIDERS).map((key) => (
-              <label key={key} className={`basemap-option ${activeBasemap === key ? 'active' : ''}`}>
-                <input
-                  type="radio"
-                  name="basemap-layer"
-                  checked={activeBasemap === key}
-                  onChange={() => setActiveBasemap(key)}
-                />
-                <span className="radio-mark" />
-                <span>{BASEMAP_PROVIDERS[key].name}</span>
-              </label>
-            ))}
-          </div>
+        {/* Basemap Dropdown */}
+        <div className="map-dropdown-wrapper" ref={basemapDropdownRef}>
+          <button
+            type="button"
+            className={`map-dropdown-btn ${basemapDropdownOpen ? 'active' : ''}`}
+            onClick={() => {
+              setBasemapDropdownOpen(!basemapDropdownOpen);
+              setLayerDropdownOpen(false);
+            }}
+          >
+            <MapIcon size={14} className="dropdown-icon" />
+            <span className="dropdown-label-prefix">Basemap:</span>
+            <span className="dropdown-current-value">{BASEMAP_PROVIDERS[activeBasemap]?.name || 'Light'}</span>
+            <ChevronDown size={14} className={`dropdown-chevron ${basemapDropdownOpen ? 'open' : ''}`} />
+          </button>
+
+          {basemapDropdownOpen && (
+            <div className="map-dropdown-menu">
+              <div className="dropdown-menu-header">PILIH BASEMAP</div>
+              {Object.keys(BASEMAP_PROVIDERS).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`dropdown-menu-item ${activeBasemap === key ? 'selected' : ''}`}
+                  onClick={() => {
+                    setActiveBasemap(key);
+                    setBasemapDropdownOpen(false);
+                  }}
+                >
+                  <span className="radio-mark" />
+                  <span>{BASEMAP_PROVIDERS[key].name}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

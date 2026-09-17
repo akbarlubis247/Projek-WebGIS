@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, MapPin, Mail, Phone, CheckCircle2 } from 'lucide-react';
+import { Layers, MapPin, Mail, Phone, CheckCircle2, ExternalLink } from 'lucide-react';
 
 export default function AboutView() {
   return (
@@ -9,14 +9,10 @@ export default function AboutView() {
           <div className="brand-badge-large">
             <Layers size={36} className="text-emerald" />
             <div>
-              <h2>NutriMap Kota Bogor v2.4</h2>
+              <h2>NutriMap Kota Bogor</h2>
               <p>Platform SIG Spasial Resmi Kota Bogor, Jawa Barat</p>
             </div>
           </div>
-
-          <p className="about-text">
-            <b>NutriMap Kota Bogor</b> dikembangkan sebagai sarana pengambilan keputusan berbasis data geografis (Data-Driven Policy) untuk jajaran Pemerintah Kota Bogor (Bappeda, Dinas Ketahanan Pangan, Dinas Kesehatan) bekerja sama dengan Pusat Studi Pembangunan IPB University.
-          </p>
 
           <h3>Tujuan Utama Platform NutriMap:</h3>
           <ul className="about-list">
@@ -27,14 +23,17 @@ export default function AboutView() {
           </ul>
 
           <div className="about-partners">
-            <h4>Kemitraan & Sumber Data:</h4>
+            <h4>Sumber Data:</h4>
             <div className="partner-tags">
-              <span>Bappeda Kota Bogor</span>
-              <span>Dinas Ketahanan Pangan</span>
-              <span>Dinas Kesehatan</span>
-              <span>IPB University</span>
-              <span>BPS Kota Bogor</span>
-              <span>PDAM Tirta Pakuan</span>
+              <a
+                href="https://satupeta.kotabogor.go.id/maps"
+                target="_blank"
+                rel="noreferrer"
+                className="sumber-data-link"
+              >
+                <ExternalLink size={14} />
+                <span>Peta | Satu Peta Kota Bogor</span>
+              </a>
             </div>
           </div>
         </div>

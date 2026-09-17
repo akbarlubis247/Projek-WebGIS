@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   LogIn,
   ShieldAlert,
-  Building2,
   UserCheck,
   ShieldCheck
 } from 'lucide-react';
@@ -84,9 +83,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
         >
           {/* Watermark Contours Background Overlay */}
           <div className="topographic-pattern-overlay" />
-          <div className="hero-top-watermark font-mono">
-            BOGOR CITY - TOPOGRAPHIC & ADMINISTRATIVE MAP
-          </div>
 
           <div className="hero-center-content">
             <div className="brand-hero-logo">
@@ -101,10 +97,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
             <p>
               Platform manajemen data spasial untuk pemetaan prioritas wilayah, ketahanan pangan, dan stunting Kota Bogor.
             </p>
-          </div>
-
-          <div className="hero-bottom-watermark font-mono">
-            Kota Bogor, Jawa Barat - Indonesia
           </div>
         </motion.div>
 
@@ -212,17 +204,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
             </form>
 
 
-          </div>
-
-          {/* Form Panel Footer */}
-          <div className="form-panel-footer">
-            <div className="foot-left">
-              <Building2 size={16} />
-              <span>Pemerintah Kota Bogor</span>
-            </div>
-            <div className="foot-right font-mono">
-              © 2026 NutriMap Bogor. v2.4.0-GIS
-            </div>
           </div>
         </motion.div>
       </div>

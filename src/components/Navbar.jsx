@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Layers, MapPin, TableProperties, Info, Home, UserCheck, Menu, X } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import gsap from 'gsap';
+import { Layers, MapPin, TableProperties, Info, Home, UserCheck, Menu, X, Sprout } from 'lucide-react';
 
 export const GUEST_NAV_ITEMS = [
   { id: 'beranda', label: 'Beranda', icon: Home },
@@ -11,6 +12,38 @@ export const GUEST_NAV_ITEMS = [
 export default function Navbar({ onOpenLogin }) {
   const [activeSection, setActiveSection] = useState('beranda');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navRef = useRef(null);
+
+  // GSAP Navbar entrance animation
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        navRef.current,
+        { y: -30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
+      );
+
+      gsap.fromTo(
+        '.nav-brand',
+        { x: -20, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.6, delay: 0.2, ease: 'power2.out' }
+      );
+
+      gsap.fromTo(
+        '.nav-links-desktop button',
+        { y: -10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, delay: 0.3, ease: 'power2.out' }
+      );
+
+      gsap.fromTo(
+        '.nav-actions',
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, delay: 0.5, ease: 'back.out(1.5)' }
+      );
+    }, navRef);
+
+    return () => ctx.revert();
+  }, []);
 
   // Smooth scroll handler
   const handleNavClick = (sectionId) => {
@@ -19,7 +52,7 @@ export default function Navbar({ onOpenLogin }) {
 
     const targetEl = document.getElementById(sectionId);
     if (targetEl) {
-      const headerOffset = 76;
+      const headerOffset = 96;
       const elementPosition = targetEl.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -50,15 +83,18 @@ export default function Navbar({ onOpenLogin }) {
   }, []);
 
   return (
-    <nav className="public-navbar">
+    <nav className="public-navbar" ref={navRef}>
       <div className="navbar-container">
         {/* Brand Logo & Title */}
         <div className="nav-brand" onClick={() => handleNavClick('beranda')}>
           <div className="brand-logo-clean">
-            <Layers size={20} className="brand-icon" />
+            <Sprout size={20} className="brand-icon" />
           </div>
           <div className="nav-brand-text">
-            <span className="n-title">NutriMap Kota Bogor</span>
+            <div className="n-title-row">
+              <span className="n-title">NutriMap</span>
+              <span className="n-badge-city">BOGOR</span>
+            </div>
             <span className="n-subtitle">Sistem Informasi Geografis Ketahanan Pangan</span>
           </div>
         </div>
