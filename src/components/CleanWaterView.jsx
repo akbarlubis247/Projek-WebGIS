@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { CountUp } from 'countup.js';
 import { Droplets, CheckCircle, AlertCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
+import pdamFacilityImg from '../assets/pdam-facility.jpg';
 
 export default function CleanWaterView() {
   const sortedByAir = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.airBersih - a.airBersih);
+
+  const avgAirRef = useRef(null);
+  const southAirRef = useRef(null);
+  const heroProdRef = useRef(null);
+  const heroKecRef = useRef(null);
+
+  useEffect(() => {
+    const anim = (ref, val, opts = {}) => {
+      if (!ref.current) return;
+      const cu = new CountUp(ref.current, val, { startVal: 0, duration: 1.2, useEasing: true, ...opts });
+      if (!cu.error) cu.start();
+    };
+
+    anim(avgAirRef, 90.8, { decimalPlaces: 1, suffix: '%' });
+    anim(southAirRef, 81.5, { decimalPlaces: 1, suffix: '%' });
+    anim(heroProdRef, 2400, { formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' L/detik' });
+    anim(heroKecRef, 6);
+  }, []);
 
   return (
     <div className="view-container animate-fade-in">
@@ -25,7 +45,7 @@ export default function CleanWaterView() {
           <div className="sc-icon"><Droplets size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Rata-Rata Akses Air Layak</span>
-            <h3 className="sc-value">90.8% Populasi</h3>
+            <h3 className="sc-value"><span ref={avgAirRef}>90.8%</span> Populasi</h3>
             <span className="sc-desc">Target RPJMD Kota Bogor 2026: 95%</span>
           </div>
         </div>
@@ -41,8 +61,40 @@ export default function CleanWaterView() {
           <div className="sc-icon"><AlertCircle size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Cakupan Perhatian (&lt;85%)</span>
-            <h3 className="sc-value">Bogor Selatan (81.5%)</h3>
+            <h3 className="sc-value">Bogor Selatan (<span ref={southAirRef}>81.5%</span>)</h3>
             <span className="sc-desc">Masih Membutuhkan Perluasan Jaringan PDAM</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Showcase Fasilitas PDAM */}
+      <div className="cleanwater-hero-card">
+        <div className="cwh-image-wrap">
+          <img
+            src={pdamFacilityImg}
+            alt="Instalasi Pengolahan Air Bersih PDAM Tirta Pakuan Kota Bogor"
+            className="cwh-img"
+          />
+        </div>
+        <div className="cwh-body">
+          <span className="cwh-tag">Perumda Tirta Pakuan Kota Bogor</span>
+          <h2>Instalasi Pengolahan Air (IPA) Terpadu</h2>
+          <p>
+            Pusat penjernihan air baku menjadi air minum berkualitas tinggi yang disalurkan melalui jaringan perpipaan ke seluruh kecamatan Kota Bogor. Pemantauan geospasial dilakukan guna menjaga keandalan kontinuitas debit serta mutu fisik-kimiawi air secara real-time.
+          </p>
+          <div className="cwh-specs">
+            <div className="spec-box">
+              <span className="sb-val" ref={heroProdRef}>2.400 L/detik</span>
+              <span className="sb-lbl">Total Kapasitas Produksi</span>
+            </div>
+            <div className="spec-box">
+              <span className="sb-val"><span ref={heroKecRef}>6</span> Kecamatan</span>
+              <span className="sb-lbl">Cakupan Wilayah Terlayani</span>
+            </div>
+            <div className="spec-box">
+              <span className="sb-val">Permenkes 2/2023</span>
+              <span className="sb-lbl">Standar Baku Mutu Air</span>
+            </div>
           </div>
         </div>
       </div>

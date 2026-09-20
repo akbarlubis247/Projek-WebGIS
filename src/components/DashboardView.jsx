@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { CountUp } from 'countup.js';
 import {
   Utensils,
   Droplets,
@@ -35,6 +36,52 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
   const highRiskCount = KECAMATAN_KOTA_BOGOR.filter(k => k.prioritas === 'Tinggi' || k.prioritas === 'Sangat Tinggi').length;
   const safeCount = KECAMATAN_KOTA_BOGOR.filter(k => k.panganStatus === 'Sangat Aman' || k.panganStatus === 'Aman').length;
 
+  // CountUp Refs for Dashboard KPIs
+  const heroIkpRef = useRef(null);
+  const heroStuntingRef = useRef(null);
+  const safeCountRef = useRef(null);
+  const waterRef = useRef(null);
+  const stuntingRef = useRef(null);
+  const riskRef = useRef(null);
+
+  // Per-kecamatan side panel refs
+  const pmPendudukRef = useRef(null);
+  const pmIkpRef = useRef(null);
+  const pmAirRef = useRef(null);
+  const pmStuntingRef = useRef(null);
+  const pmFaskesRef = useRef(null);
+
+  // Animate Dashboard Top Stats on mount
+  useEffect(() => {
+    const anim = (ref, val, opts = {}) => {
+      if (!ref.current) return;
+      const cu = new CountUp(ref.current, val, { startVal: 0, duration: 1.2, useEasing: true, ...opts });
+      if (!cu.error) cu.start();
+    };
+
+    anim(heroIkpRef, parseFloat(KOTA_BOGOR_STATS.skorIKP) || 88.4, { decimalPlaces: 1 });
+    anim(heroStuntingRef, parseFloat(KOTA_BOGOR_STATS.prevalensiStunting) || 10.5, { decimalPlaces: 1, suffix: '%' });
+    anim(safeCountRef, safeCount);
+    anim(waterRef, parseFloat(KOTA_BOGOR_STATS.aksesAirBersih) || 89.6, { decimalPlaces: 1, suffix: '%' });
+    anim(stuntingRef, parseFloat(KOTA_BOGOR_STATS.prevalensiStunting) || 10.5, { decimalPlaces: 1, suffix: '%' });
+    anim(riskRef, highRiskCount);
+  }, [safeCount, highRiskCount]);
+
+  // Re-animate Selected Kecamatan metrics on change
+  useEffect(() => {
+    const anim = (ref, val, opts = {}) => {
+      if (!ref.current) return;
+      const cu = new CountUp(ref.current, val, { startVal: 0, duration: 1.0, useEasing: true, ...opts });
+      if (!cu.error) cu.start();
+    };
+
+    anim(pmPendudukRef, selectedKec.penduduk, { formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' jiwa' });
+    anim(pmIkpRef, selectedKec.panganSkor, { decimalPlaces: 1 });
+    anim(pmAirRef, selectedKec.airBersih, { decimalPlaces: 1, suffix: '%' });
+    anim(pmStuntingRef, selectedKec.stunting, { decimalPlaces: 1, suffix: '%' });
+    anim(pmFaskesRef, selectedKec.faskes, { suffix: ' Puskesmas/Klinik' });
+  }, [selectedKec]);
+
   return (
     <div className="dashboard-page animate-fade-in">
       {/* Hero Banner */}
@@ -57,12 +104,12 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="hero-stats-mini">
           <div className="h-stat-card">
             <span>Indeks Ketahanan Pangan</span>
-            <strong>{KOTA_BOGOR_STATS.skorIKP} / 100</strong>
+            <strong><span ref={heroIkpRef}>{KOTA_BOGOR_STATS.skorIKP}</span> / 100</strong>
             <small className="good"><ArrowUpRight size={14} /> +1.8% tahun ini</small>
           </div>
           <div className="h-stat-card">
             <span>Prevalensi Stunting</span>
-            <strong>{KOTA_BOGOR_STATS.prevalensiStunting}</strong>
+            <strong ref={heroStuntingRef}>{KOTA_BOGOR_STATS.prevalensiStunting}</strong>
             <small className="good"><ArrowDownRight size={14} /> -2.4% target 2026</small>
           </div>
         </div>
@@ -74,7 +121,9 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><Utensils size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Ketahanan Pangan (IKP)</span>
-            <h3 className="sc-value">{safeCount} dari 6 Kecamatan</h3>
+            <h3 className="sc-value">
+              <span ref={safeCountRef}>{safeCount}</span> dari 6 Kecamatan
+            </h3>
             <span className="sc-desc font-mono">Skor Rata-Rata: 85.2 (Kategori Baik)</span>
           </div>
         </div>
@@ -83,7 +132,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><Droplets size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Akses Air Bersih Layak</span>
-            <h3 className="sc-value">{KOTA_BOGOR_STATS.aksesAirBersih}</h3>
+            <h3 className="sc-value" ref={waterRef}>{KOTA_BOGOR_STATS.aksesAirBersih}</h3>
             <span className="sc-desc font-mono">Target PDAM Tirta Pakuan: 95%</span>
           </div>
         </div>
@@ -92,7 +141,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><HeartPulse size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Prevalensi Stunting</span>
-            <h3 className="sc-value">{KOTA_BOGOR_STATS.prevalensiStunting}</h3>
+            <h3 className="sc-value" ref={stuntingRef}>{KOTA_BOGOR_STATS.prevalensiStunting}</h3>
             <span className="sc-desc font-mono">2 Kecamatan Prioritas Khusus</span>
           </div>
         </div>
@@ -101,7 +150,9 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-icon"><AlertOctagon size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Intervensi Prioritas</span>
-            <h3 className="sc-value">{highRiskCount} Kecamatan</h3>
+            <h3 className="sc-value">
+              <span ref={riskRef}>{highRiskCount}</span> Kecamatan
+            </h3>
             <span className="sc-desc font-mono">Bogor Selatan, Bogor Barat</span>
           </div>
         </div>
@@ -113,35 +164,34 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="dash-card map-panel">
           <div className="dash-card-head">
             <div>
-              <h2>Peta Persebaran Kerawanan Pangan & Stunting</h2>
-              <p>Visualisasi spasial 6 Kecamatan di Kota Bogor</p>
+              <h2>Sebaran Spasial Status Ketahanan Pangan</h2>
+              <p>Klik poligon kecamatan untuk melihat data geospasial detail</p>
             </div>
-            <button className="link-btn" onClick={() => onNavigate('map-explorer')}>
-              Layar Penuh <ChevronRight size={16} />
+            <button className="text-btn" onClick={() => onNavigate('map-explorer')}>
+              Perbesar Peta <ChevronRight size={16} />
             </button>
           </div>
-          <MapView
-            selectedKecamatan={selectedKec}
-            onSelectKecamatan={(kec) => {
-              setSelectedKec(kec);
-              if (onSelectKecamatan) onSelectKecamatan(kec);
-            }}
-            height="460px"
-          />
+          <div className="map-view-wrapper">
+            <MapView
+              selectedKecamatan={selectedKec}
+              onSelectKecamatan={setSelectedKec}
+              activeLayer="pangan"
+              height="380px"
+            />
+          </div>
         </div>
 
-        {/* Selected Subdistrict Detail Card */}
-        <div className="dash-card detail-side-panel">
+        {/* Region Detail Panel */}
+        <div className="dash-card region-detail-panel">
           <div className="dash-card-head">
             <div>
-              <h2>Detail Wilayah</h2>
-              <p>Klik marker pada peta untuk informasi detail</p>
+              <h2>Profil Wilayah Kecamatan</h2>
+              <p>Informasi ringkas demografi dan status pangan</p>
             </div>
           </div>
 
-          <div className="kec-profile-wrap">
-            <div className="profile-top">
-              <span className="p-id">{selectedKec.id}</span>
+          <div className="panel-content">
+            <div className="p-header">
               <h3>Kecamatan {selectedKec.nama}</h3>
               <span className={`status-pill ${selectedKec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
                 {selectedKec.panganStatus}
@@ -153,19 +203,19 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
             <div className="p-metrics-grid">
               <div className="pm-item">
                 <span>Jumlah Penduduk</span>
-                <strong>{selectedKec.penduduk.toLocaleString('id-ID')} jiwa</strong>
+                <strong ref={pmPendudukRef}>{selectedKec.penduduk.toLocaleString('id-ID')} jiwa</strong>
               </div>
               <div className="pm-item">
                 <span>Skor IKP Pangan</span>
-                <strong>{selectedKec.panganSkor} / 100</strong>
+                <strong><span ref={pmIkpRef}>{selectedKec.panganSkor}</span> / 100</strong>
               </div>
               <div className="pm-item">
                 <span>Akses Air Bersih</span>
-                <strong>{selectedKec.airBersih}%</strong>
+                <strong ref={pmAirRef}>{selectedKec.airBersih}%</strong>
               </div>
               <div className="pm-item">
                 <span>Prevalensi Stunting</span>
-                <strong className={selectedKec.stunting > 15 ? 'text-danger' : ''}>{selectedKec.stunting}%</strong>
+                <strong ref={pmStuntingRef} className={selectedKec.stunting > 15 ? 'text-danger' : ''}>{selectedKec.stunting}%</strong>
               </div>
               <div className="pm-item">
                 <span>Angka Kemiskinan</span>
@@ -173,7 +223,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
               </div>
               <div className="pm-item">
                 <span>Jumlah Faskes</span>
-                <strong>{selectedKec.faskes} Puskesmas/Klinik</strong>
+                <strong ref={pmFaskesRef}>{selectedKec.faskes} Puskesmas/Klinik</strong>
               </div>
             </div>
 

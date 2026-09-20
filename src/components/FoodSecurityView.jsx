@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { CountUp } from 'countup.js';
 import { Utensils, ShieldCheck, AlertTriangle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
 export default function FoodSecurityView() {
   const sortedByIKP = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.panganSkor - a.panganSkor);
+
+  const avgIkpRef = useRef(null);
+  const safeCountRef = useRef(null);
+  const warnCountRef = useRef(null);
+
+  useEffect(() => {
+    const anim = (ref, val, opts = {}) => {
+      if (!ref.current) return;
+      const cu = new CountUp(ref.current, val, { startVal: 0, duration: 1.2, useEasing: true, ...opts });
+      if (!cu.error) cu.start();
+    };
+
+    anim(avgIkpRef, 85.2, { decimalPlaces: 1 });
+    anim(safeCountRef, 4);
+    anim(warnCountRef, 2);
+  }, []);
 
   return (
     <div className="view-container animate-fade-in">
@@ -26,7 +43,7 @@ export default function FoodSecurityView() {
           <div className="sc-icon"><Utensils size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Rata-Rata Skor IKP</span>
-            <h3 className="sc-value">85.2 / 100</h3>
+            <h3 className="sc-value"><span ref={avgIkpRef}>85.2</span> / 100</h3>
             <span className="sc-desc">Peringkat Top 3 di Jawa Barat</span>
           </div>
         </div>
@@ -34,7 +51,7 @@ export default function FoodSecurityView() {
           <div className="sc-icon"><ShieldCheck size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Wilayah Status Aman & Sangat Aman</span>
-            <h3 className="sc-value">4 Kecamatan</h3>
+            <h3 className="sc-value"><span ref={safeCountRef}>4</span> Kecamatan</h3>
             <span className="sc-desc">Bogor Tengah, Bogor Utara, Bogor Timur, Tanah Sareal</span>
           </div>
         </div>
@@ -42,7 +59,7 @@ export default function FoodSecurityView() {
           <div className="sc-icon"><AlertTriangle size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Wilayah Status Perhatian (Waspada)</span>
-            <h3 className="sc-value">2 Kecamatan</h3>
+            <h3 className="sc-value"><span ref={warnCountRef}>2</span> Kecamatan</h3>
             <span className="sc-desc">Bogor Selatan (74.2), Bogor Barat (78.6)</span>
           </div>
         </div>

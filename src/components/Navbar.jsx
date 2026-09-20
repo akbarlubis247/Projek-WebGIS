@@ -12,7 +12,11 @@ export const GUEST_NAV_ITEMS = [
 export default function Navbar({ onOpenLogin }) {
   const [activeSection, setActiveSection] = useState('beranda');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const navRef = useRef(null);
+  const navLinksRef = useRef(null);
+  const itemRefs = useRef({});
 
   // GSAP Navbar entrance animation
   useEffect(() => {
@@ -20,7 +24,7 @@ export default function Navbar({ onOpenLogin }) {
       gsap.fromTo(
         navRef.current,
         { y: -30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' }
+        { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out', clearProps: 'transform' }
       );
 
       gsap.fromTo(
@@ -63,27 +67,105 @@ export default function Navbar({ onOpenLogin }) {
     }
   };
 
-  // Scroll Spy: Update active section on scroll
+  // Scroll Spy + Indicator Line Following Scroll Position
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = GUEST_NAV_ITEMS.map((item) => document.getElementById(item.id));
-      const scrollPosition = window.scrollY + 120;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section && section.offsetTop <= scrollPosition) {
-          setActiveSection(GUEST_NAV_ITEMS[i].id);
-          break;
+    const updateNavProgress = () => {
+      try {
+        // 1. Overall page scroll progress
+        const winScroll = window.scrollY || 0;
+        const docHeight = (document.documentElement?.scrollHeight || 0) - (window.innerHeight || 0);
+        if (docHeight > 0) {
+          setScrollProgress((winScroll / docHeight) * 100);
         }
+
+        // 2. Identify sections and calculate continuous indicator gliding
+        const sectionsInfo = GUEST_NAV_ITEMS.map((item) => {
+          const el = document.getElementById(item.id);
+          if (!el) return null;
+          return {
+            id: item.id,
+            top: el.offsetTop - 120,
+            bottom: el.offsetTop - 120 + el.offsetHeight,
+            height: el.offsetHeight
+          };
+        }).filter(Boolean);
+
+        const navContainer = navLinksRef.current;
+        if (!navContainer || sectionsInfo.length === 0) return;
+
+        const containerRect = navContainer.getBoundingClientRect();
+        const currentScroll = window.scrollY || 0;
+
+        // Find current section index
+        let currentIndex = 0;
+        for (let i = sectionsInfo.length - 1; i >= 0; i--) {
+          if (currentScroll >= sectionsInfo[i].top) {
+            currentIndex = i;
+            break;
+          }
+        }
+
+        const currItem = sectionsInfo[currentIndex];
+        if (!currItem) return;
+
+        setActiveSection(currItem.id);
+
+        const nextItem = sectionsInfo[currentIndex + 1];
+        const currBtn = itemRefs.current[currItem.id];
+        if (!currBtn) return;
+
+        const currRect = currBtn.getBoundingClientRect();
+        const currLeft = currRect.left - containerRect.left;
+        const currWidth = currRect.width;
+
+        if (nextItem && itemRefs.current[nextItem.id]) {
+          const nextBtn = itemRefs.current[nextItem.id];
+          const nextRect = nextBtn.getBoundingClientRect();
+          const nextLeft = nextRect.left - containerRect.left;
+          const nextWidth = nextRect.width;
+
+          const range = nextItem.top - currItem.top;
+          const progress = Math.max(0, Math.min(1, (currentScroll - currItem.top) / (range || 1)));
+
+          const targetLeft = currLeft + (nextLeft - currLeft) * progress;
+          const targetWidth = currWidth + (nextWidth - currWidth) * progress;
+
+          setIndicatorStyle({
+            left: targetLeft,
+            width: targetWidth,
+            opacity: 1
+          });
+        } else {
+          setIndicatorStyle({
+            left: currLeft,
+            width: currWidth,
+            opacity: 1
+          });
+        }
+      } catch (err) {
+        console.warn('Nav progress error:', err);
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', updateNavProgress, { passive: true });
+    window.addEventListener('resize', updateNavProgress);
+    const timer = setTimeout(updateNavProgress, 100);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', updateNavProgress);
+      window.removeEventListener('resize', updateNavProgress);
+    };
   }, []);
 
   return (
     <nav className="public-navbar" ref={navRef}>
+      {/* Top Global Scroll Progress Line */}
+      <div
+        className="nav-global-progress-bar"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
       <div className="navbar-container">
         {/* Brand Logo & Title */}
         <div className="nav-brand" onClick={() => handleNavClick('beranda')}>
@@ -100,13 +182,14 @@ export default function Navbar({ onOpenLogin }) {
         </div>
 
         {/* Desktop Navigation Links */}
-        <div className="nav-links-desktop">
+        <div className="nav-links-desktop" ref={navLinksRef}>
           {GUEST_NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
             return (
               <button
                 key={item.id}
+                ref={(el) => (itemRefs.current[item.id] = el)}
                 className={`nav-item-link ${isActive ? 'active' : ''}`}
                 onClick={() => handleNavClick(item.id)}
               >
@@ -115,6 +198,18 @@ export default function Navbar({ onOpenLogin }) {
               </button>
             );
           })}
+
+          {/* Animated Gliding Indicator Line that follows scroll smoothly */}
+          <div
+            className="nav-gliding-indicator"
+            style={{
+              transform: `translateX(${indicatorStyle.left}px)`,
+              width: `${indicatorStyle.width}px`,
+              opacity: indicatorStyle.opacity
+            }}
+          >
+            <div className="indicator-glow" />
+          </div>
         </div>
 
         {/* Login Action & Mobile Toggle */}

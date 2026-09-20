@@ -23,7 +23,8 @@ import {
   ShieldCheck,
   Award,
   ExternalLink,
-  Info
+  Info,
+  Store
 } from 'lucide-react';
 import {
   BarChart,
@@ -43,6 +44,10 @@ import {
   FOOD_SECURITY_CATEGORIES
 } from '../data/bogorData';
 import heroBg from '../assets/hero-banner.png';
+import pdamFacilityImg from '../assets/pdam-facility.jpg';
+import stuntingImg from '../assets/stunting-prevention.jpg';
+import foodInspectionImg from '../assets/food-inspection.jpg';
+import { CountUp } from 'countup.js';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -67,6 +72,28 @@ export default function LandingPageView({ onOpenLogin }) {
   // GSAP Root Container Ref
   const landingRef = useRef(null);
 
+  // CountUp Refs: 4 Pilar Cards
+  const ikpCountRef = useRef(null);
+  const airBersihCountRef = useRef(null);
+  const stuntingCountRef = useRef(null);
+  // CountUp Refs: PDAM Spotlight
+  const pdamAirCountRef = useRef(null);
+  const pdamDebitCountRef = useRef(null);
+  const pdamSRCountRef = useRef(null);
+  // CountUp Refs: Stunting Spotlight
+  const stuntingSpotCountRef = useRef(null);
+  const posyanduCountRef = useRef(null);
+  // CountUp Refs: Food Spotlight
+  const foodAuditCountRef = useRef(null);
+  const foodLolosCountRef = useRef(null);
+  const foodPasarCountRef = useRef(null);
+  // CountUp Refs: Analysis Side Panel (re-animates on kecamatan change)
+  const sideIkpRef = useRef(null);
+  const sideAirRef = useRef(null);
+  const sideStuntingRef = useRef(null);
+  const sidePendudukRef = useRef(null);
+  const countUpAnimatedRef = useRef(false);
+
   // Filtered Table Data for Data Indikator Section
   const filteredData = KECAMATAN_KOTA_BOGOR.filter((item) => {
     const matchSearch =
@@ -88,24 +115,59 @@ export default function LandingPageView({ onOpenLogin }) {
         { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out' }
       );
 
-      // 2. Manifesto ScrollTrigger Reveal
-      gsap.fromTo(
-        '.gsap-manifesto',
-        { y: 35, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.85,
-          ease: 'power2.out',
+      // 2. Manifesto ScrollTrigger Reveal (Staggered Soft Fade-Up)
+      const manifestoBox = document.querySelector('.ladang-manifesto-inner');
+      if (manifestoBox) {
+        const manifestoItems = manifestoBox.querySelectorAll('.ladang-pill-badge, .ladang-manifesto-title, .ladang-manifesto-text');
+        const mTl = gsap.timeline({
           scrollTrigger: {
             trigger: '.ladang-manifesto-section',
             start: 'top 85%',
             toggleActions: 'play none none none'
           }
-        }
-      );
+        });
+        mTl.fromTo(
+          manifestoItems,
+          { y: 24, opacity: 0, filter: 'blur(4px)' },
+          {
+            y: 0,
+            opacity: 1,
+            filter: 'blur(0px)',
+            duration: 0.85,
+            stagger: 0.12,
+            ease: 'power2.out'
+          }
+        );
+      }
 
-      // 3. 4 Pillars Staggered Reveal
+      // 3. Section Headers Reveal Animation (Smooth Staggered Soft Fade-Up)
+      const sectionHeads = gsap.utils.toArray('.ladang-section-head');
+      sectionHeads.forEach((head) => {
+        const textElements = head.querySelectorAll('h2, p');
+
+        const sTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: head,
+            start: 'top 88%',
+            toggleActions: 'play none none none'
+          }
+        });
+
+        sTl.fromTo(
+          textElements,
+          { y: 22, opacity: 0, filter: 'blur(4px)' },
+          {
+            y: 0,
+            opacity: 1,
+            filter: 'blur(0px)',
+            duration: 0.8,
+            stagger: 0.12,
+            ease: 'power2.out'
+          }
+        );
+      });
+
+      // 4. 4 Pillars Staggered Reveal
       gsap.fromTo(
         '.ladang-pillar-card',
         { y: 45, opacity: 0 },
@@ -123,6 +185,93 @@ export default function LandingPageView({ onOpenLogin }) {
         }
       );
 
+      // 4a. CountUp.js for ALL KPI stats on this page
+      //     Pilar cards triggered by pillars-grid, spotlights by their own boxes
+      const startCountUp = (ref, endVal, opts) => {
+        if (!ref.current) return;
+        const cu = new CountUp(ref.current, endVal, { startVal: 0, useEasing: true, duration: 1.3, ...opts });
+        if (!cu.error) cu.start();
+      };
+
+      // -- Pilar Cards --
+      ScrollTrigger.create({
+        trigger: '.ladang-pillars-grid',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          if (countUpAnimatedRef.current) return;
+          countUpAnimatedRef.current = true;
+
+          // Pilar 1: IKP score
+          startCountUp(ikpCountRef, KOTA_BOGOR_STATS.skorIKP, { decimalPlaces: 1, duration: 1.4 });
+
+          // Pilar 2: Air Bersih %
+          const targetAir = parseFloat(KOTA_BOGOR_STATS.aksesAirBersih) || 89.6;
+          startCountUp(airBersihCountRef, targetAir, {
+            decimalPlaces: 1, suffix: '%', duration: 1.3,
+            formattingFn: (n) => (n <= 0.05 ? '0%' : n.toFixed(1) + '%')
+          });
+
+          // Pilar 3: Stunting %
+          const targetStunting = parseFloat(KOTA_BOGOR_STATS.prevalensiStunting) || 15.4;
+          startCountUp(stuntingCountRef, targetStunting, {
+            decimalPlaces: 1, suffix: '%', duration: 1.3,
+            formattingFn: (n) => (n <= 0.05 ? '0%' : n.toFixed(1) + '%')
+          });
+        }
+      });
+
+      // -- PDAM Spotlight --
+      ScrollTrigger.create({
+        trigger: '.gsap-pdam-box',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          startCountUp(pdamAirCountRef, 89.6, {
+            decimalPlaces: 1, suffix: '%', duration: 1.3,
+            formattingFn: (n) => (n <= 0.05 ? '0%' : n.toFixed(1) + '%')
+          });
+          // "2.400 L/s" → animate 0 → 2400 formatted as id-ID
+          startCountUp(pdamDebitCountRef, 2400, {
+            duration: 1.3,
+            formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' L/s'
+          });
+          startCountUp(pdamSRCountRef, 170000, {
+            separator: '.', duration: 1.4, suffix: '+',
+            formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + '+'
+          });
+        }
+      });
+
+      // -- Stunting Spotlight --
+      ScrollTrigger.create({
+        trigger: '.gsap-stunting-box',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          const tStunt = parseFloat(KOTA_BOGOR_STATS.prevalensiStunting) || 15.4;
+          startCountUp(stuntingSpotCountRef, tStunt, {
+            decimalPlaces: 1, suffix: '%', duration: 1.3,
+            formattingFn: (n) => (n <= 0.05 ? '0%' : n.toFixed(1) + '%')
+          });
+          startCountUp(posyanduCountRef, 863, {
+            duration: 1.3, suffix: '+'
+          });
+        }
+      });
+
+      // -- Food Spotlight --
+      ScrollTrigger.create({
+        trigger: '.gsap-food-box',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          startCountUp(foodAuditCountRef, 48, { duration: 1.2, suffix: ' Lokasi' });
+          startCountUp(foodLolosCountRef, 96, { duration: 1.2, suffix: '% Lolos' });
+          startCountUp(foodPasarCountRef, 4, { duration: 1.0, suffix: ' Pasar' });
+        }
+      });
+
       // 4. Comparison Table Card Reveal
       gsap.fromTo(
         '.gsap-table-box',
@@ -134,6 +283,93 @@ export default function LandingPageView({ onOpenLogin }) {
           ease: 'power3.out',
           scrollTrigger: {
             trigger: '.gsap-table-box',
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        }
+      );
+
+      // -- Matriks Table: CountUp on all numeric cells --
+      ScrollTrigger.create({
+        trigger: '.gsap-table-box',
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          // IKP skor (data-val, class kec-ikp-num)
+          document.querySelectorAll('.kec-ikp-num').forEach((el) => {
+            const val = parseFloat(el.dataset.val);
+            if (isNaN(val)) return;
+            const cu = new CountUp(el, val, { startVal: 0, decimalPlaces: 1, duration: 1.2, useEasing: true });
+            if (!cu.error) cu.start();
+          });
+          // Air Bersih % (class kec-air-num)
+          document.querySelectorAll('.kec-air-num').forEach((el) => {
+            const val = parseFloat(el.dataset.val);
+            if (isNaN(val)) return;
+            const cu = new CountUp(el, val, {
+              startVal: 0, decimalPlaces: 1, duration: 1.2, useEasing: true,
+              formattingFn: (n) => n.toFixed(1) + '%'
+            });
+            if (!cu.error) cu.start();
+          });
+          // Stunting % (class kec-stunting-num)
+          document.querySelectorAll('.kec-stunting-num').forEach((el) => {
+            const val = parseFloat(el.dataset.val);
+            if (isNaN(val)) return;
+            const cu = new CountUp(el, val, {
+              startVal: 0, decimalPlaces: 1, duration: 1.2, useEasing: true,
+              formattingFn: (n) => n.toFixed(1) + '%'
+            });
+            if (!cu.error) cu.start();
+          });
+        }
+      });
+
+      // 4b. PDAM Spotlight Card Reveal
+      gsap.fromTo(
+        '.gsap-pdam-box',
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.gsap-pdam-box',
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        }
+      );
+
+      // 4c. Stunting Spotlight Card Reveal
+      gsap.fromTo(
+        '.gsap-stunting-box',
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.gsap-stunting-box',
+            start: 'top 85%',
+            toggleActions: 'play none none none'
+          }
+        }
+      );
+
+      // 4d. Food Safety Spotlight Card Reveal
+      gsap.fromTo(
+        '.gsap-food-box',
+        { y: 35, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.gsap-food-box',
             start: 'top 85%',
             toggleActions: 'play none none none'
           }
@@ -213,6 +449,27 @@ export default function LandingPageView({ onOpenLogin }) {
     return () => ctx.revert();
   }, []);
 
+  // Side Panel CountUp: re-animate whenever user selects a different kecamatan
+  useEffect(() => {
+    const animSidePanel = (ref, val, opts = {}) => {
+      if (!ref.current) return;
+      const cu = new CountUp(ref.current, val, { startVal: 0, useEasing: true, duration: 1.1, ...opts });
+      if (!cu.error) cu.start();
+    };
+    animSidePanel(sideIkpRef, selectedKec.panganSkor, { decimalPlaces: 1 });
+    animSidePanel(sideAirRef, selectedKec.airBersih, {
+      decimalPlaces: 1,
+      formattingFn: (n) => n.toFixed(1) + '%'
+    });
+    animSidePanel(sideStuntingRef, selectedKec.stunting, {
+      decimalPlaces: 1,
+      formattingFn: (n) => n.toFixed(1) + '%'
+    });
+    animSidePanel(sidePendudukRef, selectedKec.penduduk, {
+      formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' jiwa'
+    });
+  }, [selectedKec]);
+
   const handleScrollToMap = (targetKec = null) => {
     if (targetKec) {
       setSelectedKec(targetKec);
@@ -268,9 +525,8 @@ export default function LandingPageView({ onOpenLogin }) {
       {/* SECTION 2: EDITORIAL MANIFESTO STRIP (WARM LINEN STYLE) */}
       <section className="ladang-manifesto-section">
         <div className="ladang-manifesto-inner gsap-manifesto">
-          <span className="ladang-pill-badge">KOMITMEN KEDAULATAN PANGAN</span>
           <h2 className="ladang-manifesto-title">
-            Mewujudkan Kota Bogor Berketahanan Pangan Berbasis Data Geografis Nyata
+            Mewujudkan Kota Bogor <span className="ladang-title-gradient">Berketahanan Pangan</span> Berbasis Data Geografis Nyata
           </h2>
           <p className="ladang-manifesto-text">
             Sebagai sarana perumusan kebijakan berbasis spasial <i>(Data-Driven Spatial Policy)</i>, <b>NutriMap Kota Bogor</b> menghubungkan data kependudukan, keterjangkauan komoditas pangan pokok, pengawasan keamanan pangan di pasar tradisional, dan indeks stunting pada 6 kecamatan. Menghadirkan informasi yang transparan, mudah diakses masyarakat, dan dapat dipertanggungjawabkan untuk kesejahteraan bersama.
@@ -281,11 +537,9 @@ export default function LandingPageView({ onOpenLogin }) {
       {/* SECTION 3: 4 PILAR INDIKATOR UTAMA (ORGANIC METRIC CARDS) */}
       <section className="ladang-pillars-section">
         <div className="ladang-section-head">
-          <span className="ladang-sub-tag">
-            <Sparkles size={13} />
-            <span>Indikator Kunci Wilayah</span>
-          </span>
-          <h2>4 Pilar Utama Pemantauan Spasial Kota</h2>
+          <h2>
+            <span className="ladang-title-gradient">4 Pilar Utama</span> Pemantauan Spasial Kota
+          </h2>
           <p>Indikator terukur yang menjadi acuan intervensi prioritas jajaran dinas terkait Pemerintah Kota Bogor.</p>
         </div>
 
@@ -301,7 +555,7 @@ export default function LandingPageView({ onOpenLogin }) {
             <div className="pillar-main">
               <span className="pillar-label">Indeks Ketahanan Pangan (IKP)</span>
               <div className="pillar-val-row">
-                <span className="pillar-val">{KOTA_BOGOR_STATS.skorIKP}</span>
+                <span className="pillar-val" ref={ikpCountRef}>{KOTA_BOGOR_STATS.skorIKP}</span>
                 <span className="pillar-unit">/ 100</span>
               </div>
               <div className="pillar-track">
@@ -321,7 +575,9 @@ export default function LandingPageView({ onOpenLogin }) {
             <div className="pillar-main">
               <span className="pillar-label">Akses Air Bersih Layak</span>
               <div className="pillar-val-row">
-                <span className="pillar-val">{KOTA_BOGOR_STATS.aksesAirBersih}</span>
+                <span className="pillar-val" ref={airBersihCountRef}>
+                  {countUpAnimatedRef.current ? KOTA_BOGOR_STATS.aksesAirBersih : '0%'}
+                </span>
               </div>
               <div className="pillar-track">
                 <div className="pillar-fill fill-teal" style={{ width: '89.6%' }} />
@@ -340,7 +596,9 @@ export default function LandingPageView({ onOpenLogin }) {
             <div className="pillar-main">
               <span className="pillar-label">Prevalensi Stunting Balita</span>
               <div className="pillar-val-row">
-                <span className="pillar-val">{KOTA_BOGOR_STATS.prevalensiStunting}</span>
+                <span className="pillar-val" ref={stuntingCountRef}>
+                  {countUpAnimatedRef.current ? KOTA_BOGOR_STATS.prevalensiStunting : '0%'}
+                </span>
               </div>
               <div className="pillar-track">
                 <div className="pillar-fill fill-terracotta" style={{ width: '15.4%' }} />
@@ -363,6 +621,195 @@ export default function LandingPageView({ onOpenLogin }) {
               </div>
               <div className="pillar-track">
                 <div className="pillar-fill fill-earth" style={{ width: '100%' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SPOTLIGHT INFRASTRUKTUR AIR BERSIH (PDAM TIRTA PAKUAN) */}
+        <div className="ladang-card-box pdam-spotlight-card gsap-pdam-box">
+          <div className="pdam-spotlight-grid">
+            <div className="pdam-media-column">
+              <div className="pdam-media-frame">
+                <img
+                  src={pdamFacilityImg}
+                  alt="Instalasi Pengolahan Air Bersih PDAM Tirta Pakuan Kota Bogor"
+                  className="pdam-media-img"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+
+            <div className="pdam-content-column">
+              <h3 className="pdam-headline">
+                Instalasi Pengolahan Air (IPA) <span className="ladang-title-gradient">PDAM Tirta Pakuan</span>
+              </h3>
+
+              <p className="pdam-description">
+                Pusat pengolahan dan distribusi air minum terintegrasi yang menyuplai kebutuhan air bersih untuk 6 kecamatan di Kota Bogor. Terhubung dengan sistem pemantauan geospasial NutriMap guna menjamin kontinuitas debit air layak minum dan mendukung sanitasi keluarga sehat.
+              </p>
+
+              <div className="pdam-key-metrics">
+                <div className="pdam-metric-item">
+                  <span className="pmi-val" ref={pdamAirCountRef}>{KOTA_BOGOR_STATS.aksesAirBersih}</span>
+                  <span className="pmi-lbl">Cakupan Akses Kota</span>
+                </div>
+                <div className="pdam-metric-separator" />
+                <div className="pdam-metric-item">
+                  <span className="pmi-val" ref={pdamDebitCountRef}>2.400 L/s</span>
+                  <span className="pmi-lbl">Debit Air Terolah</span>
+                </div>
+                <div className="pdam-metric-separator" />
+                <div className="pdam-metric-item">
+                  <span className="pmi-val" ref={pdamSRCountRef}>170.000+</span>
+                  <span className="pmi-lbl">Sambungan Rumah (SR)</span>
+                </div>
+              </div>
+
+              <div className="pdam-footer-row">
+                <button
+                  type="button"
+                  className="btn-pdam-explore"
+                  onClick={() => handleScrollToMap()}
+                >
+                  <MapPin size={15} />
+                  <span>Lihat Sebaran Air Bersih di Peta Spasial</span>
+                </button>
+                <span className="pdam-source-text">Sumber Data: Perumda Tirta Pakuan Kota Bogor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SPOTLIGHT SOSIALISASI PENCEGAHAN STUNTING KOTA BOGOR (REVERSED LAYOUT) */}
+        <div className="ladang-card-box stunting-spotlight-card gsap-stunting-box">
+          <div className="stunting-spotlight-grid">
+            <div className="stunting-content-column">
+              <h3 className="stunting-headline">
+                Sosialisasi & Deteksi Dini <span className="ladang-title-gradient">Pencegahan Stunting</span>
+              </h3>
+
+              <p className="stunting-description">
+                Gerakan terintegrasi jajaran Dinas Kesehatan, kader Posyandu, dan TP-PKK Kota Bogor dalam pemantauan rutin tumbuh kembang balita, deteksi dini risiko stunting, edukasi pola asuh gizi seimbang, serta pendistribusian makanan tambahan (PMT) kaya nutrisi di seluruh kelurahan.
+              </p>
+
+              <div className="stunting-split-metrics">
+                <div className="stunting-metric-card">
+                  <div className="smc-header">
+                    <span className="smc-val" ref={stuntingSpotCountRef}>{KOTA_BOGOR_STATS.prevalensiStunting}</span>
+                    <span className="smc-badge-pill">Target: &lt; 10%</span>
+                  </div>
+                  <span className="smc-lbl">Prevalensi Balita Kota Bogor</span>
+                </div>
+                <div className="stunting-metric-card">
+                  <div className="smc-header">
+                    <span className="smc-val" ref={posyanduCountRef}>863+</span>
+                    <span className="smc-badge-pill">68 Kelurahan</span>
+                  </div>
+                  <span className="smc-lbl">Posyandu Aktif Terpadu</span>
+                </div>
+              </div>
+
+              <div className="stunting-action-pills">
+                <span className="stunting-pill-item"><CheckCircle2 size={13} className="text-teal" /> Penimbangan & Antropometri</span>
+                <span className="stunting-pill-item"><CheckCircle2 size={13} className="text-teal" /> Distribusi Pangan PMT</span>
+                <span className="stunting-pill-item"><CheckCircle2 size={13} className="text-teal" /> Edukasi Pola Asuh Sehat</span>
+              </div>
+
+              <div className="stunting-footer-row">
+                <button
+                  type="button"
+                  className="btn-stunting-explore"
+                  onClick={() => {
+                    setActiveChartMetric('stunting');
+                    handleScrollToSection('data-indikator');
+                  }}
+                >
+                  <HeartPulse size={15} />
+                  <span>Lihat Grafik Komparasi Stunting</span>
+                </button>
+                <span className="stunting-source-text">Sumber Data: Dinas Kesehatan Kota Bogor</span>
+              </div>
+            </div>
+
+            <div className="stunting-media-column">
+              <div className="stunting-media-frame">
+                <img
+                  src={stuntingImg}
+                  alt="Sosialisasi Pencegahan Stunting Kota Bogor di Posyandu"
+                  className="stunting-media-img"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SPOTLIGHT INSPEKSI KEAMANAN PANGAN PASAR TRADISIONAL (BENTO MATRIX LAYOUT) */}
+        <div className="ladang-card-box food-spotlight-card gsap-food-box">
+          <div className="food-spotlight-grid">
+            <div className="food-media-column">
+              <div className="food-media-frame">
+                <img
+                  src={foodInspectionImg}
+                  alt="Inspeksi Pangan Terpadu di Pasar Tradisional Kota Bogor"
+                  className="food-media-img"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+
+            <div className="food-content-column">
+              <h3 className="food-headline">
+                Pengawasan Pangan Terpadu di <span className="ladang-title-gradient">Pasar Tradisional</span>
+              </h3>
+
+              <p className="food-description">
+                Pelaksanaan audit higienitas serta uji sampel acak cepat (rapid test kit) residu pestisida, formalin, dan boraks pada komoditas pangan segar—seperti daging ayam potong, sayuran segar, ikan, dan bahan pokok—bersama Satgas Pangan & Balai POM di seluruh pasar rakyat Kota Bogor guna menjamin peredaran pangan yang aman dan bermutu bagi masyarakat.
+              </p>
+
+              <div className="food-bento-metrics">
+                <div className="food-bento-card">
+                  <div className="fbc-icon-box"><ShieldCheck size={16} /></div>
+                  <div className="fbc-text">
+                    <span className="fbc-val" ref={foodAuditCountRef}>48 Lokasi</span>
+                    <span className="fbc-lbl">Audit Pasar 2026</span>
+                  </div>
+                </div>
+                <div className="food-bento-card">
+                  <div className="fbc-icon-box"><CheckCircle2 size={16} /></div>
+                  <div className="fbc-text">
+                    <span className="fbc-val" ref={foodLolosCountRef}>96% Lolos</span>
+                    <span className="fbc-lbl">Standar Higienis BPOM</span>
+                  </div>
+                </div>
+                <div className="food-bento-card">
+                  <div className="fbc-icon-box"><Building2 size={16} /></div>
+                  <div className="fbc-text">
+                    <span className="fbc-val" ref={foodPasarCountRef}>4 Pasar</span>
+                    <span className="fbc-lbl">Fokus Pantauan Rutin</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="food-market-chips">
+                <span className="fmc-label">Fokus Pantauan:</span>
+                <span className="fmc-chip">Pasar Anyar</span>
+                <span className="fmc-chip">Pasar Bogor</span>
+                <span className="fmc-chip">Pasar Sukasari</span>
+                <span className="fmc-chip">Pasar Induk TU Kemang</span>
+              </div>
+
+              <div className="food-footer-row">
+                <button
+                  type="button"
+                  className="btn-food-explore"
+                  onClick={() => handleScrollToMap()}
+                >
+                  <Store size={15} />
+                  <span>Lihat Sebaran Pasar di Peta Spasial</span>
+                </button>
+                <span className="food-source-text">Sumber Data: Dinas Ketahanan Pangan & Balai POM</span>
               </div>
             </div>
           </div>
@@ -414,7 +861,7 @@ export default function LandingPageView({ onOpenLogin }) {
                       </td>
                       <td>
                         <div className="val-with-bar">
-                          <span className="val-text"><b>{kec.panganSkor}</b> <small>/ 100</small></span>
+                          <span className="val-text"><b className="kec-ikp-num" data-val={kec.panganSkor}>{kec.panganSkor}</b> <small>/ 100</small></span>
                           <div className="mini-bar-track">
                             <div className="mini-bar-fill bg-green" style={{ width: `${kec.panganSkor}%` }} />
                           </div>
@@ -422,7 +869,7 @@ export default function LandingPageView({ onOpenLogin }) {
                       </td>
                       <td>
                         <div className="val-with-bar">
-                          <span className="val-text"><b>{kec.airBersih}%</b></span>
+                          <span className="val-text"><b className="kec-air-num" data-val={kec.airBersih}>{kec.airBersih}%</b></span>
                           <div className="mini-bar-track">
                             <div className="mini-bar-fill bg-teal" style={{ width: `${kec.airBersih}%` }} />
                           </div>
@@ -430,7 +877,7 @@ export default function LandingPageView({ onOpenLogin }) {
                       </td>
                       <td>
                         <span className={`stunting-val ${kec.stunting > 15 ? 'val-danger' : 'val-normal'}`}>
-                          {kec.stunting}%
+                          <span className="kec-stunting-num" data-val={kec.stunting}>{kec.stunting}%</span>
                         </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
@@ -457,11 +904,9 @@ export default function LandingPageView({ onOpenLogin }) {
       {/* SECTION 4: PETA SPASIAL KETAHANAN PANGAN */}
       <section id="peta-spasial" className="single-page-section">
         <div className="ladang-section-head">
-          <span className="ladang-sub-tag">
-            <MapPin size={13} />
-            <span>Visualisasi Geografis</span>
-          </span>
-          <h2>Peta Spasial Ketahanan Pangan Kota Bogor</h2>
+          <h2>
+            Peta Spasial <span className="ladang-title-gradient">Ketahanan Pangan</span> Kota Bogor
+          </h2>
           <p>
             Eksplorasi kondisi 6 kecamatan Kota Bogor berdasarkan skor IKP, akses air minum layak, prevalensi stunting, dan sebaran fasilitas publik.
           </p>
@@ -508,7 +953,7 @@ export default function LandingPageView({ onOpenLogin }) {
                   <Utensils size={14} className="text-primary-green" />
                   <span>Indeks Ketahanan Pangan (IKP)</span>
                 </div>
-                <span className="ir-val"><b>{selectedKec.panganSkor}</b> / 100</span>
+                <span className="ir-val"><b ref={sideIkpRef}>{selectedKec.panganSkor}</b> / 100</span>
                 <div className="ir-progress-track">
                   <div className="ir-progress-fill bg-green" style={{ width: `${selectedKec.panganSkor}%` }} />
                 </div>
@@ -519,7 +964,7 @@ export default function LandingPageView({ onOpenLogin }) {
                   <Droplets size={14} className="text-water-cyan" />
                   <span>Akses Air Bersih Layak</span>
                 </div>
-                <span className="ir-val"><b>{selectedKec.airBersih}%</b></span>
+                <span className="ir-val"><b ref={sideAirRef}>{selectedKec.airBersih}%</b></span>
                 <div className="ir-progress-track">
                   <div className="ir-progress-fill bg-cyan" style={{ width: `${selectedKec.airBersih}%` }} />
                 </div>
@@ -531,7 +976,7 @@ export default function LandingPageView({ onOpenLogin }) {
                   <span>Prevalensi Stunting</span>
                 </div>
                 <span className={`ir-val ${selectedKec.stunting > 15 ? 'text-danger fw-bold' : ''}`}>
-                  <b>{selectedKec.stunting}%</b>
+                  <b ref={sideStuntingRef}>{selectedKec.stunting}%</b>
                 </span>
                 <div className="ir-progress-track">
                   <div
@@ -550,7 +995,7 @@ export default function LandingPageView({ onOpenLogin }) {
 
               <div className="meta-data-row">
                 <span className="md-label">Jumlah Penduduk</span>
-                <span className="md-value">{selectedKec.penduduk.toLocaleString('id-ID')} jiwa</span>
+                <span className="md-value" ref={sidePendudukRef}>{selectedKec.penduduk.toLocaleString('id-ID')} jiwa</span>
               </div>
 
               <div className="meta-data-row">
@@ -579,11 +1024,9 @@ export default function LandingPageView({ onOpenLogin }) {
       {/* SECTION 5: DATA INDIKATOR KOTA & VISUAL CHART */}
       <section id="data-indikator" className="single-page-section">
         <div className="ladang-section-head">
-          <span className="ladang-sub-tag">
-            <BarChart3 size={13} />
-            <span>Data & Statistik Kota</span>
-          </span>
-          <h2>Data Indikator Kota Bogor</h2>
+          <h2>
+            Data Indikator <span className="ladang-title-gradient">Kota Bogor</span>
+          </h2>
           <p>Tabel interaktif kependudukan dan komparasi grafis indikator ketahanan pangan lintas kecamatan.</p>
         </div>
 
@@ -763,11 +1206,9 @@ export default function LandingPageView({ onOpenLogin }) {
       {/* SECTION 6: TENTANG NUTRIMAP & MITRA RESMI */}
       <section id="tentang-nutrimap" className="single-page-section">
         <div className="ladang-section-head">
-          <span className="ladang-sub-tag">
-            <Info size={13} />
-            <span>Informasi Platform</span>
-          </span>
-          <h2>Tentang NutriMap Kota Bogor</h2>
+          <h2>
+            Tentang <span className="ladang-title-gradient">NutriMap Kota Bogor</span>
+          </h2>
           <p>Portal Sistem Informasi Geografis Pemantauan Ketahanan Pangan & Kesejahteraan Terpadu</p>
         </div>
 

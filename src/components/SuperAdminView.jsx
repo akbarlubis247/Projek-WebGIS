@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { CountUp } from 'countup.js';
 import {
   UserPlus,
   Shield,
@@ -20,6 +21,15 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
+
+  const adminCountRef = useRef(null);
+
+  useEffect(() => {
+    if (adminCountRef.current) {
+      const cu = new CountUp(adminCountRef.current, admins.length, { startVal: 0, duration: 1.0, useEasing: true });
+      if (!cu.error) cu.start();
+    }
+  }, [admins.length]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -111,10 +121,6 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
           <button className="primary-btn" onClick={handleOpenAddModal}>
             <UserPlus size={18} /> Tambah Admin Baru
           </button>
-
-          <button className="logout-btn-large" onClick={onLogout}>
-            <LogOut size={18} /> Keluar (Logout)
-          </button>
         </div>
       </div>
 
@@ -138,7 +144,7 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
           </div>
 
           <div className="sa-total-badge">
-            Total Admin Terdaftar: <strong>{admins.length} Akun</strong>
+            Total Admin Terdaftar: <strong><span ref={adminCountRef}>{admins.length}</span> Akun</strong>
           </div>
         </div>
 
@@ -159,13 +165,13 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
               {filteredAdmins.length > 0 ? (
                 filteredAdmins.map((item) => (
                   <tr key={item.id}>
-                    <td className="font-mono text-muted">{item.id}</td>
+                    <td className="text-muted font-semibold" style={{ letterSpacing: '0.02em' }}>{item.id}</td>
                     <td>
-                      <b>{item.nama}</b>
+                      <span className="font-bold text-main">{item.nama}</span>
                     </td>
-                    <td className="font-mono text-emerald">{item.email}</td>
-                    <td className="font-mono text-muted">
-                      <code>{item.password ? '•••••••• (' + item.password + ')' : '••••••••'}</code>
+                    <td className="text-emerald font-medium">{item.email}</td>
+                    <td className="text-muted">
+                      <span className="sa-password-badge">{item.password ? '•••••••• (' + item.password + ')' : '••••••••'}</span>
                     </td>
                     <td className="text-muted">{item.ditambahkan || '01 Sep 2026'}</td>
                     <td>

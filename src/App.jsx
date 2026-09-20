@@ -15,9 +15,13 @@ import DataEntryView from './components/DataEntryView';
 import FoodSafetyMgmtView from './components/FoodSafetyMgmtView';
 import AboutView from './components/AboutView';
 import LoginModal from './components/LoginModal';
+import IntroOverlay from './components/IntroOverlay';
 import { INITIAL_ADMINS_LIST } from './data/bogorData';
 
 export default function App() {
+  // Intro Screen State
+  const [showIntro, setShowIntro] = useState(true);
+
   // Roles: 'guest' (Public Warga) | 'admin' (Staff Admin SIG) | 'superadmin' (Super Admin Management)
   const [currentUser, setCurrentUser] = useState({
     name: 'Warga / Pengunjung',
@@ -127,59 +131,69 @@ export default function App() {
   const isGuest = currentUser.role === 'guest';
 
   return (
-    <div className={`app-layout ${isGuest ? 'public-layout-mode' : ''} ${isCollapsed ? 'sidebar-is-collapsed' : ''}`}>
-      {/* If Public Guest Mode -> Render Top Navbar only (NO SIDEBAR) */}
-      {isGuest ? (
-        <div className="public-wrapper">
-          <Navbar
-            activePage={activePage}
-            setActivePage={setActivePage}
-            onOpenLogin={() => setIsLoginModalOpen(true)}
-          />
-          <main className="public-main-content">
-            {renderView()}
-          </main>
-        </div>
-      ) : (
-        /* Logged In (Admin / Superadmin) -> Render Sidebar + Header Layout */
-        <>
-          <Sidebar
-            activePage={activePage}
-            setActivePage={setActivePage}
-            isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            isCollapsed={isCollapsed}
-            onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-            currentUser={currentUser}
-            onLogout={handleLogout}
-            onLoginClick={() => setIsLoginModalOpen(true)}
-          />
-
-          <div className="main-wrapper">
-            <Header
-              activePage={activePage}
-              onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-              isCollapsed={isCollapsed}
-              onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-              currentUser={currentUser}
-              onLogout={handleLogout}
-              onLoginClick={() => setIsLoginModalOpen(true)}
-            />
-
-            <main className="main-content">
-              {renderView()}
-            </main>
-          </div>
-        </>
+    <>
+      {/* 1. OVERLAY INTERACTIVE INTRO SCREEN */}
+      {showIntro && (
+        <IntroOverlay onFinish={() => setShowIntro(false)} />
       )}
 
-      {/* Authentication Modal */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-        adminsList={adminsList}
-      />
-    </div>
+      {/* 2. MAIN WEBSITE CONTAINER (Reveals smoothly after intro) */}
+      <div id="main-website">
+        <div className={`app-layout ${isGuest ? 'public-layout-mode' : ''} ${isCollapsed ? 'sidebar-is-collapsed' : ''}`}>
+          {/* If Public Guest Mode -> Render Top Navbar only (NO SIDEBAR) */}
+          {isGuest ? (
+            <div className="public-wrapper">
+              <Navbar
+                activePage={activePage}
+                setActivePage={setActivePage}
+                onOpenLogin={() => setIsLoginModalOpen(true)}
+              />
+              <main className="public-main-content">
+                {renderView()}
+              </main>
+            </div>
+          ) : (
+            /* Logged In (Admin / Superadmin) -> Render Sidebar + Header Layout */
+            <>
+              <Sidebar
+                activePage={activePage}
+                setActivePage={setActivePage}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                isCollapsed={isCollapsed}
+                onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+                currentUser={currentUser}
+                onLogout={handleLogout}
+                onLoginClick={() => setIsLoginModalOpen(true)}
+              />
+
+              <div className="main-wrapper">
+                <Header
+                  activePage={activePage}
+                  onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+                  isCollapsed={isCollapsed}
+                  onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+                  currentUser={currentUser}
+                  onLogout={handleLogout}
+                  onLoginClick={() => setIsLoginModalOpen(true)}
+                />
+
+                <main className="main-content">
+                  {renderView()}
+                </main>
+              </div>
+            </>
+          )}
+
+          {/* Authentication Modal */}
+          <LoginModal
+            isOpen={isLoginModalOpen}
+            onClose={() => setIsLoginModalOpen(false)}
+            onLoginSuccess={handleLoginSuccess}
+            adminsList={adminsList}
+          />
+        </div>
+      </div>
+    </>
   );
 }

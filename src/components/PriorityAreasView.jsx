@@ -1,10 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { CountUp } from 'countup.js';
 import { AlertTriangle, AlertOctagon, ShieldAlert, CheckCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 
 export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
   const priorityOrder = { 'Sangat Tinggi': 1, 'Tinggi': 2, 'Sedang': 3, 'Rendah': 4, 'Sangat Rendah': 5 };
   const sortedList = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => priorityOrder[a.prioritas] - priorityOrder[b.prioritas]);
+
+  const p1Ref = useRef(null);
+  const p2Ref = useRef(null);
+  const p3Ref = useRef(null);
+
+  useEffect(() => {
+    const anim = (ref, val, opts = {}) => {
+      if (!ref.current) return;
+      const cu = new CountUp(ref.current, val, { startVal: 0, duration: 1.2, useEasing: true, ...opts });
+      if (!cu.error) cu.start();
+    };
+
+    anim(p1Ref, 1);
+    anim(p2Ref, 1);
+    anim(p3Ref, 4);
+  }, []);
 
   return (
     <div className="view-container animate-fade-in">
@@ -26,7 +43,7 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
           <div className="sc-icon"><AlertOctagon size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Prioritas 1 (Sangat Tinggi / Waspada)</span>
-            <h3 className="sc-value">1 Kecamatan</h3>
+            <h3 className="sc-value"><span ref={p1Ref}>1</span> Kecamatan</h3>
             <span className="sc-desc">Bogor Selatan (Skor IKP 74.2, Stunting 19.8%)</span>
           </div>
         </div>
@@ -34,7 +51,7 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
           <div className="sc-icon"><AlertTriangle size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Prioritas 2 (Tinggi / Perhatian)</span>
-            <h3 className="sc-value">1 Kecamatan</h3>
+            <h3 className="sc-value"><span ref={p2Ref}>1</span> Kecamatan</h3>
             <span className="sc-desc">Bogor Barat (Skor IKP 78.6, Stunting 17.5%)</span>
           </div>
         </div>
@@ -42,7 +59,7 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
           <div className="sc-icon"><CheckCircle size={22} /></div>
           <div className="sc-info">
             <span className="sc-label">Prioritas 3 (Aman & Sangat Aman)</span>
-            <h3 className="sc-value">4 Kecamatan</h3>
+            <h3 className="sc-value"><span ref={p3Ref}>4</span> Kecamatan</h3>
             <span className="sc-desc">Bogor Tengah, Bogor Utara, Bogor Timur, Tanah Sareal</span>
           </div>
         </div>
