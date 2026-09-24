@@ -6141,6 +6141,50 @@ a {
   align-items: center;
 }
 
+/* Kecamatan Dropdown Select Styling */
+.kecamatan-map-select {
+  width: 100%;
+  padding: 10px 40px 10px 42px;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.kecamatan-map-select:hover {
+  border-color: #10b981;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+  transform: translateY(-1px);
+}
+
+.kecamatan-map-select:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.kecamatan-map-select option {
+  padding: 12px 16px;
+  font-weight: 500;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.kecamatan-map-select option:hover {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  color: #047857;
+}
+
 .modern-et-search input {
   width: 100%;
   padding: 10px 16px 10px 42px;
