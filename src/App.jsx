@@ -1,21 +1,28 @@
 import React, { useState } from 'react';
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import LandingPageView from './components/LandingPageView';
-import SuperAdminView from './components/SuperAdminView';
-import DashboardView from './components/DashboardView';
-import MapExplorerView from './components/MapExplorerView';
-import FoodSecurityView from './components/FoodSecurityView';
-import WelfareView from './components/WelfareView';
-import CleanWaterView from './components/CleanWaterView';
-import PriorityAreasView from './components/PriorityAreasView';
-import IndicatorDataView from './components/IndicatorDataView';
-import DataEntryView from './components/DataEntryView';
-import FoodSafetyMgmtView from './components/FoodSafetyMgmtView';
-import AboutView from './components/AboutView';
-import LoginModal from './components/LoginModal';
-import IntroOverlay from './components/IntroOverlay';
+// Common / Shared Layout Components
+import Navbar from './components/common/Navbar';
+import Sidebar from './components/common/Sidebar';
+import Header from './components/common/Header';
+import LoginModal from './components/common/LoginModal';
+import IntroOverlay from './components/common/IntroOverlay';
+
+// User / Public Views
+import LandingPageView from './components/user/LandingPageView';
+import MapExplorerView from './components/user/MapExplorerView';
+import FoodSecurityView from './components/user/FoodSecurityView';
+import WelfareView from './components/user/WelfareView';
+import CleanWaterView from './components/user/CleanWaterView';
+import PriorityAreasView from './components/user/PriorityAreasView';
+import IndicatorDataView from './components/user/IndicatorDataView';
+import AboutView from './components/user/AboutView';
+
+// Admin Operational Views
+import DashboardView from './components/admin/DashboardView';
+import DataEntryView from './components/admin/DataEntryView';
+import FoodSafetyMgmtView from './components/admin/FoodSafetyMgmtView';
+
+// Super Admin Management Views
+import SuperAdminView from './components/superadmin/SuperAdminView';
 import { INITIAL_ADMINS_LIST } from './data/bogorData';
 
 export default function App() {

@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { HeartPulse, Users, ShieldAlert, Award, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
-import stuntingImg from '../assets/stunting-prevention.jpg';
+import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import stuntingImg from '../../assets/stunting-prevention.jpg';
 
 export default function WelfareView() {
   const sortedByStunting = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.stunting - a.stunting);

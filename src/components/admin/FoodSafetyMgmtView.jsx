@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { ShieldCheck, Search, CheckCircle, AlertTriangle, FileSpreadsheet, FileText } from 'lucide-react';
-import { SECURITY_AUDITS } from '../data/bogorData';
-import foodInspectionImg from '../assets/food-inspection.jpg';
+import { SECURITY_AUDITS } from '../../data/bogorData';
+import foodInspectionImg from '../../assets/food-inspection.jpg';
 
 export default function FoodSafetyMgmtView() {
   const auditCountRef = useRef(null);

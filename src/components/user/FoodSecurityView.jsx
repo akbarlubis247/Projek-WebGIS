@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { Utensils, ShieldCheck, AlertTriangle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
+import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
 
 export default function FoodSecurityView() {
   const sortedByIKP = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.panganSkor - a.panganSkor);

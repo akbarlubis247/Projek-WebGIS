@@ -10,7 +10,7 @@ export default function AboutView() {
             <Layers size={36} className="text-emerald" />
             <div>
               <h2>NutriMap Kota Bogor</h2>
-              <p>Platform SIG Spasial Resmi Kota Bogor, Jawa Barat</p>
+              <p>Platform SIG Spasial Kota Bogor, Jawa Barat</p>
             </div>
           </div>
 

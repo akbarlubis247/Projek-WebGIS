@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NutriMap Bogor - Web GIS Kelompok 12</title>
-  
+
   <!-- Google Fonts: Poppins & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <!-- GSAP CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
@@ -17,7 +20,9 @@
     /* =========================================================
        RESET & GLOBAL BASE STYLES
        ========================================================= */
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -71,12 +76,10 @@
     .intro-vignette {
       position: absolute;
       inset: 0;
-      background: radial-gradient(
-        circle at center,
-        rgba(3, 12, 26, 0.1) 0%,
-        rgba(3, 12, 26, 0.45) 60%,
-        rgba(2, 8, 18, 0.85) 100%
-      );
+      background: radial-gradient(circle at center,
+          rgba(3, 12, 26, 0.1) 0%,
+          rgba(3, 12, 26, 0.45) 60%,
+          rgba(2, 8, 18, 0.85) 100%);
       z-index: 2;
     }
 
@@ -120,9 +123,20 @@
     }
 
     /* Pin Positions */
-    .pin-blue { top: 6%; left: 35%; }
-    .pin-green { top: 9%; right: 34%; }
-    .pin-red { bottom: 8%; left: 33%; }
+    .pin-blue {
+      top: 6%;
+      left: 35%;
+    }
+
+    .pin-green {
+      top: 9%;
+      right: 34%;
+    }
+
+    .pin-red {
+      bottom: 8%;
+      left: 33%;
+    }
 
     /* Pulse Rings */
     .pin-pulse-halo {
@@ -142,9 +156,21 @@
       animation-delay: 1.4s;
     }
 
-    .pin-pulse-halo.blue { border: 2px solid #3B82F6; box-shadow: 0 0 16px rgba(59, 130, 246, 0.6); }
-    .pin-pulse-halo.green { border: 2px solid #10B981; box-shadow: 0 0 16px rgba(16, 185, 129, 0.6); }
-    .pin-pulse-halo.red { top: 24px; border: 2px solid #EF4444; box-shadow: 0 0 18px rgba(239, 68, 68, 0.7); }
+    .pin-pulse-halo.blue {
+      border: 2px solid #3B82F6;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.6);
+    }
+
+    .pin-pulse-halo.green {
+      border: 2px solid #10B981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+    }
+
+    .pin-pulse-halo.red {
+      top: 24px;
+      border: 2px solid #EF4444;
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.7);
+    }
 
     .pin-ground-shadow {
       position: absolute;
@@ -174,18 +200,57 @@
       white-space: nowrap;
     }
 
-    .pin-tag-badge.blue { background: rgba(10, 25, 47, 0.85); border: 1px solid rgba(59, 130, 246, 0.6); color: #93C5FD; }
-    .pin-tag-badge.green { background: rgba(10, 25, 47, 0.85); border: 1px solid rgba(16, 185, 129, 0.6); color: #A7F3D0; }
-    .pin-tag-badge.red { background: rgba(10, 25, 47, 0.88); border: 1px solid rgba(239, 68, 68, 0.7); color: #FECACA; }
+    .pin-tag-badge.blue {
+      background: rgba(10, 25, 47, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.6);
+      color: #93C5FD;
+    }
 
-    .pin-tag-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
-    .pin-tag-badge.blue .dot { background: #3B82F6; box-shadow: 0 0 6px #3B82F6; }
-    .pin-tag-badge.green .dot { background: #10B981; box-shadow: 0 0 6px #10B981; }
-    .pin-tag-badge.red .dot { background: #EF4444; box-shadow: 0 0 6px #EF4444; }
+    .pin-tag-badge.green {
+      background: rgba(10, 25, 47, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.6);
+      color: #A7F3D0;
+    }
+
+    .pin-tag-badge.red {
+      background: rgba(10, 25, 47, 0.88);
+      border: 1px solid rgba(239, 68, 68, 0.7);
+      color: #FECACA;
+    }
+
+    .pin-tag-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .pin-tag-badge.blue .dot {
+      background: #3B82F6;
+      box-shadow: 0 0 6px #3B82F6;
+    }
+
+    .pin-tag-badge.green .dot {
+      background: #10B981;
+      box-shadow: 0 0 6px #10B981;
+    }
+
+    .pin-tag-badge.red .dot {
+      background: #EF4444;
+      box-shadow: 0 0 6px #EF4444;
+    }
 
     @keyframes pinHaloPulse {
-      0% { width: 20px; height: 20px; opacity: 0.9; }
-      100% { width: 72px; height: 72px; opacity: 0; }
+      0% {
+        width: 20px;
+        height: 20px;
+        opacity: 0.9;
+      }
+
+      100% {
+        width: 72px;
+        height: 72px;
+        opacity: 0;
+      }
     }
 
     /* =========================================================
@@ -226,16 +291,44 @@
       border: 1px dashed rgba(0, 229, 255, 0.35);
       pointer-events: none;
     }
-    .radar-ring.r1 { width: 44px; height: 44px; }
-    .radar-ring.r2 { width: 30px; height: 30px; border-style: solid; opacity: 0.5; }
-    .radar-ring.r3 { width: 14px; height: 14px; border-color: rgba(0, 229, 255, 0.7); }
 
-    .radar-crosshair-h, .radar-crosshair-v {
+    .radar-ring.r1 {
+      width: 44px;
+      height: 44px;
+    }
+
+    .radar-ring.r2 {
+      width: 30px;
+      height: 30px;
+      border-style: solid;
+      opacity: 0.5;
+    }
+
+    .radar-ring.r3 {
+      width: 14px;
+      height: 14px;
+      border-color: rgba(0, 229, 255, 0.7);
+    }
+
+    .radar-crosshair-h,
+    .radar-crosshair-v {
       position: absolute;
       background: rgba(0, 229, 255, 0.35);
     }
-    .radar-crosshair-h { top: 50%; left: 0; right: 0; height: 1px; }
-    .radar-crosshair-v { left: 50%; top: 0; bottom: 0; width: 1px; }
+
+    .radar-crosshair-h {
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+    }
+
+    .radar-crosshair-v {
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+    }
 
     .radar-sweep-beam {
       position: absolute;
@@ -257,15 +350,64 @@
       box-shadow: 0 0 8px #10B981;
       animation: radarBlip 1.6s ease-in-out infinite;
     }
-    .radar-blip.b1 { top: 28%; left: 62%; }
-    .radar-blip.b2 { bottom: 24%; left: 30%; background: #00E5FF; box-shadow: 0 0 8px #00E5FF; animation-delay: 0.8s; }
 
-    @keyframes radarSweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes radarBlip { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.3); } }
+    .radar-blip.b1 {
+      top: 28%;
+      left: 62%;
+    }
 
-    .radar-meta { display: flex; flex-direction: column; gap: 3px; }
-    .radar-title { font-size: 0.72rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.08em; text-transform: uppercase; }
-    .radar-coord { font-family: monospace; font-size: 0.65rem; color: #7DD3FC; letter-spacing: 0.05em; }
+    .radar-blip.b2 {
+      bottom: 24%;
+      left: 30%;
+      background: #00E5FF;
+      box-shadow: 0 0 8px #00E5FF;
+      animation-delay: 0.8s;
+    }
+
+    @keyframes radarSweep {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes radarBlip {
+
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.3);
+      }
+    }
+
+    .radar-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .radar-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .radar-coord {
+      font-family: monospace;
+      font-size: 0.65rem;
+      color: #7DD3FC;
+      letter-spacing: 0.05em;
+    }
 
     /* =========================================================
        4. BOTTOM-RIGHT WIDGET STATISTIK HUD
@@ -313,16 +455,56 @@
       border-radius: 3px;
       animation: barOsc 1.8s ease-in-out infinite alternate;
     }
-    .m-bar.mb1 { height: 12px; animation-delay: 0.1s; }
-    .m-bar.mb2 { height: 20px; animation-delay: 0.4s; }
-    .m-bar.mb3 { height: 16px; animation-delay: 0.25s; }
-    .m-bar.mb4 { height: 24px; animation-delay: 0.6s; }
 
-    @keyframes barOsc { 0% { transform: scaleY(0.6); } 100% { transform: scaleY(1.05); } }
+    .m-bar.mb1 {
+      height: 12px;
+      animation-delay: 0.1s;
+    }
 
-    .chart-hud-text { display: flex; flex-direction: column; line-height: 1.15; }
-    .ch-val { font-size: 0.72rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.04em; }
-    .ch-sub { font-size: 0.62rem; font-weight: 600; color: #7DD3FC; letter-spacing: 0.06em; }
+    .m-bar.mb2 {
+      height: 20px;
+      animation-delay: 0.4s;
+    }
+
+    .m-bar.mb3 {
+      height: 16px;
+      animation-delay: 0.25s;
+    }
+
+    .m-bar.mb4 {
+      height: 24px;
+      animation-delay: 0.6s;
+    }
+
+    @keyframes barOsc {
+      0% {
+        transform: scaleY(0.6);
+      }
+
+      100% {
+        transform: scaleY(1.05);
+      }
+    }
+
+    .chart-hud-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+
+    .ch-val {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: 0.04em;
+    }
+
+    .ch-sub {
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: #7DD3FC;
+      letter-spacing: 0.06em;
+    }
 
     /* =========================================================
        5. CENTER GLASSMORPHISM MODAL CARD
@@ -376,7 +558,19 @@
       animation: badgePulse 1.8s infinite;
     }
 
-    @keyframes badgePulse { 0%, 100% { opacity: 0.5; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.2); } }
+    @keyframes badgePulse {
+
+      0%,
+      100% {
+        opacity: 0.5;
+        transform: scale(0.9);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
 
     .badge-text {
       font-size: 0.68rem;
@@ -538,14 +732,34 @@
 
     /* Responsive */
     @media (max-width: 900px) {
-      .intro-hud-radar, .intro-hud-chart { display: none; }
-      .intro-modal-card { padding: 30px 24px; }
-      .pin-blue { top: 5%; left: 20%; }
-      .pin-green { top: 6%; right: 18%; }
-      .pin-red { bottom: 5%; left: 18%; }
+
+      .intro-hud-radar,
+      .intro-hud-chart {
+        display: none;
+      }
+
+      .intro-modal-card {
+        padding: 30px 24px;
+      }
+
+      .pin-blue {
+        top: 5%;
+        left: 20%;
+      }
+
+      .pin-green {
+        top: 6%;
+        right: 18%;
+      }
+
+      .pin-red {
+        bottom: 5%;
+        left: 18%;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- =========================================================
@@ -571,7 +785,8 @@
               <stop offset="100%" stop-color="#1D4ED8" />
             </linearGradient>
           </defs>
-          <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pBlueGrad)" />
+          <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z"
+            fill="url(#pBlueGrad)" />
           <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#93C5FD" stroke-width="2.5" />
         </svg>
       </div>
@@ -593,7 +808,8 @@
               <stop offset="100%" stop-color="#047857" />
             </linearGradient>
           </defs>
-          <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pGreenGrad)" />
+          <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z"
+            fill="url(#pGreenGrad)" />
           <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#A7F3D0" stroke-width="2.5" />
         </svg>
       </div>
@@ -616,7 +832,8 @@
               <stop offset="100%" stop-color="#B91C1C" />
             </linearGradient>
           </defs>
-          <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pRedGrad)" />
+          <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z"
+            fill="url(#pRedGrad)" />
           <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#FECACA" stroke-width="2.5" />
         </svg>
       </div>
@@ -647,7 +864,7 @@
 
       <div class="intro-timer-section intro-anim">
         <div class="intro-timer-header">
-          <span class="timer-info-text">Memasuki Portal WebGIS dalam</span>
+          <span class="timer-info-text">Memasuki WebGIS dalam</span>
           <span class="timer-counter-pill" id="countdownVal">5 Detik</span>
         </div>
         <div class="intro-progress-track">
@@ -672,7 +889,8 @@
        ========================================================= -->
   <div id="main-website">
     <h2>NutriMap Kota Bogor</h2>
-    <p>Selamat datang di platform Sistem Informasi Geografis Pemantauan Ketahanan Pangan, Air Bersih, dan Kesejahteraan Kota Bogor.</p>
+    <p>Selamat datang di platform Sistem Informasi Geografis Pemantauan Ketahanan Pangan, Air Bersih, dan Kesejahteraan
+      Kota Bogor.</p>
     <button class="btn-replay" onclick="location.reload()">Putar Ulang Animasi Intro</button>
   </div>
 
@@ -696,26 +914,26 @@
       const entranceTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
       // Zoom-in Background
-      entranceTl.fromTo(bgLayer, 
-        { scale: 1.1, filter: 'blur(8px)' }, 
+      entranceTl.fromTo(bgLayer,
+        { scale: 1.1, filter: 'blur(8px)' },
         { scale: 1, filter: 'blur(0px)', duration: 1.2, ease: 'power2.out' }, 0
       );
 
       // Card Entrance
-      entranceTl.fromTo(card, 
-        { scale: 0.65, opacity: 0, y: 50 }, 
+      entranceTl.fromTo(card,
+        { scale: 0.65, opacity: 0, y: 50 },
         { scale: 1, opacity: 1, y: 0, duration: 1.0, ease: 'back.out(1.35)' }, 0.15
       );
 
       // Staggered Text
-      entranceTl.fromTo('.intro-anim', 
-        { y: 22, opacity: 0, filter: 'blur(4px)' }, 
+      entranceTl.fromTo('.intro-anim',
+        { y: 22, opacity: 0, filter: 'blur(4px)' },
         { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.65, stagger: 0.12, ease: 'power2.out' }, 0.45
       );
 
       // Pins Entrance
-      entranceTl.fromTo('.intro-gis-pin', 
-        { scale: 0, opacity: 0, y: -50 }, 
+      entranceTl.fromTo('.intro-gis-pin',
+        { scale: 0, opacity: 0, y: -50 },
         { scale: 1, opacity: 1, y: 0, duration: 0.85, stagger: 0.14, ease: 'bounce.out' }, 0.35
       );
 
@@ -727,8 +945,8 @@
       gsap.to('.pin-red', { y: '-=11', duration: 2.0, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.2 });
 
       // 5-Second Timer Progress Bar
-      const progressTween = gsap.fromTo(progressFill, 
-        { width: '0%' }, 
+      const progressTween = gsap.fromTo(progressFill,
+        { width: '0%' },
         { width: '100%', duration: 5.0, ease: 'linear', onComplete: triggerExit }
       );
 
@@ -772,9 +990,9 @@
         }, '-=0.15');
 
         // Main Website Reveal
-        exitTl.fromTo(mainSite, 
-          { opacity: 0.7, scale: 0.985, filter: 'blur(3px)' }, 
-          { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.8, ease: 'power3.out' }, 
+        exitTl.fromTo(mainSite,
+          { opacity: 0.7, scale: 0.985, filter: 'blur(3px)' },
+          { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.8, ease: 'power3.out' },
           '-=0.65'
         );
       }
@@ -795,4 +1013,5 @@
     });
   </script>
 </body>
+
 </html>

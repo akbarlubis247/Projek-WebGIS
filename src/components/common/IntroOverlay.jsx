@@ -4,7 +4,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
-import introBgImg from '../assets/intro-bg.png';
+import introBgImg from '../../assets/intro-bg.png';
 
 export default function IntroOverlay({ onFinish }) {
   const [countdown, setCountdown] = useState(5);
@@ -142,12 +142,12 @@ export default function IntroOverlay({ onFinish }) {
 
       // Continuous Floating / Bouncing Animation for All 6 Pins
       const pinFloatConfigs = [
-        { sel: '.intro-pin-blue',     y: '-=12', dur: 2.3, delay: 0.0 },
-        { sel: '.intro-pin-green',    y: '+=10', dur: 2.6, delay: 0.4 },
-        { sel: '.intro-pin-amber',    y: '-=10', dur: 2.8, delay: 0.2 },
-        { sel: '.intro-pin-amber2',   y: '+=11', dur: 2.1, delay: 0.6 },
-        { sel: '.intro-pin-teal',     y: '-=9',  dur: 2.4, delay: 0.3 },
-        { sel: '.intro-pin-violet',   y: '+=13', dur: 2.7, delay: 0.5 },
+        { sel: '.intro-pin-blue', y: '-=12', dur: 2.3, delay: 0.0 },
+        { sel: '.intro-pin-green', y: '+=10', dur: 2.6, delay: 0.4 },
+        { sel: '.intro-pin-amber', y: '-=10', dur: 2.8, delay: 0.2 },
+        { sel: '.intro-pin-amber2', y: '+=11', dur: 2.1, delay: 0.6 },
+        { sel: '.intro-pin-teal', y: '-=9', dur: 2.4, delay: 0.3 },
+        { sel: '.intro-pin-violet', y: '+=13', dur: 2.7, delay: 0.5 },
       ];
       pinFloatConfigs.forEach(({ sel, y, dur, delay }) => {
         floatingTweensRef.current.push(
@@ -431,7 +431,7 @@ export default function IntroOverlay({ onFinish }) {
           <div className="intro-timer-header">
             <span className="timer-info-text">
               <Sparkles size={13} className="sparkle-icon" />
-              <span>Memasuki Portal WebGIS dalam</span>
+              <span>Memasuki WebGIS dalam</span>
             </span>
             <span className="timer-counter-pill">{countdown} Detik</span>
           </div>

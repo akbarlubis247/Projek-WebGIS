@@ -37,23 +37,29 @@ import {
   Cell,
   LabelList
 } from 'recharts';
-import MapView from './MapView';
+import MapView from '../common/MapView';
 import {
   KOTA_BOGOR_STATS,
   KECAMATAN_KOTA_BOGOR,
   FOOD_SECURITY_CATEGORIES
-} from '../data/bogorData';
-import heroBg from '../assets/hero-banner.png';
-import pdamFacilityImg from '../assets/pdam-facility.jpg';
-import stuntingImg from '../assets/stunting-prevention.jpg';
-import foodInspectionImg from '../assets/food-inspection.jpg';
+} from '../../data/bogorData';
+import { KELURAHAN_68_BOGOR } from '../../data/bogorKelurahanData';
+import { LAYER_DEFINITIONS, getIndicatorClassification } from '../../data/indicatorStandards';
+import heroBg from '../../assets/hero-banner.png';
+import pdamFacilityImg from '../../assets/pdam-facility.jpg';
+import stuntingImg from '../../assets/stunting-prevention.jpg';
+import foodInspectionImg from '../../assets/food-inspection.jpg';
 import { CountUp } from 'countup.js';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
 export default function LandingPageView({ onOpenLogin }) {
-  const [selectedKec, setSelectedKec] = useState(KECAMATAN_KOTA_BOGOR[0]);
+  const [selectedKec, setSelectedKec] = useState(null);
+  const [selectedKel, setSelectedKel] = useState(null);
+  const [activeMapLayer, setActiveMapLayer] = useState('stunting');
+  const [panelKecTab, setPanelKecTab] = useState('Semua');
+  const [panelKelSearch, setPanelKelSearch] = useState('');
   const [searchTable, setSearchTable] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua Status');
   const [activeChartMetric, setActiveChartMetric] = useState('panganSkor');
@@ -449,30 +455,46 @@ export default function LandingPageView({ onOpenLogin }) {
     return () => ctx.revert();
   }, []);
 
-  // Side Panel CountUp: re-animate whenever user selects a different kecamatan
+  // Side Panel CountUp: re-animate whenever user selects a different kecamatan or views all
   useEffect(() => {
     const animSidePanel = (ref, val, opts = {}) => {
       if (!ref.current) return;
       const cu = new CountUp(ref.current, val, { startVal: 0, useEasing: true, duration: 1.1, ...opts });
       if (!cu.error) cu.start();
     };
-    animSidePanel(sideIkpRef, selectedKec.panganSkor, { decimalPlaces: 1 });
-    animSidePanel(sideAirRef, selectedKec.airBersih, {
-      decimalPlaces: 1,
-      formattingFn: (n) => n.toFixed(1) + '%'
-    });
-    animSidePanel(sideStuntingRef, selectedKec.stunting, {
-      decimalPlaces: 1,
-      formattingFn: (n) => n.toFixed(1) + '%'
-    });
-    animSidePanel(sidePendudukRef, selectedKec.penduduk, {
-      formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' jiwa'
-    });
+    if (selectedKec) {
+      animSidePanel(sideIkpRef, selectedKec.panganSkor, { decimalPlaces: 1 });
+      animSidePanel(sideAirRef, selectedKec.airBersih, {
+        decimalPlaces: 1,
+        formattingFn: (n) => n.toFixed(1) + '%'
+      });
+      animSidePanel(sideStuntingRef, selectedKec.stunting, {
+        decimalPlaces: 1,
+        formattingFn: (n) => n.toFixed(1) + '%'
+      });
+      animSidePanel(sidePendudukRef, selectedKec.penduduk, {
+        formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' jiwa'
+      });
+    } else {
+      animSidePanel(sideIkpRef, KOTA_BOGOR_STATS.skorIKP || 88.2, { decimalPlaces: 1 });
+      animSidePanel(sideAirRef, parseFloat(KOTA_BOGOR_STATS.aksesAirBersih) || 89.6, {
+        decimalPlaces: 1,
+        formattingFn: (n) => n.toFixed(1) + '%'
+      });
+      animSidePanel(sideStuntingRef, parseFloat(KOTA_BOGOR_STATS.prevalensiStunting) || 15.4, {
+        decimalPlaces: 1,
+        formattingFn: (n) => n.toFixed(1) + '%'
+      });
+      animSidePanel(sidePendudukRef, 1092800, {
+        formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' jiwa'
+      });
+    }
   }, [selectedKec]);
 
   const handleScrollToMap = (targetKec = null) => {
     if (targetKec) {
       setSelectedKec(targetKec);
+      setSelectedKel(null);
     }
     const el = document.getElementById('peta-spasial');
     if (el) {
@@ -710,11 +732,6 @@ export default function LandingPageView({ onOpenLogin }) {
                 </div>
               </div>
 
-              <div className="stunting-action-pills">
-                <span className="stunting-pill-item"><CheckCircle2 size={13} className="text-teal" /> Penimbangan & Antropometri</span>
-                <span className="stunting-pill-item"><CheckCircle2 size={13} className="text-teal" /> Distribusi Pangan PMT</span>
-                <span className="stunting-pill-item"><CheckCircle2 size={13} className="text-teal" /> Edukasi Pola Asuh Sehat</span>
-              </div>
 
               <div className="stunting-footer-row">
                 <button
@@ -840,13 +857,16 @@ export default function LandingPageView({ onOpenLogin }) {
               </thead>
               <tbody>
                 {KECAMATAN_KOTA_BOGOR.map((kec) => {
-                  const isSelected = selectedKec.id === kec.id;
+                  const isSelected = selectedKec?.id === kec.id;
                   const statusClass = kec.panganStatus.toLowerCase().replace(/\s+/g, '-');
                   return (
                     <tr
                       key={kec.id}
                       className={`ladang-row ${isSelected ? 'row-selected' : ''}`}
-                      onClick={() => setSelectedKec(kec)}
+                      onClick={() => {
+                        setSelectedKec(kec);
+                        setSelectedKel(null);
+                      }}
                     >
                       <td>
                         <div className="kec-name-cell">
@@ -918,105 +938,743 @@ export default function LandingPageView({ onOpenLogin }) {
           <div className="ladang-card-box map-main-panel">
             <MapView
               selectedKecamatan={selectedKec}
-              onSelectKecamatan={(kec) => setSelectedKec(kec)}
+              selectedKelurahan={selectedKel}
+              activeLayerFilter={activeMapLayer}
+              onActiveLayerChange={(newLayer) => setActiveMapLayer(newLayer)}
+              onSelectKecamatan={(kec) => {
+                setSelectedKec(kec);
+                setSelectedKel(null);
+              }}
+              onSelectKelurahan={(kel) => {
+                setSelectedKel(kel);
+                if (kel) {
+                  const parent = KECAMATAN_KOTA_BOGOR.find(
+                    (k) => k.nama.toLowerCase() === (kel.kecamatan || '').toLowerCase()
+                  );
+                  if (parent) setSelectedKec(parent);
+                }
+              }}
               height={isMobile ? '420px' : '580px'}
             />
           </div>
 
           {/* Analysis Sidebar (25-30% Area) */}
           <div className="ladang-card-box analysis-side-panel">
-            <div className="analysis-header">
-              <div className="ah-meta">
-                <span className="ah-id-code">{selectedKec.id}</span>
-                <span className={`status-badge status-${selectedKec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
-                  {selectedKec.panganStatus}
-                </span>
+            {selectedKel ? (
+              /* MODE DETAIL KELURAHAN TERPILIH */
+              (() => {
+                const kelActiveVal = selectedKel[LAYER_DEFINITIONS[activeMapLayer]?.propKey || 'stunting'];
+                const kelActiveClass = getIndicatorClassification(activeMapLayer, kelActiveVal);
+
+                const classStunt = getIndicatorClassification('stunting', selectedKel.stunting);
+                const classKemiskinan = getIndicatorClassification('kemiskinan', selectedKel.kemiskinan);
+                const classPangan = getIndicatorClassification('pangan', selectedKel.kerentananPangan);
+                const classAir = getIndicatorClassification('air', selectedKel.airBersih);
+
+                return (
+                  <div className="kelurahan-detail-view animate-fade-in">
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedKel(null)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          padding: '6px 12px',
+                          fontSize: '11.5px',
+                          fontWeight: 700,
+                          color: '#0369a1',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <span>←</span> {selectedKec ? `Kembali ke Kec. ${selectedKec.nama}` : 'Kembali ke Seluruh Wilayah'}
+                      </button>
+
+                      {selectedKec && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedKel(null);
+                            setSelectedKec(null);
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            background: '#ffffff',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '6px',
+                            padding: '6px 10px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            color: '#475569',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <span>🌐</span> Seluruh Wilayah
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="analysis-header">
+                      <div className="ah-meta">
+                        <span className="ah-id-code">{selectedKel.id}</span>
+                        <span
+                          className="status-badge"
+                          style={{
+                            background: kelActiveClass.bg,
+                            color: kelActiveClass.textBadge,
+                            border: `1.5px solid ${kelActiveClass.border}`,
+                            fontWeight: 800
+                          }}
+                        >
+                          {LAYER_DEFINITIONS[activeMapLayer].shortLabel}: {kelActiveClass.status}
+                        </span>
+                      </div>
+                      <h3 className="ah-title">Kelurahan {selectedKel.nama}</h3>
+                      <p className="ah-sub">Kecamatan {selectedKel.kecamatan} • Kota Bogor</p>
+                    </div>
+
+                    <div className="analysis-divider" />
+
+                    <p className="analysis-description">
+                      Data geospasial mikro tingkat kelurahan. Memetakan indikator prevalensi stunting balita, kemiskinan warga, kerentanan pasokan pangan, dan sanitasi air bersih PDAM.
+                    </p>
+
+                    <div className="analysis-divider" />
+
+                    {/* 4 Pilar Indikator Mikro Kelurahan */}
+                    <div className="indicator-group-list">
+                      <span className="group-title">INDIKATOR MIKRO KELURAHAN</span>
+
+                      {/* Stunting */}
+                      <div
+                        className="indicator-row"
+                        style={{
+                          background: activeMapLayer === 'stunting' ? classStunt.bg : 'transparent',
+                          borderRadius: 6,
+                          padding: activeMapLayer === 'stunting' ? '6px 8px' : '4px 0',
+                          border: activeMapLayer === 'stunting' ? `1px solid ${classStunt.border}` : 'none'
+                        }}
+                      >
+                        <div className="ir-label">
+                          <HeartPulse size={14} style={{ color: classStunt.color }} />
+                          <span>Prevalensi Balita Stunting</span>
+                        </div>
+                        <span className="ir-val" style={{ color: classStunt.textBadge }}>
+                          <b>{selectedKel.stunting}%</b> <small>({classStunt.shortTier})</small>
+                        </span>
+                        <div className="ir-progress-track">
+                          <div
+                            className="ir-progress-fill"
+                            style={{ width: `${Math.min((selectedKel.stunting / 25) * 100, 100)}%`, background: classStunt.color }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Kemiskinan */}
+                      <div
+                        className="indicator-row"
+                        style={{
+                          background: activeMapLayer === 'kemiskinan' ? classKemiskinan.bg : 'transparent',
+                          borderRadius: 6,
+                          padding: activeMapLayer === 'kemiskinan' ? '6px 8px' : '4px 0',
+                          border: activeMapLayer === 'kemiskinan' ? `1px solid ${classKemiskinan.border}` : 'none'
+                        }}
+                      >
+                        <div className="ir-label">
+                          <Users size={14} style={{ color: classKemiskinan.color }} />
+                          <span>Tingkat Kemiskinan / DTKS</span>
+                        </div>
+                        <span className="ir-val" style={{ color: classKemiskinan.textBadge }}>
+                          <b>{selectedKel.kemiskinan}%</b> <small>({classKemiskinan.shortTier})</small>
+                        </span>
+                        <div className="ir-progress-track">
+                          <div
+                            className="ir-progress-fill"
+                            style={{ width: `${Math.min((selectedKel.kemiskinan / 15) * 100, 100)}%`, background: classKemiskinan.color }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Kerentanan Pangan */}
+                      <div
+                        className="indicator-row"
+                        style={{
+                          background: activeMapLayer === 'pangan' ? classPangan.bg : 'transparent',
+                          borderRadius: 6,
+                          padding: activeMapLayer === 'pangan' ? '6px 8px' : '4px 0',
+                          border: activeMapLayer === 'pangan' ? `1px solid ${classPangan.border}` : 'none'
+                        }}
+                      >
+                        <div className="ir-label">
+                          <Utensils size={14} style={{ color: classPangan.color }} />
+                          <span>Skor Kerentanan Pangan</span>
+                        </div>
+                        <span className="ir-val" style={{ color: classPangan.textBadge }}>
+                          <b>{selectedKel.kerentananPangan}</b> / 100 <small>({classPangan.shortTier})</small>
+                        </span>
+                        <div className="ir-progress-track">
+                          <div
+                            className="ir-progress-fill"
+                            style={{ width: `${Math.min(selectedKel.kerentananPangan, 100)}%`, background: classPangan.color }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Air Bersih */}
+                      <div
+                        className="indicator-row"
+                        style={{
+                          background: activeMapLayer === 'air' ? classAir.bg : 'transparent',
+                          borderRadius: 6,
+                          padding: activeMapLayer === 'air' ? '6px 8px' : '4px 0',
+                          border: activeMapLayer === 'air' ? `1px solid ${classAir.border}` : 'none'
+                        }}
+                      >
+                        <div className="ir-label">
+                          <Droplets size={14} style={{ color: classAir.color }} />
+                          <span>Akses Air Bersih Layak</span>
+                        </div>
+                        <span className="ir-val" style={{ color: classAir.textBadge }}>
+                          <b>{selectedKel.airBersih}%</b> <small>({classAir.shortTier})</small>
+                        </span>
+                        <div className="ir-progress-track">
+                          <div
+                            className="ir-progress-fill"
+                            style={{ width: `${Math.min(selectedKel.airBersih, 100)}%`, background: classAir.color }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="analysis-divider" />
+
+                    {/* Profil Geospasial & Komparasi */}
+                    <div className="meta-stats-section">
+                      <span className="group-title">KOMPARASI WILAYAH</span>
+
+                      <div className="meta-data-row">
+                        <span className="md-label">Kecamatan Induk</span>
+                        <span className="md-value">Kec. {selectedKel.kecamatan}</span>
+                      </div>
+
+                      {(() => {
+                        const parentKec = KECAMATAN_KOTA_BOGOR.find(
+                          (k) => k.nama.toLowerCase() === (selectedKel.kecamatan || '').toLowerCase()
+                        );
+                        const kecAvgStunting = parentKec ? parentKec.stunting : 14.5;
+                        const diff = selectedKel.stunting - kecAvgStunting;
+                        return (
+                          <div className="meta-data-row">
+                            <span className="md-label">Stunting vs Rata-rata Kec.</span>
+                            <span className="md-value" style={{ fontWeight: 700, color: diff > 0 ? '#dc2626' : '#16a34a' }}>
+                              {diff > 0
+                                ? `+${diff.toFixed(1)}% (Di atas rata-rata)`
+                                : `${diff.toFixed(1)}% (Lebih baik)`}
+                            </span>
+                          </div>
+                        );
+                      })()}
+
+                      <div className="meta-data-row">
+                        <span className="md-label">Rekomendasi Intervensi</span>
+                        <span className="md-value" style={{ fontWeight: 600 }}>
+                          {selectedKel.stunting >= 18 ? 'PMT Rutin, Jamban Sehat, & Air PDAM' : (selectedKel.stunting >= 14 ? 'Pendampingan Gizi Balita Posyandu' : 'Pemantauan Berkala Terpadu')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="analysis-footer">
+                      <span className="af-coord">Lat: {selectedKel.lat}, Lng: {selectedKel.lng}</span>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : selectedKec ? (
+              /* MODE RINGKASAN KECAMATAN TERPILIH */
+              <div className="kecamatan-detail-view animate-fade-in">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedKec(null);
+                    setSelectedKel(null);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#f8fafc',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    padding: '5px 11px',
+                    fontSize: '11.5px',
+                    fontWeight: 600,
+                    color: '#0284c7',
+                    cursor: 'pointer',
+                    marginBottom: '12px',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  <span>←</span> Tampilkan Ringkasan Seluruh Kota Bogor
+                </button>
+
+                <div className="analysis-header">
+                  <div className="ah-meta">
+                    <span className="ah-id-code">{selectedKec.id}</span>
+                    <span className={`status-badge status-${selectedKec.panganStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {selectedKec.panganStatus}
+                    </span>
+                  </div>
+                  <h3 className="ah-title">Kecamatan {selectedKec.nama}</h3>
+                  <p className="ah-sub">Pusat Wilayah: {selectedKec.pusat}</p>
+                </div>
+
+                <div className="analysis-divider" />
+
+                <p className="analysis-description">
+                  {selectedKec.deskripsi}
+                </p>
+
+                <div className="analysis-divider" />
+
+                {/* Core Spatial Indicators */}
+                <div className="indicator-group-list">
+                  <span className="group-title">INDIKATOR UTAMA</span>
+
+                  <div className="indicator-row">
+                    <div className="ir-label">
+                      <Utensils size={14} className="text-primary-green" />
+                      <span>Indeks Ketahanan Pangan (IKP)</span>
+                    </div>
+                    <span className="ir-val"><b ref={sideIkpRef}>{selectedKec.panganSkor}</b> / 100</span>
+                    <div className="ir-progress-track">
+                      <div className="ir-progress-fill bg-green" style={{ width: `${selectedKec.panganSkor}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="indicator-row">
+                    <div className="ir-label">
+                      <Droplets size={14} className="text-water-cyan" />
+                      <span>Akses Air Bersih Layak</span>
+                    </div>
+                    <span className="ir-val"><b ref={sideAirRef}>{selectedKec.airBersih}%</b></span>
+                    <div className="ir-progress-track">
+                      <div className="ir-progress-fill bg-cyan" style={{ width: `${selectedKec.airBersih}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="indicator-row">
+                    <div className="ir-label">
+                      <HeartPulse size={14} className="text-danger" />
+                      <span>Prevalensi Stunting</span>
+                    </div>
+                    <span className={`ir-val ${selectedKec.stunting > 15 ? 'text-danger fw-bold' : ''}`}>
+                      <b ref={sideStuntingRef}>{selectedKec.stunting}%</b>
+                    </span>
+                    <div className="ir-progress-track">
+                      <div
+                        className="ir-progress-fill bg-danger"
+                        style={{ width: `${Math.min((selectedKec.stunting / 25) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="analysis-divider" />
+
+                {/* Demographic & Infrastructure Metadata */}
+                <div className="meta-stats-section">
+                  <span className="group-title">PROFIL & FASILITAS</span>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Jumlah Penduduk</span>
+                    <span className="md-value" ref={sidePendudukRef}>{selectedKec.penduduk.toLocaleString('id-ID')} jiwa</span>
+                  </div>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Fasilitas Kesehatan & Pasar</span>
+                    <span className="md-value">{selectedKec.faskes} Faskes • {selectedKec.pasarTradisional} Pasar</span>
+                  </div>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Tingkat Kemiskinan</span>
+                    <span className="md-value">{selectedKec.tingkatKemiskinan}</span>
+                  </div>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Sumber Air Dominan</span>
+                    <span className="md-value">{selectedKec.sumberAirDominan}</span>
+                  </div>
+                </div>
+
+                <div className="analysis-divider" />
+
+                {/* Daftar Kelurahan Cepat (Interactive Chips Sesuai Layer Aktif) */}
+                <div className="meta-stats-section">
+                  <span className="group-title">
+                    KELURAHAN DI KEC. {selectedKec.nama.toUpperCase()} ({KELURAHAN_68_BOGOR.filter(k => k.kecamatan === selectedKec.nama).length})
+                  </span>
+                  <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', lineHeight: 1.4 }}>
+                    Menampilkan nilai <strong>{LAYER_DEFINITIONS[activeMapLayer]?.label}</strong>. Klik kelurahan untuk fokus di peta:
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                    {KELURAHAN_68_BOGOR.filter(k => k.kecamatan === selectedKec.nama).map((k) => {
+                      const kVal = k[LAYER_DEFINITIONS[activeMapLayer]?.propKey || 'stunting'];
+                      const kClass = getIndicatorClassification(activeMapLayer, kVal);
+                      return (
+                        <button
+                          key={k.id}
+                          type="button"
+                          onClick={() => setSelectedKel(k)}
+                          style={{
+                            padding: '4px 7px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            borderRadius: '5px',
+                            border: `1px solid ${kClass.border}`,
+                            background: '#ffffff',
+                            color: '#1e293b',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = kClass.color;
+                            e.currentTarget.style.background = kClass.bg;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = kClass.border;
+                            e.currentTarget.style.background = '#ffffff';
+                          }}
+                        >
+                          <span>📍 {k.nama}</span>
+                          <span style={{
+                            fontSize: '9.5px',
+                            fontWeight: 800,
+                            padding: '1px 5px',
+                            borderRadius: '3px',
+                            background: kClass.bg,
+                            color: kClass.textBadge,
+                            border: `1px solid ${kClass.border}`
+                          }}>
+                            {kVal}{LAYER_DEFINITIONS[activeMapLayer]?.unit || ''}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="analysis-footer">
+                  <span className="af-coord">Lat: {selectedKec.lat}, Lng: {selectedKec.lng}</span>
+                </div>
               </div>
-              <h3 className="ah-title">Kecamatan {selectedKec.nama}</h3>
-              <p className="ah-sub">Pusat Wilayah: {selectedKec.pusat}</p>
-            </div>
-
-            <div className="analysis-divider" />
-
-            <p className="analysis-description">
-              {selectedKec.deskripsi}
-            </p>
-
-            <div className="analysis-divider" />
-
-            {/* Core Spatial Indicators */}
-            <div className="indicator-group-list">
-              <span className="group-title">INDIKATOR UTAMA</span>
-
-              <div className="indicator-row">
-                <div className="ir-label">
-                  <Utensils size={14} className="text-primary-green" />
-                  <span>Indeks Ketahanan Pangan (IKP)</span>
+            ) : (
+              /* MODE RINGKASAN SELURUH KOTA BOGOR (ALL 68 KELURAHAN) */
+              <div className="kota-bogor-detail-view animate-fade-in">
+                <div className="analysis-header">
+                  <div className="ah-meta">
+                    <span className="ah-id-code" style={{ background: '#fef3c7', color: '#b45309' }}>KOTA-BOGOR</span>
+                    {(() => {
+                      let cityVal = 15.4;
+                      if (activeMapLayer === 'stunting') cityVal = 15.4;
+                      else if (activeMapLayer === 'kemiskinan') cityVal = 5.8;
+                      else if (activeMapLayer === 'pangan') cityVal = 32.5;
+                      else if (activeMapLayer === 'air') cityVal = 89.6;
+                      const cityClass = getIndicatorClassification(activeMapLayer, cityVal);
+                      return (
+                        <span
+                          className="status-badge"
+                          style={{
+                            background: cityClass.bg,
+                            color: cityClass.textBadge,
+                            border: `1.5px solid ${cityClass.border}`,
+                            fontWeight: 800
+                          }}
+                        >
+                          {LAYER_DEFINITIONS[activeMapLayer].shortLabel}: {cityClass.status}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <h3 className="ah-title">Kota Bogor (Seluruh Wilayah)</h3>
+                  <p className="ah-sub">Pusat Pemerintahan: Balai Kota • 6 Kecamatan • 68 Kelurahan</p>
                 </div>
-                <span className="ir-val"><b ref={sideIkpRef}>{selectedKec.panganSkor}</b> / 100</span>
-                <div className="ir-progress-track">
-                  <div className="ir-progress-fill bg-green" style={{ width: `${selectedKec.panganSkor}%` }} />
-                </div>
-              </div>
 
-              <div className="indicator-row">
-                <div className="ir-label">
-                  <Droplets size={14} className="text-water-cyan" />
-                  <span>Akses Air Bersih Layak</span>
-                </div>
-                <span className="ir-val"><b ref={sideAirRef}>{selectedKec.airBersih}%</b></span>
-                <div className="ir-progress-track">
-                  <div className="ir-progress-fill bg-cyan" style={{ width: `${selectedKec.airBersih}%` }} />
-                </div>
-              </div>
+                <div className="analysis-divider" />
 
-              <div className="indicator-row">
-                <div className="ir-label">
-                  <HeartPulse size={14} className="text-danger" />
-                  <span>Prevalensi Stunting</span>
-                </div>
-                <span className={`ir-val ${selectedKec.stunting > 15 ? 'text-danger fw-bold' : ''}`}>
-                  <b ref={sideStuntingRef}>{selectedKec.stunting}%</b>
-                </span>
-                <div className="ir-progress-track">
+                <p className="analysis-description">
+                  Data geospasial agregat Kota Bogor. Menampilkan sebaran komprehensif 68 kelurahan pada 6 kecamatan dalam pemantauan ketahanan pangan, penanganan stunting balita, dan sanitasi air bersih PDAM.
+                </p>
+
+                <div className="analysis-divider" />
+
+                {/* Core Spatial Indicators Kota */}
+                <div className="indicator-group-list">
+                  <span className="group-title">INDIKATOR AGREGAT KOTA</span>
+
                   <div
-                    className="ir-progress-fill bg-danger"
-                    style={{ width: `${Math.min((selectedKec.stunting / 25) * 100, 100)}%` }}
-                  />
+                    className="indicator-row"
+                    style={{
+                      background: activeMapLayer === 'pangan' ? '#f0fdf4' : 'transparent',
+                      borderRadius: 6,
+                      padding: activeMapLayer === 'pangan' ? '6px 8px' : '4px 0',
+                      border: activeMapLayer === 'pangan' ? '1px solid #bbf7d0' : 'none'
+                    }}
+                  >
+                    <div className="ir-label">
+                      <Utensils size={14} className="text-primary-green" />
+                      <span>Indeks Ketahanan Pangan (IKP)</span>
+                    </div>
+                    <span className="ir-val"><b ref={sideIkpRef}>88.2</b> / 100 <small style={{ color: '#16a34a', fontWeight: 700 }}>(Sangat Tahan)</small></span>
+                    <div className="ir-progress-track">
+                      <div className="ir-progress-fill bg-green" style={{ width: '88.2%' }} />
+                    </div>
+                  </div>
+
+                  <div
+                    className="indicator-row"
+                    style={{
+                      background: activeMapLayer === 'air' ? '#f0fdf4' : 'transparent',
+                      borderRadius: 6,
+                      padding: activeMapLayer === 'air' ? '6px 8px' : '4px 0',
+                      border: activeMapLayer === 'air' ? '1px solid #bbf7d0' : 'none'
+                    }}
+                  >
+                    <div className="ir-label">
+                      <Droplets size={14} className="text-water-cyan" />
+                      <span>Akses Air Bersih Layak</span>
+                    </div>
+                    <span className="ir-val"><b ref={sideAirRef}>89.6%</b> <small style={{ color: '#0284c7', fontWeight: 700 }}>(Layak Terpadu)</small></span>
+                    <div className="ir-progress-track">
+                      <div className="ir-progress-fill bg-cyan" style={{ width: '89.6%' }} />
+                    </div>
+                  </div>
+
+                  <div
+                    className="indicator-row"
+                    style={{
+                      background: activeMapLayer === 'stunting' ? '#fefce8' : 'transparent',
+                      borderRadius: 6,
+                      padding: activeMapLayer === 'stunting' ? '6px 8px' : '4px 0',
+                      border: activeMapLayer === 'stunting' ? '1px solid #fef08a' : 'none'
+                    }}
+                  >
+                    <div className="ir-label">
+                      <HeartPulse size={14} className="text-danger" />
+                      <span>Prevalensi Stunting Kota</span>
+                    </div>
+                    <span className="ir-val">
+                      <b ref={sideStuntingRef}>15.4%</b> <small style={{ color: '#ca8a04', fontWeight: 700 }}>(Target &lt;14%)</small>
+                    </span>
+                    <div className="ir-progress-track">
+                      <div
+                        className="ir-progress-fill bg-danger"
+                        style={{ width: `${Math.min((15.4 / 25) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="analysis-divider" />
+
+                {/* Profil & Fasilitas Agregat */}
+                <div className="meta-stats-section">
+                  <span className="group-title">PROFIL & FASILITAS KOTA</span>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Total Penduduk</span>
+                    <span className="md-value" ref={sidePendudukRef}>1.092.800 jiwa</span>
+                  </div>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Wilayah Administrasi</span>
+                    <span className="md-value">6 Kecamatan • 68 Kelurahan</span>
+                  </div>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Fasilitas Publik</span>
+                    <span className="md-value">64 Faskes • 17 Pasar Tradisional</span>
+                  </div>
+
+                  <div className="meta-data-row">
+                    <span className="md-label">Sumber Air Dominan</span>
+                    <span className="md-value">PDAM Tirta Pakuan Kota Bogor</span>
+                  </div>
+                </div>
+
+                <div className="analysis-divider" />
+
+                {/* DAFTAR SEMUA 68 KELURAHAN SE-KOTA BOGOR */}
+                <div className="meta-stats-section">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span className="group-title" style={{ margin: 0 }}>
+                      KELURAHAN SE-KOTA BOGOR (68)
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                      {(() => {
+                        const totalMatch = KELURAHAN_68_BOGOR.filter((k) => {
+                          const matchKec = panelKecTab === 'Semua' || k.kecamatan === panelKecTab;
+                          const matchSearch =
+                            !panelKelSearch ||
+                            k.nama.toLowerCase().includes(panelKelSearch.toLowerCase()) ||
+                            k.kecamatan.toLowerCase().includes(panelKelSearch.toLowerCase());
+                          return matchKec && matchSearch;
+                        }).length;
+                        return `${totalMatch} ditampilkan`;
+                      })()}
+                    </span>
+                  </div>
+
+                  <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', lineHeight: 1.4 }}>
+                    Menampilkan nilai <strong>{LAYER_DEFINITIONS[activeMapLayer]?.label}</strong>. Klik kelurahan untuk fokus di peta & membuka detail:
+                  </p>
+
+                  {/* Filter Tab Kecamatan */}
+                  <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '6px' }}>
+                    {['Semua', 'Bogor Tengah', 'Bogor Utara', 'Bogor Selatan', 'Bogor Timur', 'Bogor Barat', 'Tanah Sareal'].map((tab) => {
+                      const isActive = panelKecTab === tab;
+                      return (
+                        <button
+                          key={tab}
+                          type="button"
+                          onClick={() => setPanelKecTab(tab)}
+                          style={{
+                            padding: '3px 7px',
+                            fontSize: '10.5px',
+                            fontWeight: isActive ? 700 : 500,
+                            borderRadius: '4px',
+                            border: isActive ? '1px solid #0284c7' : '1px solid #e2e8f0',
+                            background: isActive ? '#f0f9ff' : '#ffffff',
+                            color: isActive ? '#0369a1' : '#64748b',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          {tab === 'Semua' ? 'Semua (68)' : tab.replace('Bogor ', 'B. ')}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Pencarian Kelurahan Cepat */}
+                  <div style={{ marginBottom: '8px' }}>
+                    <input
+                      type="text"
+                      placeholder="🔍 Cari nama kelurahan..."
+                      value={panelKelSearch}
+                      onChange={(e) => setPanelKelSearch(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '5px 10px',
+                        fontSize: '11.5px',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px',
+                        outline: 'none',
+                        background: '#f8fafc',
+                        color: '#0f172a'
+                      }}
+                    />
+                  </div>
+
+                  {/* Scrollable Chips List 68 Kelurahan */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '5px',
+                      maxHeight: '260px',
+                      overflowY: 'auto',
+                      paddingRight: '3px'
+                    }}
+                  >
+                    {KELURAHAN_68_BOGOR
+                      .filter((k) => {
+                        const matchKec = panelKecTab === 'Semua' || k.kecamatan === panelKecTab;
+                        const matchSearch =
+                          !panelKelSearch ||
+                          k.nama.toLowerCase().includes(panelKelSearch.toLowerCase()) ||
+                          k.kecamatan.toLowerCase().includes(panelKelSearch.toLowerCase());
+                        return matchKec && matchSearch;
+                      })
+                      .map((k) => {
+                        const kVal = k[LAYER_DEFINITIONS[activeMapLayer]?.propKey || 'stunting'];
+                        const kClass = getIndicatorClassification(activeMapLayer, kVal);
+                        return (
+                          <button
+                            key={k.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedKel(k);
+                              const parent = KECAMATAN_KOTA_BOGOR.find(
+                                (item) => item.nama.toLowerCase() === (k.kecamatan || '').toLowerCase()
+                              );
+                              if (parent) setSelectedKec(parent);
+                            }}
+                            style={{
+                              padding: '4px 7px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              borderRadius: '5px',
+                              border: `1px solid ${kClass.border}`,
+                              background: '#ffffff',
+                              color: '#1e293b',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              transition: 'all 0.15s',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = kClass.color;
+                              e.currentTarget.style.background = kClass.bg;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = kClass.border;
+                              e.currentTarget.style.background = '#ffffff';
+                            }}
+                          >
+                            <span>📍 {k.nama}</span>
+                            {panelKecTab === 'Semua' && (
+                              <small style={{ color: '#94a3b8', fontSize: '9px', fontWeight: 500 }}>
+                                ({k.kecamatan.replace('Bogor ', 'B.')})
+                              </small>
+                            )}
+                            <span
+                              style={{
+                                fontSize: '9.5px',
+                                fontWeight: 800,
+                                padding: '1px 5px',
+                                borderRadius: '3px',
+                                background: kClass.bg,
+                                color: kClass.textBadge,
+                                border: `1px solid ${kClass.border}`
+                              }}
+                            >
+                              {kVal}{LAYER_DEFINITIONS[activeMapLayer]?.unit || ''}
+                            </span>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                <div className="analysis-footer">
+                  <span className="af-coord">Koordinat Pusat: Lat: -6.5971, Lng: 106.7949 (Balai Kota)</span>
                 </div>
               </div>
-            </div>
-
-            <div className="analysis-divider" />
-
-            {/* Demographic & Infrastructure Metadata */}
-            <div className="meta-stats-section">
-              <span className="group-title">PROFIL & FASILITAS</span>
-
-              <div className="meta-data-row">
-                <span className="md-label">Jumlah Penduduk</span>
-                <span className="md-value" ref={sidePendudukRef}>{selectedKec.penduduk.toLocaleString('id-ID')} jiwa</span>
-              </div>
-
-              <div className="meta-data-row">
-                <span className="md-label">Fasilitas Kesehatan & Pasar</span>
-                <span className="md-value">{selectedKec.faskes} Faskes • {selectedKec.pasarTradisional} Pasar</span>
-              </div>
-
-              <div className="meta-data-row">
-                <span className="md-label">Tingkat Kemiskinan</span>
-                <span className="md-value">{selectedKec.tingkatKemiskinan}</span>
-              </div>
-
-              <div className="meta-data-row">
-                <span className="md-label">Sumber Air Dominan</span>
-                <span className="md-value">{selectedKec.sumberAirDominan}</span>
-              </div>
-            </div>
-
-            <div className="analysis-footer">
-              <span className="af-coord">Lat: {selectedKec.lat}, Lng: {selectedKec.lng}</span>
-            </div>
+            )}
           </div>
         </div>
       </section>
@@ -1220,7 +1878,7 @@ export default function LandingPageView({ onOpenLogin }) {
               </div>
               <div>
                 <h3>NutriMap Kota Bogor</h3>
-                <p>Platform SIG Spasial Resmi Pemerintah Kota Bogor, Jawa Barat</p>
+                <p>Platform SIG Spasial Kota Bogor, Jawa Barat</p>
               </div>
             </div>
 

@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { Droplets, CheckCircle, AlertCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
-import pdamFacilityImg from '../assets/pdam-facility.jpg';
+import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import pdamFacilityImg from '../../assets/pdam-facility.jpg';
 
 export default function CleanWaterView() {
   const sortedByAir = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.airBersih - a.airBersih);

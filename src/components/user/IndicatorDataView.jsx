@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { TableProperties, Search, Filter, AlertTriangle, Download, FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { KECAMATAN_DATA, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
+import { KECAMATAN_DATA, FOOD_SECURITY_CATEGORIES } from '../../data/bogorData';
 
 export default function IndicatorDataView() {
   const [search, setSearch] = useState('');

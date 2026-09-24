@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserCheck, Shield, Plus, Key, CheckCircle, Lock } from 'lucide-react';
-import { USER_ROLES } from '../data/bogorData';
+import { USER_ROLES } from '../../data/bogorData';
 
 export default function AdminDashboardView({ currentUser }) {
   return (

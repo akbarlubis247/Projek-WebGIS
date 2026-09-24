@@ -21,13 +21,13 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
-import MapView from './MapView';
+import MapView from '../common/MapView';
 import {
   KOTA_BOGOR_STATS,
   KECAMATAN_KOTA_BOGOR,
   MONTHLY_TREND,
   FOOD_SECURITY_CATEGORIES
-} from '../data/bogorData';
+} from '../../data/bogorData';
 
 export default function DashboardView({ onNavigate, onSelectKecamatan }) {
   const [selectedKec, setSelectedKec] = useState(KECAMATAN_KOTA_BOGOR[0]);
