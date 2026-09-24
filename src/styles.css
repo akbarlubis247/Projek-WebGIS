@@ -4487,7 +4487,21 @@ a {
 .status-pill-sm.rawan { background: #FFEDD5; color: #C2410C; border: 1px solid #FED7AA; }
 .status-pill-sm.sangat-rawan { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
 
-/* Institutional Buttons */
+.rank-item .status-pill-sm {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.rank-item .status-pill-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
 .primary-btn {
   padding: 8px 16px;
   background: var(--primary-green);
