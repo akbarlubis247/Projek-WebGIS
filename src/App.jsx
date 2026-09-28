@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-import LandingPageView from './components/LandingPageView';
+import PublicOverview from './components/PublicOverview';
 import SuperAdminView from './components/SuperAdminView';
 import DashboardView from './components/DashboardView';
 import MapExplorerView from './components/MapExplorerView';
@@ -15,12 +15,9 @@ import DataEntryView from './components/DataEntryView';
 import FoodSafetyMgmtView from './components/FoodSafetyMgmtView';
 import AboutView from './components/AboutView';
 import LoginModal from './components/LoginModal';
-import IntroOverlay from './components/IntroOverlay';
 import { INITIAL_ADMINS_LIST } from './data/bogorData';
 
 export default function App() {
-  // Intro Screen State
-  const [showIntro, setShowIntro] = useState(true);
 
   // Roles: 'guest' (Public Warga) | 'admin' (Staff Admin SIG) | 'superadmin' (Super Admin Management)
   const [currentUser, setCurrentUser] = useState({
@@ -78,7 +75,7 @@ export default function App() {
     switch (activePage) {
       case 'landing':
         return (
-          <LandingPageView
+          <PublicOverview
             onOpenLogin={() => setIsLoginModalOpen(true)}
             onSelectKecamatan={setSelectedKecamatan}
           />
@@ -119,7 +116,7 @@ export default function App() {
         return <AboutView />;
       default:
         return (
-          <LandingPageView
+          <PublicOverview
             onOpenLogin={() => setIsLoginModalOpen(true)}
             onSelectKecamatan={setSelectedKecamatan}
           />
@@ -132,12 +129,6 @@ export default function App() {
 
   return (
     <>
-      {/* 1. OVERLAY INTERACTIVE INTRO SCREEN */}
-      {showIntro && (
-        <IntroOverlay onFinish={() => setShowIntro(false)} />
-      )}
-
-      {/* 2. MAIN WEBSITE CONTAINER (Reveals smoothly after intro) */}
       <div id="main-website">
         <div className={`app-layout ${isGuest ? 'public-layout-mode' : ''} ${isCollapsed ? 'sidebar-is-collapsed' : ''}`}>
           {/* If Public Guest Mode -> Render Top Navbar only (NO SIDEBAR) */}
@@ -179,6 +170,7 @@ export default function App() {
                 />
 
                 <main className="main-content">
+                  <div className="nm-admin-notice" role="note">Demo UI admin · tanpa autentikasi backend. Data dan perubahan di panel ini bukan data resmi dan belum dipublikasikan.</div>
                   {renderView()}
                 </main>
               </div>

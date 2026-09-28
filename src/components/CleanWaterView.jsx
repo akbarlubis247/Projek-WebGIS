@@ -9,9 +9,6 @@ export default function CleanWaterView() {
   const sortedByAir = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.airBersih - a.airBersih);
 
   const avgAirRef = useRef(null);
-  const southAirRef = useRef(null);
-  const heroProdRef = useRef(null);
-  const heroKecRef = useRef(null);
 
   useEffect(() => {
     const anim = (ref, val, opts = {}) => {
@@ -21,9 +18,6 @@ export default function CleanWaterView() {
     };
 
     anim(avgAirRef, 90.8, { decimalPlaces: 1, suffix: '%' });
-    anim(southAirRef, 81.5, { decimalPlaces: 1, suffix: '%' });
-    anim(heroProdRef, 2400, { formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' L/detik' });
-    anim(heroKecRef, 6);
   }, []);
 
   return (
@@ -46,23 +40,23 @@ export default function CleanWaterView() {
           <div className="sc-info">
             <span className="sc-label">Rata-Rata Akses Air Layak</span>
             <h3 className="sc-value"><span ref={avgAirRef}>90.8%</span> Populasi</h3>
-            <span className="sc-desc">Target RPJMD Kota Bogor 2026: 95%</span>
+            <span className="sc-desc">Nilai contoh · perlu sumber dan tahun data</span>
           </div>
         </div>
         <div className="stat-card emerald">
           <div className="sc-icon"><CheckCircle size={22} /></div>
           <div className="sc-info">
-            <span className="sc-label">Cakupan Tertinggi (&gt;95%)</span>
-            <h3 className="sc-value">Bogor Tengah & Bogor Timur</h3>
-            <span className="sc-desc">Sistem Perpipaan PDAM Tirta Pakuan</span>
+            <span className="sc-label">Ringkasan nilai tertinggi pada data contoh</span>
+            <h3 className="sc-value">Data ilustratif</h3>
+            <span className="sc-desc">Bukan peta cakupan jaringan PDAM</span>
           </div>
         </div>
         <div className="stat-card amber">
           <div className="sc-icon"><AlertCircle size={22} /></div>
           <div className="sc-info">
-            <span className="sc-label">Cakupan Perhatian (&lt;85%)</span>
-            <h3 className="sc-value">Bogor Selatan (<span ref={southAirRef}>81.5%</span>)</h3>
-            <span className="sc-desc">Masih Membutuhkan Perluasan Jaringan PDAM</span>
+            <span className="sc-label">Perlu validasi lebih lanjut</span>
+            <h3 className="sc-value">Data ilustratif</h3>
+            <span className="sc-desc">Tidak menyimpulkan kebutuhan perluasan layanan</span>
           </div>
         </div>
       </div>
@@ -72,29 +66,20 @@ export default function CleanWaterView() {
         <div className="cwh-image-wrap">
           <img
             src={pdamFacilityImg}
-            alt="Instalasi Pengolahan Air Bersih PDAM Tirta Pakuan Kota Bogor"
+            alt="Ilustrasi fasilitas air untuk rancangan tampilan NutriMap"
             className="cwh-img"
           />
         </div>
         <div className="cwh-body">
-          <span className="cwh-tag">Perumda Tirta Pakuan Kota Bogor</span>
-          <h2>Instalasi Pengolahan Air (IPA) Terpadu</h2>
+          <span className="cwh-tag">Layer fasilitas · belum diverifikasi</span>
+          <h2>Air bersih: indikator dan aset perlu dibedakan.</h2>
           <p>
-            Pusat penjernihan air baku menjadi air minum berkualitas tinggi yang disalurkan melalui jaringan perpipaan ke seluruh kecamatan Kota Bogor. Pemantauan geospasial dilakukan guna menjaga keandalan kontinuitas debit serta mutu fisik-kimiawi air secara real-time.
+            Ilustrasi fasilitas pengolahan air untuk kebutuhan desain. Lokasi fasilitas, jaringan perpipaan, cakupan pelayanan, debit, dan mutu air belum dipetakan pada prototipe ini dan memerlukan data resmi.
           </p>
           <div className="cwh-specs">
-            <div className="spec-box">
-              <span className="sb-val" ref={heroProdRef}>2.400 L/detik</span>
-              <span className="sb-lbl">Total Kapasitas Produksi</span>
-            </div>
-            <div className="spec-box">
-              <span className="sb-val"><span ref={heroKecRef}>6</span> Kecamatan</span>
-              <span className="sb-lbl">Cakupan Wilayah Terlayani</span>
-            </div>
-            <div className="spec-box">
-              <span className="sb-val">Permenkes 2/2023</span>
-              <span className="sb-lbl">Standar Baku Mutu Air</span>
-            </div>
+            <div className="spec-box"><span className="sb-val">Titik fasilitas</span><span className="sb-lbl">Menunggu lokasi terverifikasi</span></div>
+            <div className="spec-box"><span className="sb-val">Jaringan pipa</span><span className="sb-lbl">Tidak tersedia di peta ini</span></div>
+            <div className="spec-box"><span className="sb-val">Cakupan layanan</span><span className="sb-lbl">Perlu data resmi terpisah</span></div>
           </div>
         </div>
       </div>

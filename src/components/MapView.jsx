@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import {
   Layers,
   ZoomIn,
@@ -38,10 +39,14 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
   const markersRef = useRef([]);
-  const circlesRef = useRef([]);
   const [activeLayer, setActiveLayer] = useState(activeLayerFilter || 'pangan');
   const [activeBasemap, setActiveBasemap] = useState('light');
-  const [selectedDetails, setSelectedDetails] = useState(null);
+  const [tileError, setTileError] = useState(false);
+  const [tileRetry, setTileRetry] = useState(0);
+
+  useEffect(() => {
+    if (activeLayerFilter) setActiveLayer(activeLayerFilter);
+  }, [activeLayerFilter]);
 
   // Dropdown states
   const [layerDropdownOpen, setLayerDropdownOpen] = useState(false);
@@ -53,7 +58,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
     pangan: 'Ketahanan Pangan',
     air: 'Akses Air Bersih',
     stunting: 'Prevalensi Stunting',
-    faskes: 'Fasilitas & Pasar'
+    faskes: 'Dukungan Fasilitas'
   };
 
   // Close dropdowns on outside click
@@ -80,7 +85,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
       center: [-6.5971, 106.7949],
       zoom: 12,
       zoomControl: false,
-      attributionControl: false
+      attributionControl: true
     });
 
     // Add Initial Basemap Tile Layer
@@ -117,10 +122,16 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
 
   // Update Basemap Tile Layer when activeBasemap changes
   useEffect(() => {
-    if (!tileLayerRef.current) return;
+    if (!mapInstanceRef.current) return;
     const provider = BASEMAP_PROVIDERS[activeBasemap] || BASEMAP_PROVIDERS.light;
-    tileLayerRef.current.setUrl(provider.url);
-  }, [activeBasemap]);
+    if (tileLayerRef.current) tileLayerRef.current.remove();
+    setTileError(false);
+    const tileLayer = L.tileLayer(provider.url, { maxZoom: 19, attribution: provider.attribution });
+    tileLayer.on('tileerror', () => setTileError(true));
+    tileLayer.addTo(mapInstanceRef.current);
+    tileLayerRef.current = tileLayer;
+    return () => { tileLayer.off(); tileLayer.remove(); };
+  }, [activeBasemap, tileRetry]);
 
   // Update map markers when activeLayer changes
   useEffect(() => {
@@ -129,13 +140,10 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
 
     // Clear existing markers and circles
     markersRef.current.forEach(m => map.removeLayer(m));
-    circlesRef.current.forEach(c => map.removeLayer(c));
     markersRef.current = [];
-    circlesRef.current = [];
 
     KECAMATAN_KOTA_BOGOR.forEach(kec => {
       let color = '#16A34A';
-      let radius = kec.penduduk / 500;
 
       if (activeLayer === 'pangan') {
         const cat = FOOD_SECURITY_CATEGORIES.find(c => c.label === kec.panganStatus);
@@ -147,16 +155,6 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
       } else if (activeLayer === 'faskes') {
         color = kec.faskes > 10 ? '#15803D' : '#F59E0B';
       }
-
-      // Add Circle Buffer for spatial footprint representation
-      const circle = L.circle([kec.lat, kec.lng], {
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.16,
-        radius: radius * 3.4,
-        weight: 1.5
-      }).addTo(map);
-      circlesRef.current.push(circle);
 
       // Create Custom SVG Pin Marker
       const customIcon = L.divIcon({
@@ -182,7 +180,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
               ${kec.panganStatus}
             </span>
           </div>
-          <p class="l-pop-desc">${kec.deskripsi}</p>
+          <p class="l-pop-desc">Data contoh frontend · sumber dan periode belum diverifikasi.</p>
           <div class="l-pop-stats">
             <div><small>Penduduk</small><b>${kec.penduduk.toLocaleString('id-ID')} jiwa</b></div>
             <div><small>Skor IKP</small><b>${kec.panganSkor}</b></div>
@@ -199,7 +197,6 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
       marker.bindPopup(popupHtml, { maxWidth: 300 });
 
       marker.on('click', () => {
-        setSelectedDetails(kec);
         if (onSelectKecamatan) onSelectKecamatan(kec);
       });
 
@@ -212,7 +209,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedKecamatan) return;
     mapInstanceRef.current.flyTo([selectedKecamatan.lat, selectedKecamatan.lng], 13, {
-      duration: 1.0
+      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1.0
     });
   }, [selectedKecamatan]);
 
@@ -224,6 +221,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
     <div className="map-view-container" style={{ height }}>
       {/* Map Canvas */}
       <div ref={mapRef} className="leaflet-map-canvas" />
+      {tileError && <div className="nm-tile-error" role="status">Sebagian peta dasar gagal dimuat. Periksa koneksi internet. <button onClick={() => setTileRetry((current) => current + 1)}>Coba lagi</button></div>}
 
       {/* Clean Layer & Basemap Control Dropdowns */}
       <div className="map-control-panel">
@@ -245,7 +243,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
 
           {layerDropdownOpen && (
             <div className="map-dropdown-menu">
-              <div className="dropdown-menu-header">PILIH LAYER INDIKATOR</div>
+              <div className="dropdown-menu-header">PILIH TAMPILAN INDIKATOR</div>
               <button
                 type="button"
                 className={`dropdown-menu-item ${activeLayer === 'pangan' ? 'selected' : ''}`}
@@ -295,7 +293,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
               >
                 <span className="radio-mark" />
                 <Building2 size={14} className="item-icon text-muted" />
-                <span>Fasilitas & Pasar</span>
+                <span>Dukungan Fasilitas</span>
               </button>
             </div>
           )}
@@ -360,7 +358,7 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
           {activeLayer === 'pangan' && 'Klasifikasi Ketahanan Pangan'}
           {activeLayer === 'air' && 'Klasifikasi Akses Air Bersih'}
           {activeLayer === 'stunting' && 'Klasifikasi Stunting Balita'}
-          {activeLayer === 'faskes' && 'Sebaran Fasilitas Kesehatan'}
+          {activeLayer === 'faskes' && 'Jumlah Faskes Contoh per Kecamatan'}
         </span>
 
         {activeLayer === 'pangan' && (
@@ -378,15 +376,15 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
           <div className="legend-items">
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#06B6D4' }} />
-              <span className="legend-lbl">Akses Layak (&gt;90%)</span>
+              <span className="legend-lbl">Akses ≥92% (contoh)</span>
             </div>
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#0284C7' }} />
-              <span className="legend-lbl">Akses Cukup (85–90%)</span>
+              <span className="legend-lbl">Akses 85–&lt;92% (contoh)</span>
             </div>
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#F59E0B' }} />
-              <span className="legend-lbl">Akses Waspada (&lt;85%)</span>
+              <span className="legend-lbl">Akses &lt;85% (contoh)</span>
             </div>
           </div>
         )}
@@ -399,11 +397,11 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
             </div>
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#F59E0B' }} />
-              <span className="legend-lbl">Sedang (10–15%)</span>
+              <span className="legend-lbl">Sedang (10–&lt;15%)</span>
             </div>
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#DC2626' }} />
-              <span className="legend-lbl">Tinggi (&gt;15%)</span>
+              <span className="legend-lbl">Tinggi (≥15%)</span>
             </div>
           </div>
         )}
@@ -412,11 +410,11 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
           <div className="legend-items">
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#15803D' }} />
-              <span className="legend-lbl">Faskes Lengkap (&gt;10 Unit)</span>
+              <span className="legend-lbl">Lebih dari 10 unit (contoh)</span>
             </div>
             <div className="legend-row">
               <span className="legend-color-dot" style={{ backgroundColor: '#F59E0B' }} />
-              <span className="legend-lbl">Faskes Terbatas (≤10 Unit)</span>
+              <span className="legend-lbl">Sampai 10 unit (contoh)</span>
             </div>
           </div>
         )}
@@ -425,7 +423,8 @@ export default function MapView({ selectedKecamatan, onSelectKecamatan, activeLa
       {/* Map Coordinate Metadata Bar */}
       <div className="map-coord-bar">
         <span>Kota Bogor, Jawa Barat</span>
-        <code>-6.5971° S, 106.7949° E</code>
+        <code>6.5971° S, 106.7949° E</code>
+        <span className="map-scope-chip">Ringkasan kecamatan</span>
       </div>
     </div>
   );

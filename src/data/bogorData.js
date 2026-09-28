@@ -129,9 +129,9 @@ export const KECAMATAN_KOTA_BOGOR = [
 export const KECAMATAN_DATA = KECAMATAN_KOTA_BOGOR;
 
 export const INITIAL_ADMINS_LIST = [
-  { id: "ADM-001", nama: "Dr. Ahmad Ridwan", email: "admin@bogorkota.go.id", password: "admin123password", status: "Aktif", ditambahkan: "01 Sep 2026" },
-  { id: "ADM-002", nama: "Siti Rahmawati, S.P.", email: "siti.rahma@bogorkota.go.id", password: "password123", status: "Aktif", ditambahkan: "15 Agu 2026" },
-  { id: "ADM-003", nama: "Budi Santoso, ST", email: "budi.analis@bogorkota.go.id", password: "password123", status: "Aktif", ditambahkan: "20 Agu 2026" },
+  { id: "ADM-001", nama: "Admin Demo 1", email: "admin.demo1@example.test", status: "Aktif", ditambahkan: "01 Sep 2026" },
+  { id: "ADM-002", nama: "Admin Demo 2", email: "admin.demo2@example.test", status: "Aktif", ditambahkan: "15 Agu 2026" },
+  { id: "ADM-003", nama: "Admin Demo 3", email: "admin.demo3@example.test", status: "Aktif", ditambahkan: "20 Agu 2026" },
 ];
 
 export const FOOD_SECURITY_CATEGORIES = [

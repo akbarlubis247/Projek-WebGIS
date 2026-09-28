@@ -1,38 +1,42 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Search,
   Filter,
-  Layers,
   MapPin,
   X,
-  Download,
   Info,
   Building2,
-  Utensils,
-  Droplets,
-  HeartPulse,
-  Sparkles
+  CalendarClock,
+  MapPinned
 } from 'lucide-react';
 import MapView from './MapView';
+import SpatialReadinessPanel from './SpatialReadinessPanel';
 import { KECAMATAN_KOTA_BOGOR, FOOD_SECURITY_CATEGORIES } from '../data/bogorData';
 
-export default function MapExplorerView({ onNavigate }) {
-  const [search, setSearch] = useState('');
+export default function MapExplorerView() {
   const [selectedStatus, setSelectedStatus] = useState('Semua Status');
   const [selectedKec, setSelectedKec] = useState(KECAMATAN_KOTA_BOGOR[0]);
-  const [activeLayerFilter, setActiveLayerFilter] = useState('pangan');
   const [showDrawer, setShowDrawer] = useState(true);
 
-  // Filtered dataset
   const filteredList = KECAMATAN_KOTA_BOGOR.filter((item) => {
-    const matchesSearch = item.nama.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = selectedStatus === 'Semua Status' || item.panganStatus === selectedStatus;
-    return matchesSearch && matchesStatus;
+    return matchesStatus;
   });
 
   return (
     <div className="map-explorer-page animate-fade-in">
+      <div className="map-explorer-brief">
+        <div>
+          <span className="map-explorer-eyebrow"><MapPinned size={14} /> Eksplorator spasial</span>
+          <h1>Jelajahi indikator, pahami kesiapan datanya.</h1>
+          <p>Penanda peta merepresentasikan ringkasan indikator tingkat kecamatan, bukan titik fasilitas ataupun batas layanan.</p>
+        </div>
+        <div className="map-explorer-brief-meta">
+          <span><CalendarClock size={15} /> Data periodik</span>
+          <span>Demo UI · belum real-time</span>
+        </div>
+      </div>
+
       {/* Top Filter Bar */}
       <div className="explorer-top-bar modern-top-bar">
         <div className="et-search modern-et-search">
@@ -78,14 +82,6 @@ export default function MapExplorerView({ onNavigate }) {
             <Info size={15} /> Detail Panel
           </motion.button>
 
-          <motion.button
-            className="export-btn-sm modern-primary-pill"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={() => alert('Mengunduh data Spasial GeoJSON 6 Kecamatan Kota Bogor...')}
-          >
-            <Download size={15} /> Export GeoJSON
-          </motion.button>
         </div>
       </div>
 
@@ -98,8 +94,8 @@ export default function MapExplorerView({ onNavigate }) {
               setSelectedKec(kec);
               setShowDrawer(true);
             }}
-            activeLayerFilter={activeLayerFilter}
-            height="calc(100vh - 180px)"
+            activeLayerFilter="pangan"
+            height="min(680px, calc(100vh - 245px))"
           />
         </div>
 
@@ -194,10 +190,20 @@ export default function MapExplorerView({ onNavigate }) {
                   ))}
                 </div>
               </div>
+
+              <div className="drawer-data-context">
+                <CalendarClock size={16} />
+                <div>
+                  <strong>Catatan pembacaan peta</strong>
+                  <span>Indikator berasal dari data periodik. Tahun, sumber, dan definisi variabel perlu tersedia sebelum dipakai untuk keputusan.</span>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
       </div>
+
+      <SpatialReadinessPanel />
     </div>
   );
 }

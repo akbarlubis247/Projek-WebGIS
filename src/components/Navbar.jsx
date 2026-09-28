@@ -216,13 +216,14 @@ export default function Navbar({ onOpenLogin }) {
         <div className="nav-actions">
           <button id="login-admin-btn" className="nav-login-btn" onClick={onOpenLogin}>
             <UserCheck size={16} />
-            <span>Login Admin / SuperAdmin</span>
+            <span>Demo Panel Admin</span>
           </button>
 
           <button
             className="mobile-nav-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle Menu Navigasi"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -253,7 +254,7 @@ export default function Navbar({ onOpenLogin }) {
               setMobileMenuOpen(false);
             }}
           >
-            <UserCheck size={16} /> Login Admin / SuperAdmin
+            <UserCheck size={16} /> Demo Panel Admin
           </button>
         </div>
       )}

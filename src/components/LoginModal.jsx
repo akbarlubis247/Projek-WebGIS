@@ -14,8 +14,8 @@ import {
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList }) {
   const [selectedRoleTab, setSelectedRoleTab] = useState('admin'); // 'admin' | 'superadmin'
-  const [email, setEmail] = useState('admin@bogorkota.go.id');
-  const [password, setPassword] = useState('admin123password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   // 1. Refs untuk GSAP Selector
@@ -72,13 +72,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
             // Ubah teks & state saat elemen tidak terlihat
             setSelectedRoleTab(role);
             setErrorMessage('');
-            if (isSuper) {
-              setEmail('superadmin@bogorkota.go.id');
-              setPassword('superadmin123');
-            } else {
-              setEmail('admin@bogorkota.go.id');
-              setPassword('admin123password');
-            }
+            setEmail('');
+            setPassword('');
 
             if (formHeadingRef.current) {
               formHeadingRef.current.textContent = isSuper
@@ -105,13 +100,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
     } else {
       setSelectedRoleTab(role);
       setErrorMessage('');
-      if (isSuper) {
-        setEmail('superadmin@bogorkota.go.id');
-        setPassword('superadmin123');
-      } else {
-        setEmail('admin@bogorkota.go.id');
-        setPassword('admin123password');
-      }
+      setEmail('');
+      setPassword('');
       isAnimatingRef.current = false;
     }
   };
@@ -120,40 +110,19 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
     e.preventDefault();
     setErrorMessage('');
 
-    if (selectedRoleTab === 'superadmin') {
-      if (email.toLowerCase() === 'superadmin@bogorkota.go.id' && password === 'superadmin123') {
-        onLoginSuccess({
-          name: 'Super Admin Utama',
-          role: 'superadmin',
-          email: email,
-          isLoggedIn: true
-        });
-        onClose();
-      } else {
-        setErrorMessage('Email atau kata sandi Superadmin salah! (Gunakan: superadmin@bogorkota.go.id / superadmin123)');
-      }
-    } else {
-      const foundAdmin = adminsList.find(a => a.email.toLowerCase() === email.toLowerCase());
-      if (foundAdmin) {
-        onLoginSuccess({
-          name: foundAdmin.nama,
-          role: 'admin',
-          email: foundAdmin.email,
-          isLoggedIn: true
-        });
-        onClose();
-      } else if (email && password) {
-        onLoginSuccess({
-          name: 'Staff Admin Kota',
-          role: 'admin',
-          email: email,
-          isLoggedIn: true
-        });
-        onClose();
-      } else {
-        setErrorMessage('Silakan masukkan email dan kata sandi admin!');
-      }
+    if (!email || !password) {
+      setErrorMessage('Masukkan email dan kata sandi untuk melanjutkan ke demo.');
+      return;
     }
+
+    onLoginSuccess({
+      name: selectedRoleTab === 'superadmin' ? 'Pengguna Demo Super Admin' : 'Pengguna Demo Admin',
+      role: selectedRoleTab,
+      email,
+      isLoggedIn: true,
+      isDemo: true
+    });
+    onClose();
   };
 
   return (
@@ -226,7 +195,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
               <h2 id="form-title" ref={formHeadingRef}>
                 {selectedRoleTab === 'superadmin' ? 'Masuk ke Panel Super Admin' : 'Masuk ke Panel Admin'}
               </h2>
-              <p>Silakan masukkan kredensial Anda untuk mengelola data indikator dan wilayah.</p>
+              <p>Masukkan kredensial contoh untuk membuka simulasi antarmuka. Autentikasi sebenarnya akan disediakan oleh backend.</p>
             </div>
 
             {errorMessage && (
@@ -270,11 +239,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    alert(
-                      selectedRoleTab === 'superadmin'
-                        ? 'Akun Demo Superadmin:\nEmail: superadmin@bogorkota.go.id\nPassword: superadmin123'
-                        : 'Akun Demo Staff Admin:\nEmail: admin@bogorkota.go.id\nPassword: admin123password'
-                    );
+                    alert('Pemulihan akun belum tersedia karena autentikasi backend belum diimplementasikan.');
                   }}
                 >
                   Lupa kata sandi?

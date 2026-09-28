@@ -171,7 +171,7 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
                     </td>
                     <td className="text-emerald font-medium">{item.email}</td>
                     <td className="text-muted">
-                      <span className="sa-password-badge">{item.password ? '•••••••• (' + item.password + ')' : '••••••••'}</span>
+                      <span className="sa-password-badge">Demo · belum terhubung backend</span>
                     </td>
                     <td className="text-muted">{item.ditambahkan || '01 Sep 2026'}</td>
                     <td>

@@ -133,7 +133,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
           <div className="sc-info">
             <span className="sc-label">Akses Air Bersih Layak</span>
             <h3 className="sc-value" ref={waterRef}>{KOTA_BOGOR_STATS.aksesAirBersih}</h3>
-            <span className="sc-desc font-mono">Target PDAM Tirta Pakuan: 95%</span>
+            <span className="sc-desc font-mono">Nilai contoh antarmuka · perlu metadata sumber</span>
           </div>
         </div>
 
