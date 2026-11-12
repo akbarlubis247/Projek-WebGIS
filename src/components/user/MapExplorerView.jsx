@@ -135,7 +135,7 @@ export default function MapExplorerView({ onNavigate }) {
             <div className="drawer-head">
               <div>
                 <span className="d-badge font-mono">{selectedKel.id}</span>
-                <h2>Kelurahan {selectedKel.nama}</h2>
+                <h2 className="section-title-editorial">Kelurahan {selectedKel.nama}</h2>
                 <span className="d-sub">Kecamatan: {selectedKel.kecamatan}</span>
               </div>
               <button className="d-close" onClick={() => setShowDrawer(false)}>

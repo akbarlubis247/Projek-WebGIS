@@ -17,7 +17,8 @@ import {
   X,
   UserPlus,
   Home,
-  ChevronLeft
+  ChevronLeft,
+  FileEdit
 } from 'lucide-react';
 
 export const ADMIN_MENU_ITEMS = [
@@ -30,6 +31,7 @@ export const ADMIN_MENU_ITEMS = [
   { id: 'indicator-data', label: 'Data Indikator (PDF/CSV)', icon: TableProperties, category: 'Manajemen Data' },
   { id: 'data-entry', label: 'Entri Data (Manual & CSV)', icon: FilePlus, category: 'Manajemen Data' },
   { id: 'food-safety', label: 'Keamanan Pangan', icon: ShieldCheck, category: 'Manajemen Data' },
+  { id: 'content-mgmt', label: 'Kelola Konten Publik (CMS)', icon: FileEdit, category: 'Pengaturan' },
   { id: 'about', label: 'Tentang NutriMap', icon: Info, category: 'Pengaturan' },
 ];
 
@@ -42,6 +44,7 @@ export const GUEST_MENU_ITEMS = [
 
 export const SUPERADMIN_MENU_ITEMS = [
   { id: 'superadmin-mgmt', label: 'Kelola Admin & Hak Akses', icon: UserPlus, category: 'Super Admin' },
+  { id: 'content-mgmt', label: 'Kelola Foto & Konten CMS', icon: FileEdit, category: 'Super Admin' },
 ];
 
 export default function Sidebar({

@@ -12,6 +12,7 @@ import {
   Building2,
   Map as MapIcon,
   ChevronDown,
+  ChevronUp,
   Info
 } from 'lucide-react';
 import { BOGOR_KELURAHAN_GEOJSON } from '../../data/bogorKelurahanGeoJSON';
@@ -91,6 +92,7 @@ export default function MapView({
   const [layerDropdownOpen, setLayerDropdownOpen] = useState(false);
   const [basemapDropdownOpen, setBasemapDropdownOpen] = useState(false);
   const [kecDropdownOpen, setKecDropdownOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(true);
   const layerDropdownRef = useRef(null);
   const basemapDropdownRef = useRef(null);
   const kecDropdownRef = useRef(null);
@@ -172,7 +174,18 @@ export default function MapView({
     tileLayerRef.current = tileLayer;
     mapInstanceRef.current = map;
 
+    // Pastikan ukuran peta menyesuaikan wadah container secara presisi (full height)
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    resizeObserver.observe(mapRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -298,8 +311,19 @@ export default function MapView({
       };
     };
 
-    // Pasang GeoJSON Layer
+    // Pasang GeoJSON Layer dengan filter kelurahan terpilih
     const geoLayer = L.geoJSON(BOGOR_KELURAHAN_GEOJSON, {
+      filter: (feature) => {
+        // Jika ada kelurahan terpilih (dari klik chip/search/peta): HANYA TAMPILKAN KELURAHAN ITU SAJA
+        if (selectedKelurahan) {
+          const selId = selectedKelurahan.id;
+          const selNama = selectedKelurahan.nama ? selectedKelurahan.nama.toLowerCase().trim() : '';
+          const p = feature.properties;
+          const pNama = p.nama ? p.nama.toLowerCase().trim() : '';
+          return p.id === selId || (selNama && pNama === selNama);
+        }
+        return true;
+      },
       style: styleFeature,
       onEachFeature: (feature, layer) => {
         const p = feature.properties;
@@ -424,6 +448,17 @@ export default function MapView({
     }).addTo(map);
 
     geojsonLayerRef.current = geoLayer;
+
+    // Jika sedang memilih kelurahan tertentu, fokuskan bounds kamera ke kelurahan tersebut dan buka popup
+    if (selectedKelurahan) {
+      const bounds = geoLayer.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15.5 });
+      }
+      geoLayer.eachLayer((l) => {
+        l.openPopup();
+      });
+    }
   }, [activeLayer, selectedKecFilter, selectedKelurahan]);
 
   // Map Controls
@@ -431,21 +466,39 @@ export default function MapView({
   const handleZoomOut = () => mapInstanceRef.current && mapInstanceRef.current.zoomOut();
   const handleResetView = () => {
     setSelectedKecFilter('Semua Kecamatan');
+    if (onSelectKelurahan) onSelectKelurahan(null);
+    if (onSelectKecamatan) onSelectKecamatan(null);
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setView([-6.5971, 106.7949], 13);
     }
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: height, borderRadius: 12, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.06)' }}>
+    <div
+      className="map-view-container"
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: height || '100%',
+        minHeight: height && height !== '100%' ? height : '100%',
+        flex: 1,
+        borderRadius: 12,
+        overflow: 'hidden',
+        border: '1px solid #e2e8f0',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       {/* Wadah DOM Leaflet */}
-      <div ref={mapRef} style={{ width: '100%', height: '100%', zIndex: 0 }} />
+      <div ref={mapRef} style={{ width: '100%', height: '100%', flex: 1, minHeight: '100%', zIndex: 0 }} />
 
       {/* Kontrol Kiri Atas: Pemilihan Kecamatan, Layer Indikator, dan Basemap */}
-      <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 500, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+      <div className="map-top-controls" style={{ position: 'absolute', top: 16, left: 16, zIndex: 500, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         {/* 1. Pemilihan Kecamatan (Kecamatan Selector) */}
         <div ref={kecDropdownRef} style={{ position: 'relative' }}>
           <button
+            className="map-control-btn"
             onClick={() => setKecDropdownOpen(!kecDropdownOpen)}
             style={{
               padding: '8px 14px',
@@ -463,12 +516,12 @@ export default function MapView({
             }}
           >
             <Building2 size={16} color={selectedKecFilter !== 'Semua Kecamatan' ? '#0284c7' : '#64748b'} />
-            <span>{selectedKecFilter === 'Semua Kecamatan' ? '📍 Pilih Kecamatan' : `📍 ${selectedKecFilter}`}</span>
+            <span className="map-btn-text">{selectedKecFilter === 'Semua Kecamatan' ? '📍 Pilih Kecamatan' : `📍 ${selectedKecFilter}`}</span>
             <ChevronDown size={14} />
           </button>
 
           {kecDropdownOpen && (
-            <div style={{
+            <div className="map-control-dropdown" style={{
               position: 'absolute',
               top: '110%',
               left: 0,
@@ -512,6 +565,7 @@ export default function MapView({
         {/* Tombol Reset Filter jika sedang pilih kecamatan tertentu */}
         {selectedKecFilter !== 'Semua Kecamatan' && (
           <button
+            className="map-control-btn"
             onClick={() => handleSelectKecamatan('Semua Kecamatan')}
             style={{
               padding: '8px 12px',
@@ -528,9 +582,35 @@ export default function MapView({
           </button>
         )}
 
+        {/* Tombol Reset Filter jika sedang pilih kelurahan tertentu */}
+        {selectedKelurahan && (
+          <button
+            className="map-control-btn"
+            onClick={() => {
+              if (onSelectKelurahan) onSelectKelurahan(null);
+            }}
+            style={{
+              padding: '8px 12px',
+              background: '#e0f2fe',
+              border: '1.5px solid #0284c7',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#0369a1',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+          >
+            ✕ Tampilkan Semua Kelurahan
+          </button>
+        )}
+
         {/* 2. Penggantian Lapisan Indikator (Layer Toggling) */}
         <div ref={layerDropdownRef} style={{ position: 'relative' }}>
           <button
+            className="map-control-btn"
             onClick={() => setLayerDropdownOpen(!layerDropdownOpen)}
             style={{
               padding: '8px 14px',
@@ -548,12 +628,12 @@ export default function MapView({
             }}
           >
             <Layers size={16} color="#0284c7" />
-            <span>Layer: {layerLabels[activeLayer]}</span>
+            <span className="map-btn-text">Layer: {layerLabels[activeLayer]}</span>
             <ChevronDown size={14} />
           </button>
 
           {layerDropdownOpen && (
-            <div style={{
+            <div className="map-control-dropdown" style={{
               position: 'absolute',
               top: '110%',
               left: 0,
@@ -596,6 +676,7 @@ export default function MapView({
         {/* 3. Pemilihan Basemap */}
         <div ref={basemapDropdownRef} style={{ position: 'relative' }}>
           <button
+            className="map-control-btn"
             onClick={() => setBasemapDropdownOpen(!basemapDropdownOpen)}
             style={{
               padding: '8px 14px',
@@ -613,12 +694,12 @@ export default function MapView({
             }}
           >
             <MapIcon size={16} color="#64748b" />
-            <span>Peta: {BASEMAP_PROVIDERS[activeBasemap].name}</span>
+            <span className="map-btn-text">Peta: {BASEMAP_PROVIDERS[activeBasemap].name}</span>
             <ChevronDown size={14} />
           </button>
 
           {basemapDropdownOpen && (
-            <div style={{
+            <div className="map-control-dropdown" style={{
               position: 'absolute',
               top: '110%',
               left: 0,
@@ -645,36 +726,39 @@ export default function MapView({
       </div>
 
       {/* Zoom Controls di Kanan Atas */}
-      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 500, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <button onClick={handleZoomIn} style={{ width: 34, height: 34, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+      <div className="map-zoom-controls" style={{ position: 'absolute', top: 16, right: 16, zIndex: 500, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <button className="map-zoom-btn" onClick={handleZoomIn} style={{ width: 34, height: 34, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <ZoomIn size={16} />
         </button>
-        <button onClick={handleZoomOut} style={{ width: 34, height: 34, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <button className="map-zoom-btn" onClick={handleZoomOut} style={{ width: 34, height: 34, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <ZoomOut size={16} />
         </button>
-        <button onClick={handleResetView} title="Reset Posisi Kota Bogor" style={{ width: 34, height: 34, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <button className="map-zoom-btn" onClick={handleResetView} title="Reset Posisi Kota Bogor" style={{ width: 34, height: 34, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
           <Maximize2 size={16} />
         </button>
       </div>
 
       {/* Info Card di Kiri Bawah (Tetap Aktif saat Ada Wilayah Terpilih atau Dihover) */}
       {activeTarget && (
-        <div style={{
+        <div className="map-info-card" style={{
           position: 'absolute',
           bottom: 20,
           left: 16,
-          zIndex: 500,
+          right: 'auto',
+          zIndex: 490,
           background: 'rgba(255, 255, 255, 0.96)',
           backdropFilter: 'blur(6px)',
           border: `1.5px solid ${activeTargetInfo?.border || '#cbd5e1'}`,
           borderRadius: 10,
           padding: '11px 15px',
           boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
-          minWidth: 230
+          minWidth: 180,
+          maxWidth: 250,
+          width: 'max-content'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
             <span style={{ fontSize: 10, textTransform: 'uppercase', color: '#64748b', fontWeight: 800, letterSpacing: '0.5px' }}>
-              {hoveredKelurahan ? '👁️ Sorot Wilayah' : '📌 Wilayah Terpilih'}
+              {hoveredKelurahan ? '👁️ Sorot' : '📌 Terpilih'}
             </span>
             {activeTargetInfo && (
               <span style={{ fontSize: 10, fontWeight: 700, background: activeTargetInfo.bg, color: activeTargetInfo.textBadge, padding: '1px 6px', borderRadius: 4, border: `1px solid ${activeTargetInfo.border}` }}>
@@ -682,11 +766,11 @@ export default function MapView({
               </span>
             )}
           </div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>Kel. {activeTarget.nama}</div>
-          <div style={{ fontSize: 11.5, color: '#0284c7', fontWeight: 600 }}>Kec. {activeTarget.kecamatan}</div>
-          <div style={{ fontSize: 12.5, marginTop: 6, color: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>Kel. {activeTarget.nama}</div>
+          <div style={{ fontSize: 11, color: '#0284c7', fontWeight: 600 }}>Kec. {activeTarget.kecamatan}</div>
+          <div style={{ fontSize: 12, marginTop: 4, color: '#334155', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span>{LAYER_DEFINITIONS[activeLayer]?.shortLabel || 'Indikator'}:</span>
-            <strong style={{ color: activeTargetInfo?.color || '#0f172a', fontSize: 14 }}>
+            <strong style={{ color: activeTargetInfo?.color || '#0f172a', fontSize: 13.5 }}>
               {activeTargetVal}{LAYER_DEFINITIONS[activeLayer]?.unit || ''}
             </strong>
           </div>
@@ -694,64 +778,84 @@ export default function MapView({
       )}
 
       {/* Legenda Tematik Dinamis dengan Sinkronisasi Nilai Terpilih di Kanan Bawah */}
-      <div style={{
+      <div className="map-legend-card" style={{
         position: 'absolute',
         bottom: 20,
         right: 16,
+        left: 'auto',
         zIndex: 500,
         background: 'rgba(255, 255, 255, 0.96)',
         backdropFilter: 'blur(6px)',
         border: '1px solid #cbd5e1',
         borderRadius: 10,
-        padding: '12px 16px',
+        padding: '10px 14px',
         boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
         fontSize: 12,
-        minWidth: 260
+        minWidth: 180,
+        maxWidth: 280,
+        width: 'max-content'
       }}>
-        <div style={{ fontWeight: 800, marginBottom: 8, color: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div
+          onClick={() => setLegendOpen(!legendOpen)}
+          style={{
+            fontWeight: 800,
+            marginBottom: legendOpen ? 8 : 0,
+            color: '#0f172a',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            cursor: 'pointer',
+            userSelect: 'none'
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <Info size={14} color="#0284c7" />
-            <span>Legenda: {LAYER_DEFINITIONS[activeLayer]?.shortLabel}</span>
+            <span style={{ fontSize: 12 }}>{LAYER_DEFINITIONS[activeLayer]?.shortLabel}</span>
           </div>
-          {activeTargetInfo && (
-            <span style={{ fontSize: 11, fontWeight: 800, color: activeTargetInfo.textBadge, background: activeTargetInfo.bg, border: `1px solid ${activeTargetInfo.border}`, padding: '1px 6px', borderRadius: 4 }}>
-              {activeTargetVal}{LAYER_DEFINITIONS[activeLayer]?.unit}
-            </span>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {activeTargetInfo && (
+              <span style={{ fontSize: 10.5, fontWeight: 800, color: activeTargetInfo.textBadge, background: activeTargetInfo.bg, border: `1px solid ${activeTargetInfo.border}`, padding: '1px 5px', borderRadius: 4 }}>
+                {activeTargetVal}{LAYER_DEFINITIONS[activeLayer]?.unit}
+              </span>
+            )}
+            {legendOpen ? <ChevronDown size={14} color="#64748b" /> : <ChevronUp size={14} color="#64748b" />}
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gap: 4 }}>
-          {LAYER_DEFINITIONS[activeLayer]?.thresholds.map((tier, idx) => {
-            const isTargetTier = activeTargetInfo && activeTargetInfo.tierIndex === idx;
-            return (
-              <div
-                key={tier.label}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '3px 6px',
-                  borderRadius: 5,
-                  background: isTargetTier ? tier.bg : 'transparent',
-                  border: isTargetTier ? `1.5px solid ${tier.border}` : '1.5px solid transparent',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 14, height: 14, background: tier.color, borderRadius: 3, flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
-                  <span style={{ fontSize: 11.5, color: isTargetTier ? '#0f172a' : '#475569', fontWeight: isTargetTier ? 700 : 500 }}>
-                    {tier.label}
-                  </span>
+        {legendOpen && (
+          <div className="map-legend-content" style={{ display: 'grid', gap: 3 }}>
+            {LAYER_DEFINITIONS[activeLayer]?.thresholds.map((tier, idx) => {
+              const isTargetTier = activeTargetInfo && activeTargetInfo.tierIndex === idx;
+              return (
+                <div
+                  key={tier.label}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '2px 5px',
+                    borderRadius: 5,
+                    background: isTargetTier ? tier.bg : 'transparent',
+                    border: isTargetTier ? `1.5px solid ${tier.border}` : '1.5px solid transparent',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 12, height: 12, background: tier.color, borderRadius: 3, flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
+                    <span style={{ fontSize: 11, color: isTargetTier ? '#0f172a' : '#475569', fontWeight: isTargetTier ? 700 : 500 }}>
+                      {tier.label}
+                    </span>
+                  </div>
+                  {isTargetTier && (
+                    <span style={{ fontSize: 9.5, fontWeight: 800, color: tier.textBadge, background: '#ffffff', padding: '1px 4px', borderRadius: 3, border: `1px solid ${tier.border}`, flexShrink: 0 }}>
+                      ◀ Terpilih
+                    </span>
+                  )}
                 </div>
-                {isTargetTier && (
-                  <span style={{ fontSize: 10, fontWeight: 800, color: tier.textBadge, background: '#ffffff', padding: '1px 5px', borderRadius: 4, border: `1px solid ${tier.border}`, flexShrink: 0 }}>
-                    ◀ Terpilih
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

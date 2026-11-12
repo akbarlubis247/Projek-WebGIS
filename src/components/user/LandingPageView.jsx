@@ -24,7 +24,9 @@ import {
   Award,
   ExternalLink,
   Info,
-  Store
+  Store,
+  FileEdit,
+  Clock
 } from 'lucide-react';
 import {
   BarChart,
@@ -50,11 +52,13 @@ import pdamFacilityImg from '../../assets/pdam-facility.jpg';
 import stuntingImg from '../../assets/stunting-prevention.jpg';
 import foodInspectionImg from '../../assets/food-inspection.jpg';
 import { CountUp } from 'countup.js';
+import { getPublicContent } from '../../data/defaultPublicContent';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-export default function LandingPageView({ onOpenLogin }) {
+export default function LandingPageView({ onOpenLogin, onSelectKecamatan, currentUser, onNavigate }) {
+  const [content, setContent] = useState(getPublicContent());
   const [selectedKec, setSelectedKec] = useState(null);
   const [selectedKel, setSelectedKel] = useState(null);
   const [activeMapLayer, setActiveMapLayer] = useState('stunting');
@@ -66,6 +70,14 @@ export default function LandingPageView({ onOpenLogin }) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
+
+  useEffect(() => {
+    const handleContentUpdate = () => {
+      setContent(getPublicContent());
+    };
+    window.addEventListener('nutrimap_content_updated', handleContentUpdate);
+    return () => window.removeEventListener('nutrimap_content_updated', handleContentUpdate);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -536,7 +548,7 @@ export default function LandingPageView({ onOpenLogin }) {
         <div className="hero-showcase-container">
           <div className="hero-banner-frame">
             <img
-              src={heroBg}
+              src={content.images?.heroBanner || heroBg}
               alt="NutriMap Kota Bogor - Ketahanan Pangan Tangguh, Akses Air Bersih & Gizi Sehat"
               className="hero-banner-image"
             />
@@ -548,10 +560,10 @@ export default function LandingPageView({ onOpenLogin }) {
       <section className="ladang-manifesto-section">
         <div className="ladang-manifesto-inner gsap-manifesto">
           <h2 className="ladang-manifesto-title">
-            Mewujudkan Kota Bogor <span className="ladang-title-gradient">Berketahanan Pangan</span> Berbasis Data Geografis Nyata
+            {content.manifesto.title}
           </h2>
           <p className="ladang-manifesto-text">
-            Sebagai sarana perumusan kebijakan berbasis spasial <i>(Data-Driven Spatial Policy)</i>, <b>NutriMap Kota Bogor</b> menghubungkan data kependudukan, keterjangkauan komoditas pangan pokok, pengawasan keamanan pangan di pasar tradisional, dan indeks stunting pada 6 kecamatan. Menghadirkan informasi yang transparan, mudah diakses masyarakat, dan dapat dipertanggungjawabkan untuk kesejahteraan bersama.
+            {content.manifesto.text}
           </p>
         </div>
       </section>
@@ -560,9 +572,9 @@ export default function LandingPageView({ onOpenLogin }) {
       <section className="ladang-pillars-section">
         <div className="ladang-section-head">
           <h2>
-            <span className="ladang-title-gradient">4 Pilar Utama</span> Pemantauan Spasial Kota
+            {content.pillars.sectionTitle}
           </h2>
-          <p>Indikator terukur yang menjadi acuan intervensi prioritas jajaran dinas terkait Pemerintah Kota Bogor.</p>
+          <p>{content.pillars.sectionSubtitle}</p>
         </div>
 
         <div className="ladang-pillars-grid">
@@ -572,16 +584,16 @@ export default function LandingPageView({ onOpenLogin }) {
               <div className="pillar-icon-box">
                 <Utensils size={20} />
               </div>
-              <span className="pillar-badge badge-green">Sangat Baik</span>
+              <span className="pillar-badge badge-green">{content.pillars.ikp.badge}</span>
             </div>
             <div className="pillar-main">
-              <span className="pillar-label">Indeks Ketahanan Pangan (IKP)</span>
+              <span className="pillar-label">{content.pillars.ikp.label}</span>
               <div className="pillar-val-row">
-                <span className="pillar-val" ref={ikpCountRef}>{KOTA_BOGOR_STATS.skorIKP}</span>
-                <span className="pillar-unit">/ 100</span>
+                <span className="pillar-val" ref={ikpCountRef}>{content.pillars.ikp.value}</span>
+                <span className="pillar-unit">{content.pillars.ikp.unit}</span>
               </div>
               <div className="pillar-track">
-                <div className="pillar-fill fill-green" style={{ width: `${KOTA_BOGOR_STATS.skorIKP}%` }} />
+                <div className="pillar-fill fill-green" style={{ width: `${parseFloat(content.pillars.ikp.value) || 88.2}%` }} />
               </div>
             </div>
           </div>
@@ -592,17 +604,17 @@ export default function LandingPageView({ onOpenLogin }) {
               <div className="pillar-icon-box">
                 <Droplets size={20} />
               </div>
-              <span className="pillar-badge badge-teal">Aman & Stabil</span>
+              <span className="pillar-badge badge-teal">{content.pillars.air.badge}</span>
             </div>
             <div className="pillar-main">
-              <span className="pillar-label">Akses Air Bersih Layak</span>
+              <span className="pillar-label">{content.pillars.air.label}</span>
               <div className="pillar-val-row">
                 <span className="pillar-val" ref={airBersihCountRef}>
-                  {countUpAnimatedRef.current ? KOTA_BOGOR_STATS.aksesAirBersih : '0%'}
+                  {countUpAnimatedRef.current ? content.pillars.air.value : '0%'}
                 </span>
               </div>
               <div className="pillar-track">
-                <div className="pillar-fill fill-teal" style={{ width: '89.6%' }} />
+                <div className="pillar-fill fill-teal" style={{ width: `${parseFloat(content.pillars.air.value) || 89.6}%` }} />
               </div>
             </div>
           </div>
@@ -613,17 +625,17 @@ export default function LandingPageView({ onOpenLogin }) {
               <div className="pillar-icon-box">
                 <HeartPulse size={20} />
               </div>
-              <span className="pillar-badge badge-terracotta">Intervensi Aktif</span>
+              <span className="pillar-badge badge-terracotta">{content.pillars.stunting.badge}</span>
             </div>
             <div className="pillar-main">
-              <span className="pillar-label">Prevalensi Stunting Balita</span>
+              <span className="pillar-label">{content.pillars.stunting.label}</span>
               <div className="pillar-val-row">
                 <span className="pillar-val" ref={stuntingCountRef}>
-                  {countUpAnimatedRef.current ? KOTA_BOGOR_STATS.prevalensiStunting : '0%'}
+                  {countUpAnimatedRef.current ? content.pillars.stunting.value : '0%'}
                 </span>
               </div>
               <div className="pillar-track">
-                <div className="pillar-fill fill-terracotta" style={{ width: '15.4%' }} />
+                <div className="pillar-fill fill-terracotta" style={{ width: `${parseFloat(content.pillars.stunting.value) || 15.4}%` }} />
               </div>
             </div>
           </div>
@@ -634,15 +646,16 @@ export default function LandingPageView({ onOpenLogin }) {
               <div className="pillar-icon-box">
                 <Building2 size={20} />
               </div>
-              <span className="pillar-badge badge-earth">100% Terverifikasi</span>
+              <span className="pillar-badge badge-earth">{content.pillars.pasar.badge}</span>
             </div>
             <div className="pillar-main">
-              <span className="pillar-label">Faskes & Pasar Tradisional</span>
+              <span className="pillar-label">{content.pillars.pasar.label}</span>
               <div className="pillar-val-row">
-                <span className="pillar-val-small">14 Faskes • 4 Pasar</span>
+                <span className="pillar-val">{content.pillars.pasar.value}</span>
+                <span className="pillar-unit" style={{ fontSize: 13, marginLeft: 4 }}>{content.pillars.pasar.unit}</span>
               </div>
               <div className="pillar-track">
-                <div className="pillar-fill fill-earth" style={{ width: '100%' }} />
+                <div className="pillar-fill fill-earth" style={{ width: `${parseFloat(content.pillars.pasar.value) || 96}%` }} />
               </div>
             </div>
           </div>
@@ -654,7 +667,7 @@ export default function LandingPageView({ onOpenLogin }) {
             <div className="pdam-media-column">
               <div className="pdam-media-frame">
                 <img
-                  src={pdamFacilityImg}
+                  src={content.images?.pdamFacility || pdamFacilityImg}
                   alt="Instalasi Pengolahan Air Bersih PDAM Tirta Pakuan Kota Bogor"
                   className="pdam-media-img"
                   loading="lazy"
@@ -664,27 +677,27 @@ export default function LandingPageView({ onOpenLogin }) {
 
             <div className="pdam-content-column">
               <h3 className="pdam-headline">
-                Instalasi Pengolahan Air (IPA) <span className="ladang-title-gradient">PDAM Tirta Pakuan</span>
+                {content.spotlightPdam.headline}
               </h3>
 
               <p className="pdam-description">
-                Pusat pengolahan dan distribusi air minum terintegrasi yang menyuplai kebutuhan air bersih untuk 6 kecamatan di Kota Bogor. Terhubung dengan sistem pemantauan geospasial NutriMap guna menjamin kontinuitas debit air layak minum dan mendukung sanitasi keluarga sehat.
+                {content.spotlightPdam.description}
               </p>
 
               <div className="pdam-key-metrics">
                 <div className="pdam-metric-item">
-                  <span className="pmi-val" ref={pdamAirCountRef}>{KOTA_BOGOR_STATS.aksesAirBersih}</span>
-                  <span className="pmi-lbl">Cakupan Akses Kota</span>
+                  <span className="pmi-val" ref={pdamAirCountRef}>{content.spotlightPdam.metric1Val}</span>
+                  <span className="pmi-lbl">{content.spotlightPdam.metric1Lbl}</span>
                 </div>
                 <div className="pdam-metric-separator" />
                 <div className="pdam-metric-item">
-                  <span className="pmi-val" ref={pdamDebitCountRef}>2.400 L/s</span>
-                  <span className="pmi-lbl">Debit Air Terolah</span>
+                  <span className="pmi-val" ref={pdamDebitCountRef}>{content.spotlightPdam.metric2Val}</span>
+                  <span className="pmi-lbl">{content.spotlightPdam.metric2Lbl}</span>
                 </div>
                 <div className="pdam-metric-separator" />
                 <div className="pdam-metric-item">
-                  <span className="pmi-val" ref={pdamSRCountRef}>170.000+</span>
-                  <span className="pmi-lbl">Sambungan Rumah (SR)</span>
+                  <span className="pmi-val" ref={pdamSRCountRef}>{content.spotlightPdam.metric3Val}</span>
+                  <span className="pmi-lbl">{content.spotlightPdam.metric3Lbl}</span>
                 </div>
               </div>
 
@@ -695,9 +708,9 @@ export default function LandingPageView({ onOpenLogin }) {
                   onClick={() => handleScrollToMap()}
                 >
                   <MapPin size={15} />
-                  <span>Lihat Sebaran Air Bersih di Peta Spasial</span>
+                  <span>{content.spotlightPdam.buttonText}</span>
                 </button>
-                <span className="pdam-source-text">Sumber Data: Perumda Tirta Pakuan Kota Bogor</span>
+                <span className="pdam-source-text">{content.spotlightPdam.sourceText}</span>
               </div>
             </div>
           </div>
@@ -708,27 +721,27 @@ export default function LandingPageView({ onOpenLogin }) {
           <div className="stunting-spotlight-grid">
             <div className="stunting-content-column">
               <h3 className="stunting-headline">
-                Sosialisasi & Deteksi Dini <span className="ladang-title-gradient">Pencegahan Stunting</span>
+                {content.spotlightStunting.headline}
               </h3>
 
               <p className="stunting-description">
-                Gerakan terintegrasi jajaran Dinas Kesehatan, kader Posyandu, dan TP-PKK Kota Bogor dalam pemantauan rutin tumbuh kembang balita, deteksi dini risiko stunting, edukasi pola asuh gizi seimbang, serta pendistribusian makanan tambahan (PMT) kaya nutrisi di seluruh kelurahan.
+                {content.spotlightStunting.description}
               </p>
 
               <div className="stunting-split-metrics">
                 <div className="stunting-metric-card">
                   <div className="smc-header">
-                    <span className="smc-val" ref={stuntingSpotCountRef}>{KOTA_BOGOR_STATS.prevalensiStunting}</span>
-                    <span className="smc-badge-pill">Target: &lt; 10%</span>
+                    <span className="smc-val" ref={stuntingSpotCountRef}>{content.spotlightStunting.targetVal}</span>
+                    <span className="smc-badge-pill">{content.spotlightStunting.targetLbl}</span>
                   </div>
-                  <span className="smc-lbl">Prevalensi Balita Kota Bogor</span>
+                  <span className="smc-lbl">{content.spotlightStunting.subTargetLbl}</span>
                 </div>
                 <div className="stunting-metric-card">
                   <div className="smc-header">
-                    <span className="smc-val" ref={posyanduCountRef}>863+</span>
-                    <span className="smc-badge-pill">68 Kelurahan</span>
+                    <span className="smc-val" ref={posyanduCountRef}>{content.spotlightStunting.posyanduVal}</span>
+                    <span className="smc-badge-pill">{content.spotlightStunting.posyanduLbl}</span>
                   </div>
-                  <span className="smc-lbl">Posyandu Aktif Terpadu</span>
+                  <span className="smc-lbl">{content.spotlightStunting.subPosyanduLbl}</span>
                 </div>
               </div>
 
@@ -743,16 +756,16 @@ export default function LandingPageView({ onOpenLogin }) {
                   }}
                 >
                   <HeartPulse size={15} />
-                  <span>Lihat Grafik Komparasi Stunting</span>
+                  <span>{content.spotlightStunting.buttonText}</span>
                 </button>
-                <span className="stunting-source-text">Sumber Data: Dinas Kesehatan Kota Bogor</span>
+                <span className="stunting-source-text">{content.spotlightStunting.sourceText}</span>
               </div>
             </div>
 
             <div className="stunting-media-column">
               <div className="stunting-media-frame">
                 <img
-                  src={stuntingImg}
+                  src={content.images?.stuntingPrevention || stuntingImg}
                   alt="Sosialisasi Pencegahan Stunting Kota Bogor di Posyandu"
                   className="stunting-media-img"
                   loading="lazy"
@@ -768,7 +781,7 @@ export default function LandingPageView({ onOpenLogin }) {
             <div className="food-media-column">
               <div className="food-media-frame">
                 <img
-                  src={foodInspectionImg}
+                  src={content.images?.foodInspection || foodInspectionImg}
                   alt="Inspeksi Pangan Terpadu di Pasar Tradisional Kota Bogor"
                   className="food-media-img"
                   loading="lazy"
@@ -778,43 +791,42 @@ export default function LandingPageView({ onOpenLogin }) {
 
             <div className="food-content-column">
               <h3 className="food-headline">
-                Pengawasan Pangan Terpadu di <span className="ladang-title-gradient">Pasar Tradisional</span>
+                {content.spotlightFood.headline}
               </h3>
 
               <p className="food-description">
-                Pelaksanaan audit higienitas serta uji sampel acak cepat (rapid test kit) residu pestisida, formalin, dan boraks pada komoditas pangan segar—seperti daging ayam potong, sayuran segar, ikan, dan bahan pokok—bersama Satgas Pangan & Balai POM di seluruh pasar rakyat Kota Bogor guna menjamin peredaran pangan yang aman dan bermutu bagi masyarakat.
+                {content.spotlightFood.description}
               </p>
 
               <div className="food-bento-metrics">
                 <div className="food-bento-card">
                   <div className="fbc-icon-box"><ShieldCheck size={16} /></div>
                   <div className="fbc-text">
-                    <span className="fbc-val" ref={foodAuditCountRef}>48 Lokasi</span>
-                    <span className="fbc-lbl">Audit Pasar 2026</span>
+                    <span className="fbc-val" ref={foodAuditCountRef}>{content.spotlightFood.auditVal}</span>
+                    <span className="fbc-lbl">{content.spotlightFood.auditLbl}</span>
                   </div>
                 </div>
                 <div className="food-bento-card">
                   <div className="fbc-icon-box"><CheckCircle2 size={16} /></div>
                   <div className="fbc-text">
-                    <span className="fbc-val" ref={foodLolosCountRef}>96% Lolos</span>
-                    <span className="fbc-lbl">Standar Higienis BPOM</span>
+                    <span className="fbc-val" ref={foodLolosCountRef}>{content.spotlightFood.passRateVal}</span>
+                    <span className="fbc-lbl">{content.spotlightFood.passRateLbl}</span>
                   </div>
                 </div>
                 <div className="food-bento-card">
                   <div className="fbc-icon-box"><Building2 size={16} /></div>
                   <div className="fbc-text">
-                    <span className="fbc-val" ref={foodPasarCountRef}>4 Pasar</span>
-                    <span className="fbc-lbl">Fokus Pantauan Rutin</span>
+                    <span className="fbc-val" ref={foodPasarCountRef}>{content.spotlightFood.marketCountVal}</span>
+                    <span className="fbc-lbl">{content.spotlightFood.marketCountLbl}</span>
                   </div>
                 </div>
               </div>
 
               <div className="food-market-chips">
                 <span className="fmc-label">Fokus Pantauan:</span>
-                <span className="fmc-chip">Pasar Anyar</span>
-                <span className="fmc-chip">Pasar Bogor</span>
-                <span className="fmc-chip">Pasar Sukasari</span>
-                <span className="fmc-chip">Pasar Induk TU Kemang</span>
+                {content.spotlightFood.marketChips.map((chip, idx) => (
+                  <span key={idx} className="fmc-chip">{chip}</span>
+                ))}
               </div>
 
               <div className="food-footer-row">
@@ -826,17 +838,95 @@ export default function LandingPageView({ onOpenLogin }) {
                   <Store size={15} />
                   <span>Lihat Sebaran Pasar di Peta Spasial</span>
                 </button>
-                <span className="food-source-text">Sumber Data: Dinas Ketahanan Pangan & Balai POM</span>
+                <span className="food-source-text">{content.spotlightFood.sourceText}</span>
               </div>
             </div>
           </div>
         </div>
 
+        {/* SECTION: FIELD DOCUMENTATION GALLERY (GALERI FOTO DOKUMENTASI LAPANGAN) */}
+        {content.gallery && content.gallery.length > 0 && (
+          <div className="ladang-card-box gallery-spotlight-box gsap-gallery-box" style={{ marginTop: 24, marginBottom: 24 }}>
+            <div className="ladang-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <span className="editorial-pill" style={{ marginBottom: 6, display: 'inline-block' }}>Dokumentasi Terpadu</span>
+                <h3 className="ladang-card-title" style={{ fontSize: 20, fontWeight: 800 }}>
+                  Galeri Dokumentasi Lapangan Pemkot Bogor
+                </h3>
+                <p className="ladang-card-desc" style={{ marginTop: 4 }}>
+                  Potret kegiatan riil pemantauan ketahanan pangan, instalasi PDAM Tirta Pakuan, serta penanganan gizi balita di 6 kecamatan.
+                </p>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', background: '#f0fdfa', padding: '5px 12px', borderRadius: 9999, border: '1px solid #ccfbf1' }}>
+                {content.gallery.length} Dokumentasi Terpantau
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 18, marginTop: 16 }}>
+              {content.gallery.map((item, idx) => (
+                <div
+                  key={item.id || idx}
+                  className="gallery-card-item"
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: 12,
+                    border: '1px solid #e2e8f0',
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s, box-shadow 0.2s'
+                  }}
+                >
+                  <div style={{ position: 'relative', height: 180, background: '#0f172a', overflow: 'hidden' }}>
+                    <img
+                      src={item.url}
+                      alt={item.title}
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    {item.category && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: 10,
+                          left: 10,
+                          background: 'rgba(15, 23, 42, 0.75)',
+                          color: '#ffffff',
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: 4,
+                          backdropFilter: 'blur(4px)'
+                        }}
+                      >
+                        {item.category}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <h4 style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>
+                        {item.title}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Overview 6 Kecamatan (Clean Editorial Table) */}
         <div className="ladang-card-box overview-kecamatan-card gsap-table-box">
           <div className="ladang-card-header">
             <div>
-              <h3 className="ladang-card-title">Matriks Komparasi 6 Kecamatan Kota Bogor</h3>
+              <h3 className="ladang-card-title">
+                Matriks Komparasi 6 Kecamatan Kota Bogor
+              </h3>
               <p className="ladang-card-desc">
                 Pilih kecamatan untuk fokus ke titik koordinat peta atau meninjau detail demografi dan fasilitas.
               </p>
@@ -925,10 +1015,10 @@ export default function LandingPageView({ onOpenLogin }) {
       <section id="peta-spasial" className="single-page-section">
         <div className="ladang-section-head">
           <h2>
-            Peta Spasial <span className="ladang-title-gradient">Ketahanan Pangan</span> Kota Bogor
+            {content.spatialSection.title}
           </h2>
           <p>
-            Eksplorasi kondisi 6 kecamatan Kota Bogor berdasarkan skor IKP, akses air minum layak, prevalensi stunting, dan sebaran fasilitas publik.
+            {content.spatialSection.subtitle}
           </p>
         </div>
 
@@ -954,7 +1044,7 @@ export default function LandingPageView({ onOpenLogin }) {
                   if (parent) setSelectedKec(parent);
                 }
               }}
-              height={isMobile ? '420px' : '580px'}
+              height={isMobile ? '450px' : '100%'}
             />
           </div>
 
@@ -1683,9 +1773,9 @@ export default function LandingPageView({ onOpenLogin }) {
       <section id="data-indikator" className="single-page-section">
         <div className="ladang-section-head">
           <h2>
-            Data Indikator <span className="ladang-title-gradient">Kota Bogor</span>
+            {content.indicatorSection.title}
           </h2>
-          <p>Tabel interaktif kependudukan dan komparasi grafis indikator ketahanan pangan lintas kecamatan.</p>
+          <p>{content.indicatorSection.subtitle}</p>
         </div>
 
         {/* Data Filter & Search Toolbar */}
@@ -1865,9 +1955,9 @@ export default function LandingPageView({ onOpenLogin }) {
       <section id="tentang-nutrimap" className="single-page-section">
         <div className="ladang-section-head">
           <h2>
-            Tentang <span className="ladang-title-gradient">NutriMap Kota Bogor</span>
+            {content.aboutSection.title}
           </h2>
-          <p>Portal Sistem Informasi Geografis Pemantauan Ketahanan Pangan & Kesejahteraan Terpadu</p>
+          <p>{content.aboutSection.subtitle}</p>
         </div>
 
         <div className="about-split-grid">
@@ -1882,36 +1972,30 @@ export default function LandingPageView({ onOpenLogin }) {
               </div>
             </div>
 
+            <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.65, marginTop: 14 }}>
+              {content.aboutSection.description}
+            </p>
+
             <h4 className="about-subhead">Sasaran & Cakupan Sistem:</h4>
             <ul className="about-bullet-list">
-              <li>
-                <CheckCircle2 size={16} className="bullet-icon text-forest" />
-                <span>Pemantauan indeks ketahanan pangan (IKP) berkala pada 6 kecamatan.</span>
-              </li>
-              <li>
-                <CheckCircle2 size={16} className="bullet-icon text-forest" />
-                <span>Monitoring jangkauan pipa dan kualitas air bersih PDAM Tirta Pakuan.</span>
-              </li>
-              <li>
-                <CheckCircle2 size={16} className="bullet-icon text-forest" />
-                <span>Deteksi dini dan penanganan prioritas stunting balita tingkat kecamatan.</span>
-              </li>
-              <li>
-                <CheckCircle2 size={16} className="bullet-icon text-forest" />
-                <span>Transparansi pengawasan ketersediaan pasokan pangan di pasar tradisional.</span>
-              </li>
+              {content.aboutSection.objectives.map((obj, idx) => (
+                <li key={idx}>
+                  <CheckCircle2 size={16} className="bullet-icon text-forest" />
+                  <span>{obj}</span>
+                </li>
+              ))}
             </ul>
 
             <div className="about-partners-wrap">
               <span className="partners-label">Sumber Data:</span>
               <a
-                href="https://satupeta.kotabogor.go.id/maps"
+                href={content.aboutSection.sourceLinkUrl || "https://satupeta.kotabogor.go.id/maps"}
                 target="_blank"
                 rel="noreferrer"
                 className="sumber-data-link"
               >
                 <ExternalLink size={14} />
-                <span>Peta | Satu Peta Kota Bogor</span>
+                <span>{content.aboutSection.sourceLinkTitle || "Peta | Satu Peta Kota Bogor"}</span>
               </a>
             </div>
           </div>
@@ -1923,7 +2007,7 @@ export default function LandingPageView({ onOpenLogin }) {
               <Building2 size={18} className="contact-icon text-forest" />
               <div>
                 <b>Alamat Kantor Balai Kota:</b>
-                <p>Gedung Balai Kota Bogor, Jl. Ir. H. Juanda No. 10, Kota Bogor, Jawa Barat 16121</p>
+                <p>{content.aboutSection.address}</p>
               </div>
             </div>
 
@@ -1931,7 +2015,7 @@ export default function LandingPageView({ onOpenLogin }) {
               <Mail size={18} className="contact-icon text-forest" />
               <div>
                 <b>Email Resmi Pelaporan GIS:</b>
-                <p>sig.nutrimap@bogorkota.go.id</p>
+                <p>{content.aboutSection.email}</p>
               </div>
             </div>
 
@@ -1939,7 +2023,15 @@ export default function LandingPageView({ onOpenLogin }) {
               <Phone size={18} className="contact-icon text-forest" />
               <div>
                 <b>Layanan Hotline / WhatsApp:</b>
-                <p>+62 812-3456-7890</p>
+                <p>{content.aboutSection.phone}</p>
+              </div>
+            </div>
+
+            <div className="contact-entry">
+              <Clock size={18} className="contact-icon text-forest" />
+              <div>
+                <b>Jam Pelayanan:</b>
+                <p>{content.aboutSection.officeHours || "Senin - Jumat: 08.00 - 16.00 WIB"}</p>
               </div>
             </div>
           </div>
@@ -1956,7 +2048,7 @@ export default function LandingPageView({ onOpenLogin }) {
               </div>
               <div>
                 <div className="fb-title">NutriMap Kota Bogor</div>
-                <div className="fb-sub">Sistem Informasi Geografis Ketahanan Pangan & Kesejahteraan</div>
+                <div className="fb-sub">{content.footer?.tagline || "Sistem Informasi Geografis Ketahanan Pangan & Kesejahteraan"}</div>
               </div>
             </div>
             <p className="footer-brand-desc">
@@ -1966,9 +2058,54 @@ export default function LandingPageView({ onOpenLogin }) {
         </div>
 
         <div className="footer-bottom-row">
-          <span>&copy; {new Date().getFullYear()} Pemerintah Kota Bogor • Bappeda • Dinas Ketahanan Pangan • Dinas Kesehatan. Seluruh Hak Cipta Dilindungi.</span>
+          <span>{content.footer?.copyright || "© 2026 Pemerintah Kota Bogor - Bappeda & Dinas Ketahanan Pangan. Hak Cipta Dilindungi."}</span>
         </div>
       </footer>
+
+      {/* FLOATING QUICK-EDIT CMS BUTTON FOR LOGGED-IN ADMINS */}
+      {currentUser && (currentUser.role === 'admin' || currentUser.role === 'superadmin') && (
+        <aside
+          aria-label="Admin CMS Quick Edit"
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 9999
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => onNavigate && onNavigate('content-mgmt')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              background: '#0f172a',
+              color: '#ffffff',
+              border: '2px solid #38bdf8',
+              borderRadius: 9999,
+              padding: '12px 20px',
+              fontSize: 13.5,
+              fontWeight: 800,
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(15, 23, 42, 0.35)',
+              transition: 'transform 0.15s ease, background 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+              e.currentTarget.style.background = '#1e293b';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1.0)';
+              e.currentTarget.style.background = '#0f172a';
+            }}
+            title="Buka panel editor CMS untuk mengedit teks halaman umum ini langsung"
+          >
+            <FileEdit size={17} color="#38bdf8" />
+            <span>Kelola Konten Halaman Ini (CMS)</span>
+          </button>
+        </aside>
+      )}
     </div>
   );
 }

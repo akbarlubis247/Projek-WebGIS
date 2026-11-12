@@ -1,0 +1,94 @@
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram name="use case diagram" id="QszgOV5DKZ2ENM6owS0h">
+    <mxGraphModel dx="1548" dy="1010" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;graph LR\n    %% Aktor\n    Publik[\&quot;Publik / Akademisi\&quot;]\n    Admin[\&quot;Admin (Dinas / Bappeda)\&quot;]\n\n    %% Batas Sistem\n    subgraph NutriMap Bogor\n        UC1[\&quot;Menampilkan Peta Interaktif &amp; Layer Tematik\&quot;]\n        UC2[\&quot;Melihat Ringkasan &amp; Peringkat SAW\&quot;]\n        UC3[\&quot;Navigasi Peta dari Tabel Peringkat\&quot;]\n        UC4[\&quot;Mengunggah &amp; Memvalidasi Data CSV\&quot;]\n        UC5[\&quot;Mengatur Bobot Kriteria SAW\&quot;]\n    end\n\n    %% Hubungan Aktor Publik (Kiri)\n    Publik --- UC1\n    Publik --- UC2\n    Publik --- UC3\n\n    %% Hubungan Aktor Admin (Kanan)\n    UC1 --- Admin\n    UC2 --- Admin\n    UC3 --- Admin\n    UC4 --- Admin\n    UC5 --- Admin&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="24Hq495r8yaT9HhoqIJG-23">
+          <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=10;" vertex="1">
+            <mxGeometry as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="NutriMap Bogor" mermaidId="n:NutriMap Bogor" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="NutriMap Bogor" id="24Hq495r8yaT9HhoqIJG-24">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-23" style="html=1;whiteSpace=wrap;strokeWidth=1;verticalAlign=top;fillColor=light-dark(#ffffde,#1f2020);strokeColor=light-dark(#aaaa33,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="730" width="455" x="264" y="730" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Menampilkan Peta Interaktif &amp; Layer Tematik" mermaidId="n:UC1" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Menampilkan Peta Interaktif &amp; Layer Tematik" id="24Hq495r8yaT9HhoqIJG-25">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-24" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="385" x="35" y="60.833333333333336" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Melihat Ringkasan &amp; Peringkat SAW" mermaidId="n:UC2" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Melihat Ringkasan &amp; Peringkat SAW" id="24Hq495r8yaT9HhoqIJG-26">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-24" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="311" x="65" y="169.99592592592592" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Navigasi Peta dari Tabel Peringkat" mermaidId="n:UC3" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Navigasi Peta dari Tabel Peringkat" id="24Hq495r8yaT9HhoqIJG-27">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-24" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="303" x="69" y="279.9985185185186" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Mengunggah &amp; Memvalidasi Data CSV" mermaidId="n:UC4" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Mengunggah &amp; Memvalidasi Data CSV" id="24Hq495r8yaT9HhoqIJG-28">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-24" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="325" x="58" y="380.00111111111113" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Mengatur Bobot Kriteria SAW" mermaidId="n:UC5" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Mengatur Bobot Kriteria SAW" id="24Hq495r8yaT9HhoqIJG-29">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-24" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="266" x="76" y="500.0037037037037" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="mengatur Akun admin" mermaidId="n:UC5" mermaidBaseStyle="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Mengatur Bobot Kriteria SAW" id="24Hq495r8yaT9HhoqIJG-40">
+          <mxCell parent="24Hq495r8yaT9HhoqIJG-24" style="html=1;whiteSpace=wrap;strokeWidth=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="73" width="266" x="94.5" y="620" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-56" edge="1" parent="24Hq495r8yaT9HhoqIJG-23" source="24Hq495r8yaT9HhoqIJG-41" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="24Hq495r8yaT9HhoqIJG-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-57" edge="1" parent="24Hq495r8yaT9HhoqIJG-23" source="24Hq495r8yaT9HhoqIJG-41" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="24Hq495r8yaT9HhoqIJG-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-58" edge="1" parent="24Hq495r8yaT9HhoqIJG-23" source="24Hq495r8yaT9HhoqIJG-41" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="24Hq495r8yaT9HhoqIJG-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-41" parent="24Hq495r8yaT9HhoqIJG-23" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="&lt;span style=&quot;font-family: &amp;quot;Trebuchet MS&amp;quot;, Verdana, Arial, sans-serif; font-size: 16px; white-space: normal; color: light-dark(rgb(204, 204, 204), rgb(255, 255, 255));&quot;&gt;Publik / Akademisi&lt;/span&gt;" vertex="1">
+          <mxGeometry height="80" width="42.86" x="100" y="910" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-63" edge="1" parent="24Hq495r8yaT9HhoqIJG-23" source="24Hq495r8yaT9HhoqIJG-60" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="24Hq495r8yaT9HhoqIJG-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-60" parent="24Hq495r8yaT9HhoqIJG-23" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="&lt;font face=&quot;Trebuchet MS, Verdana, Arial, sans-serif&quot;&gt;&lt;span style=&quot;font-size: 16px; text-wrap-mode: wrap;&quot;&gt;Super Admin&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="42.86" x="142.86" y="1320" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-49" edge="1" parent="1" source="24Hq495r8yaT9HhoqIJG-48" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="24Hq495r8yaT9HhoqIJG-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-48" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="&lt;span style=&quot;font-family: &amp;quot;Trebuchet MS&amp;quot;, Verdana, Arial, sans-serif; font-size: 16px; white-space: normal; color: light-dark(rgb(204, 204, 204), rgb(255, 255, 255));&quot;&gt;Admin (Dinas / Bappeda)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="80" width="42.86" x="860" y="960" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-50" edge="1" parent="1" source="24Hq495r8yaT9HhoqIJG-28" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="24Hq495r8yaT9HhoqIJG-48">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-51" edge="1" parent="1" source="24Hq495r8yaT9HhoqIJG-27" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="24Hq495r8yaT9HhoqIJG-48">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-52" edge="1" parent="1" source="24Hq495r8yaT9HhoqIJG-26" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="24Hq495r8yaT9HhoqIJG-48">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="24Hq495r8yaT9HhoqIJG-53" edge="1" parent="1" source="24Hq495r8yaT9HhoqIJG-25" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="24Hq495r8yaT9HhoqIJG-48">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="paDOOIAZW8tHfQiYFVyx" name="Halaman-2">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

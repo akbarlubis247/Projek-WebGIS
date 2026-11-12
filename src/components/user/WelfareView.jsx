@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { HeartPulse, Users, ShieldAlert, Award, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import { getPublicContent } from '../../data/defaultPublicContent';
 import stuntingImg from '../../assets/stunting-prevention.jpg';
 
 export default function WelfareView() {
+  const [content, setContent] = useState(getPublicContent());
   const sortedByStunting = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.stunting - a.stunting);
 
   const avgStuntingRef = useRef(null);
@@ -14,6 +16,12 @@ export default function WelfareView() {
   const heroStuntingRef = useRef(null);
   const heroTargetRef = useRef(null);
   const heroPosyanduRef = useRef(null);
+
+  useEffect(() => {
+    const handleUpdate = () => setContent(getPublicContent());
+    window.addEventListener('nutrimap_content_updated', handleUpdate);
+    return () => window.removeEventListener('nutrimap_content_updated', handleUpdate);
+  }, []);
 
   useEffect(() => {
     const anim = (ref, val, opts = {}) => {
@@ -33,7 +41,7 @@ export default function WelfareView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <h1>Detail Kesejahteraan & Prevalensi Stunting</h1>
+        <h1 className="page-title-editorial">Detail Kesejahteraan &amp; Prevalensi Stunting</h1>
         <div className="export-action-group">
           <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Data Stunting Kota Bogor...')}>
             <FileSpreadsheet size={16} /> Unduh CSV / Excel
@@ -75,14 +83,14 @@ export default function WelfareView() {
       <div className="welfare-hero-card">
         <div className="whc-image-wrap">
           <img
-            src={stuntingImg}
+            src={content.images?.stuntingPrevention || stuntingImg}
             alt="Sosialisasi Pencegahan Stunting Kota Bogor di Posyandu"
             className="whc-img"
           />
         </div>
         <div className="whc-body">
           <span className="whc-tag">Dinas Kesehatan & Gerakan Posyandu Kota Bogor</span>
-          <h2>Sosialisasi Terpadu Pencegahan Stunting Balita</h2>
+          <h2 className="section-title-editorial">Sosialisasi Terpadu Pencegahan Stunting Balita</h2>
           <p>
             Pendampingan intensif bagi ibu dan balita melalui penimbangan rutin, pengukuran kurva pertumbuhan antropometri, edukasi pola asuh gizi seimbang, serta distribusi paket pangan padat gizi (PMT). Intervensi difokuskan secara geospasial pada kelurahan dengan angka prevalensi balita di atas ambang batas.
           </p>

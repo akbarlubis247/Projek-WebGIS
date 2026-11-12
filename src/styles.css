@@ -1564,20 +1564,46 @@ a {
   z-index: 2;
 }
 
-.ladang-title-gradient {
-  background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 40%, #40916C 75%, #52B788 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
-  font-weight: 800;
-  filter: drop-shadow(0 1px 1px rgba(27, 67, 50, 0.08));
+/* ==========================================================================
+   MODERN TEGAS TYPOGRAPHY (Bold, Tegas, Bersih & Highly Legible)
+   Satu kesatuan font tegas (Geometric Sans: Outfit / Inter)
+   100% konsisten, solid hitam pekat (#0F172A), tidak terpecah-pecah/setengah-setengah.
+   ========================================================================== */
+
+.editorial-sans,
+.editorial-serif,
+.editorial-serif-normal,
+.serif-accent,
+.ladang-title-gradient,
+.ladang-title-gradient.warm {
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 800 !important;
+  font-style: normal !important;
+  color: #0F172A !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: #0F172A !important;
+  display: inline !important;
+  letter-spacing: -0.025em !important;
+  filter: none !important;
 }
 
-.ladang-title-gradient.warm {
-  background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 40%, #40916C 75%, #52B788 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 1px 1px rgba(27, 67, 50, 0.08));
+.page-title-editorial,
+.section-title-editorial,
+.ladang-section-head h2,
+.ladang-manifesto-title,
+.pdam-headline,
+.stunting-headline,
+.food-headline,
+.page-header h1,
+.section-head-clean h2 {
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-weight: 800 !important;
+  color: #0F172A !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.25 !important;
+  font-style: normal !important;
+  margin: 0;
 }
 
 .ladang-section-head p {
@@ -2963,12 +2989,17 @@ a {
   grid-template-columns: minmax(0, 1fr) clamp(340px, 22vw, 380px);
   gap: 18px;
   align-items: stretch;
+  min-height: 620px;
 }
 
 .map-main-panel {
   padding: 0;
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 620px;
 }
 
 .analysis-side-panel {
@@ -2977,6 +3008,7 @@ a {
   gap: 12px;
   padding: 20px;
   overflow-y: auto;
+  max-height: 750px;
 }
 
 .analysis-header {
@@ -3325,15 +3357,18 @@ a {
 
 .map-legend-card {
   position: absolute;
-  bottom: 26px;
-  left: 12px;
-  z-index: 1000;
+  bottom: 20px;
+  right: 16px !important;
+  left: auto !important;
+  z-index: 500;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
+  max-width: 280px !important;
+  width: auto !important;
 }
 
 .legend-head {
@@ -4726,7 +4761,9 @@ a {
    ========================================================================== */
 @media (max-width: 1024px) {
   .dashboard-main-grid, .dashboard-sub-grid, .l-hero-stats { grid-template-columns: 1fr; }
-  .spatial-workspace-grid { grid-template-columns: 1fr; gap: 20px; }
+  .spatial-workspace-grid { grid-template-columns: 1fr; gap: 20px; min-height: auto; }
+  .map-main-panel { min-height: 450px; height: 450px; }
+  .analysis-side-panel { max-height: none; }
   .about-split-grid { grid-template-columns: 1fr; gap: 20px; }
 
   /* Navbar */
@@ -4945,10 +4982,12 @@ a {
     display: none;
   }
   .map-legend-card {
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
+    bottom: 10px !important;
+    right: 10px !important;
+    left: auto !important;
     padding: 6px 10px;
+    max-width: 200px !important;
+    width: auto !important;
   }
 
   /* Data Filters & Toolbar */
@@ -5047,9 +5086,7 @@ a {
 .hero-gradient-title {
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 0%, #a7f3d0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #0F172A;
   line-height: 1.2;
 }
 
@@ -6026,6 +6063,8 @@ a {
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Floating Detail Drawer */
@@ -7444,3 +7483,78 @@ a {
     display: none;
   }
 }
+
+/* ==========================================================================
+   Map Mobile Responsive Overrides
+   Hanya berlaku di layar mobile/tablet kecil (<= 768px), tidak mengubah tampilan web desktop
+   ========================================================================== */
+@media (max-width: 768px) {
+  .map-top-controls {
+    top: 10px !important;
+    left: 10px !important;
+    right: 50px !important;
+    gap: 6px !important;
+  }
+  
+  .map-control-btn {
+    padding: 6px 10px !important;
+    font-size: 11.5px !important;
+    border-radius: 8px !important;
+    max-width: 100% !important;
+  }
+
+  .map-btn-text {
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .map-control-dropdown {
+    width: min(250px, calc(100vw - 32px)) !important;
+    max-height: 250px !important;
+    left: auto !important;
+    right: 0 !important;
+  }
+
+  .map-zoom-controls {
+    top: 10px !important;
+    right: 10px !important;
+    gap: 4px !important;
+  }
+
+  .map-zoom-btn {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .map-info-card {
+    left: 10px !important;
+    bottom: 56px !important;
+    right: auto !important;
+    max-width: 170px !important;
+    min-width: 120px !important;
+    padding: 7px 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .map-legend-card {
+    right: 10px !important;
+    bottom: 10px !important;
+    left: auto !important;
+    min-width: unset !important;
+    max-width: 180px !important;
+    width: auto !important;
+    padding: 7px 10px !important;
+    border-radius: 8px !important;
+    z-index: 550 !important;
+  }
+
+  .map-legend-content {
+    margin-top: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+}
+
+

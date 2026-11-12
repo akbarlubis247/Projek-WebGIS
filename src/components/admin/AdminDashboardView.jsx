@@ -7,7 +7,9 @@ export default function AdminDashboardView({ currentUser }) {
     <div className="view-container animate-fade-in">
       <div className="page-header">
         <div>
-          <h1>Admin Dashboard & Manajemen Pengguna</h1>
+          <h1 className="page-title-editorial">
+            Admin Dashboard &amp; Manajemen Pengguna
+          </h1>
           <p>Pengaturan hak akses, peran sistem (Role-Based Access Control), dan riwayat login pengguna NutriMap.</p>
         </div>
         <button className="primary-btn-sm" onClick={() => alert('Buka Form Tambah Pengguna Baru')}>

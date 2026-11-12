@@ -1,17 +1,25 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { Droplets, CheckCircle, AlertCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import { getPublicContent } from '../../data/defaultPublicContent';
 import pdamFacilityImg from '../../assets/pdam-facility.jpg';
 
 export default function CleanWaterView() {
+  const [content, setContent] = useState(getPublicContent());
   const sortedByAir = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.airBersih - a.airBersih);
 
   const avgAirRef = useRef(null);
   const southAirRef = useRef(null);
   const heroProdRef = useRef(null);
   const heroKecRef = useRef(null);
+
+  useEffect(() => {
+    const handleUpdate = () => setContent(getPublicContent());
+    window.addEventListener('nutrimap_content_updated', handleUpdate);
+    return () => window.removeEventListener('nutrimap_content_updated', handleUpdate);
+  }, []);
 
   useEffect(() => {
     const anim = (ref, val, opts = {}) => {
@@ -29,7 +37,7 @@ export default function CleanWaterView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <h1>Detail Akses Air Bersih & Sanitasi</h1>
+        <h1 className="page-title-editorial">Detail Akses Air Bersih &amp; Sanitasi</h1>
         <div className="export-action-group">
           <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Data Air Bersih Kota Bogor...')}>
             <FileSpreadsheet size={16} /> Unduh CSV / Excel
@@ -71,14 +79,14 @@ export default function CleanWaterView() {
       <div className="cleanwater-hero-card">
         <div className="cwh-image-wrap">
           <img
-            src={pdamFacilityImg}
+            src={content.images?.pdamFacility || pdamFacilityImg}
             alt="Instalasi Pengolahan Air Bersih PDAM Tirta Pakuan Kota Bogor"
             className="cwh-img"
           />
         </div>
         <div className="cwh-body">
           <span className="cwh-tag">Perumda Tirta Pakuan Kota Bogor</span>
-          <h2>Instalasi Pengolahan Air (IPA) Terpadu</h2>
+          <h2 className="section-title-editorial">Instalasi Pengolahan Air (IPA) Terpadu</h2>
           <p>
             Pusat penjernihan air baku menjadi air minum berkualitas tinggi yang disalurkan melalui jaringan perpipaan ke seluruh kecamatan Kota Bogor. Pemantauan geospasial dilakukan guna menjaga keandalan kontinuitas debit serta mutu fisik-kimiawi air secara real-time.
           </p>

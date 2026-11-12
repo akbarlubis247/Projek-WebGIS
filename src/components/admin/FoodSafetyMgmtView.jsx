@@ -30,7 +30,7 @@ export default function FoodSafetyMgmtView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <h1>Manajemen Keamanan Pangan</h1>
+        <h1 className="page-title-editorial">Manajemen Keamanan Pangan</h1>
         <div className="export-action-group">
           <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Log Keamanan Pangan...')}>
             <FileSpreadsheet size={16} /> Unduh CSV / Excel
@@ -79,7 +79,7 @@ export default function FoodSafetyMgmtView() {
         </div>
         <div className="fhc-body">
           <span className="fhc-tag">Satgas Ketahanan Pangan & BPOM Kota Bogor</span>
-          <h2>Inspeksi Pangan Terpadu di Pasar Tradisional</h2>
+          <h2 className="section-title-editorial">Inspeksi Pangan Terpadu di Pasar Tradisional</h2>
           <p>
             Pengawasan berkala dan pengambilan sampel acak komoditas pangan segar (sayuran, cabai, daging ayam, ikan, dan bahan pokok) di pasar-pasar tradisional Kota Bogor (Pasar Anyar, Pasar Bogor, Pasar Sukasari, dan Pasar Induk TU Kemang) guna menjamin standar keamanan pangan bebas formalin dan residu berbahaya.
           </p>
@@ -103,7 +103,7 @@ export default function FoodSafetyMgmtView() {
       <div className="dash-card table-card">
         <div className="dash-card-head">
           <div>
-            <h2>Log Hasil Inspeksi Keamanan Pangan Terbaru</h2>
+            <h2 className="section-title-editorial">Log Hasil Inspeksi Keamanan Pangan Terbaru</h2>
             <p>Data pemeriksaan berkala oleh Dinas Ketahanan Pangan & Satgas Pangan Kota Bogor</p>
           </div>
         </div>

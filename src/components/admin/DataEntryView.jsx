@@ -171,8 +171,8 @@ export default function DataEntryView() {
       {/* Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: '#0f172a' }}>
-            Portal Entri & Pengunggahan Data Indikator (CSV)
+          <h1 className="page-title-editorial" style={{ fontSize: 26, fontWeight: 800, margin: 0, color: '#0f172a' }}>
+            Portal Entri &amp; Pengunggahan Data Indikator (CSV)
           </h1>
           <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: 14 }}>
             Fasilitas bagi administrator instansi (Dinkes/Bappeda) untuk mengunggah dataset 4 indikator 68 kelurahan Kota Bogor secara massal.

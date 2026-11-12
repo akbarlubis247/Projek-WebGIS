@@ -45,7 +45,7 @@ export default function IndicatorDataView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <h1>Data Indikator NutriMap Kota Bogor</h1>
+        <h1 className="page-title-editorial">Data Indikator NutriMap Kota Bogor</h1>
         <div className="export-action-group">
           <button className="btn-export-excel" onClick={handleExportCSV}>
             <FileSpreadsheet size={16} /> Unduh CSV / Excel

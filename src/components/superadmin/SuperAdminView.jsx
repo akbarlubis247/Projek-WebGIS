@@ -111,7 +111,9 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
           <div className="sa-badge">
             <ShieldCheck size={16} /> Portal Khusus Super Admin
           </div>
-          <h1>Manajemen Akun & Hak Akses Admin</h1>
+          <h1 className="page-title-editorial">
+            Manajemen Akun &amp; Hak Akses Admin
+          </h1>
           <p>
             Kelola daftar email dan kata sandi staff admin yang diberikan hak akses operasional SIG NutriMap Kota Bogor.
           </p>

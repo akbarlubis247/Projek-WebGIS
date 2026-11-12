@@ -10,7 +10,9 @@ import {
   ArrowDownRight,
   MapPin,
   CheckCircle2,
-  Download
+  Download,
+  FileEdit,
+  Camera
 } from 'lucide-react';
 import {
   AreaChart,
@@ -87,7 +89,9 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
       {/* Hero Banner */}
       <div className="dash-hero">
         <div className="hero-content">
-          <h1>NutriMap Kota Bogor</h1>
+          <h1 className="page-title-editorial">
+            Dashboard NutriMap Kota Bogor
+          </h1>
           <p>
             Sistem Informasi Geografis Pemantauan Ketahanan Pangan, Akses Air Bersih, dan Penanganan Stunting Terpadu.
           </p>
@@ -164,7 +168,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="dash-card map-panel">
           <div className="dash-card-head">
             <div>
-              <h2>Sebaran Spasial Status Ketahanan Pangan</h2>
+              <h2 className="section-title-editorial">Sebaran Spasial Status Ketahanan Pangan</h2>
               <p>Klik poligon kecamatan untuk melihat data geospasial detail</p>
             </div>
             <button className="text-btn" onClick={() => onNavigate('map-explorer')}>
@@ -185,7 +189,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="dash-card region-detail-panel">
           <div className="dash-card-head">
             <div>
-              <h2>Profil Wilayah Kecamatan</h2>
+              <h2 className="section-title-editorial">Profil Wilayah Kecamatan</h2>
               <p>Informasi ringkas demografi dan status pangan</p>
             </div>
           </div>
@@ -249,7 +253,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="dash-card chart-card">
           <div className="dash-card-head">
             <div>
-              <h2>Tren Indikator Utama (8 Bulan Terakhir)</h2>
+              <h2 className="section-title-editorial">Tren Indikator Utama (8 Bulan Terakhir)</h2>
               <p>Perkembangan IKP, Stunting, dan Akses Air Bersih Kota Bogor</p>
             </div>
           </div>
@@ -283,7 +287,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
         <div className="dash-card ranking-card">
           <div className="dash-card-head">
             <div>
-              <h2>Kecamatan Butuh Intervensi</h2>
+              <h2 className="section-title-editorial">Kecamatan Butuh Intervensi Prioritas</h2>
               <p>Peringkat kerawanan tertinggi di Kota Bogor</p>
             </div>
             <button className="link-btn" onClick={() => onNavigate('priority-areas')}>
@@ -307,6 +311,59 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
               ))}
           </div>
         </div>
+      </div>
+
+      {/* Quick CMS Action Card */}
+      <div
+        className="dash-cms-banner"
+        style={{
+          marginTop: 24,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+          borderRadius: 12,
+          padding: '20px 24px',
+          color: '#ffffff',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 16,
+          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.15)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: 10, borderRadius: 10 }}>
+            <FileEdit size={24} color="#38bdf8" />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#ffffff' }}>
+              Kelola Foto &amp; Konten Publik Halaman Warga (CMS)
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: 13, color: '#94a3b8' }}>
+              Ganti foto banner judul beranda, foto PDAM, foto stunting, dan dokumentasi lapangan langsung dari antarmuka Admin.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onNavigate('content-mgmt')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 18px',
+            background: '#047857',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: 8,
+            fontSize: 13.5,
+            fontWeight: 800,
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(4, 120, 87, 0.3)'
+          }}
+        >
+          <Camera size={16} /> Buka Editor Foto &amp; Konten
+        </button>
       </div>
     </div>
   );

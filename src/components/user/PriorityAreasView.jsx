@@ -96,7 +96,7 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
       {/* Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, color: '#0f172a' }}>
+          <h1 className="page-title-editorial" style={{ fontSize: 26, fontWeight: 800, margin: 0, color: '#0f172a' }}>
             Sistem Rekomendasi Prioritas Intervensi (Algoritma SAW)
           </h1>
           <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: 14 }}>

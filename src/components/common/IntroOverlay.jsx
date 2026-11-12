@@ -5,8 +5,10 @@ import {
   Sparkles
 } from 'lucide-react';
 import introBgImg from '../../assets/intro-bg.png';
+import { getPublicContent } from '../../data/defaultPublicContent';
 
 export default function IntroOverlay({ onFinish }) {
+  const [content] = useState(() => getPublicContent());
   const [countdown, setCountdown] = useState(5);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -231,7 +233,7 @@ export default function IntroOverlay({ onFinish }) {
       {/* Background Layer with GIS Landscape & Map Grid */}
       <div className="intro-bg-layer" ref={bgRef}>
         <img
-          src={introBgImg}
+          src={content.images?.introBg || introBgImg}
           alt="WebGIS NutriMap Bogor Intro Background"
           className="intro-bg-img"
         />

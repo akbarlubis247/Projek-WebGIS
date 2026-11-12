@@ -23,6 +23,7 @@ export { default as DashboardView } from './admin/DashboardView';
 export { default as AdminDashboardView } from './admin/AdminDashboardView';
 export { default as DataEntryView } from './admin/DataEntryView';
 export { default as FoodSafetyMgmtView } from './admin/FoodSafetyMgmtView';
+export { default as PublicContentEditorView } from './admin/PublicContentEditorView';
 
 // 4. Super Admin Views
 export { default as SuperAdminView } from './superadmin/SuperAdminView';

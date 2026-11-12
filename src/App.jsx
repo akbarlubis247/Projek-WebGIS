@@ -20,6 +20,7 @@ import AboutView from './components/user/AboutView';
 import DashboardView from './components/admin/DashboardView';
 import DataEntryView from './components/admin/DataEntryView';
 import FoodSafetyMgmtView from './components/admin/FoodSafetyMgmtView';
+import PublicContentEditorView from './components/admin/PublicContentEditorView';
 
 // Super Admin Management Views
 import SuperAdminView from './components/superadmin/SuperAdminView';
@@ -69,8 +70,8 @@ export default function App() {
 
   // Render view content based on active page
   const renderView = () => {
-    // 1. SUPERADMIN VIEW
-    if (currentUser.role === 'superadmin') {
+    // 1. SUPERADMIN VIEW (kecuali saat membuka editor konten CMS)
+    if (currentUser.role === 'superadmin' && activePage !== 'content-mgmt') {
       return (
         <SuperAdminView
           admins={adminsList}
@@ -88,6 +89,8 @@ export default function App() {
           <LandingPageView
             onOpenLogin={() => setIsLoginModalOpen(true)}
             onSelectKecamatan={setSelectedKecamatan}
+            currentUser={currentUser}
+            onNavigate={setActivePage}
           />
         );
       case 'dashboard':
@@ -122,6 +125,8 @@ export default function App() {
         return <DataEntryView />;
       case 'food-safety':
         return <FoodSafetyMgmtView />;
+      case 'content-mgmt':
+        return <PublicContentEditorView onNavigate={setActivePage} />;
       case 'about':
         return <AboutView />;
       default:

@@ -26,7 +26,7 @@ export default function FoodSecurityView() {
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
-        <h1>Detail Ketahanan Pangan (IKP)</h1>
+        <h1 className="page-title-editorial">Detail Ketahanan Pangan (IKP)</h1>
         <div className="export-action-group">
           <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Data Ketahanan Pangan...')}>
             <FileSpreadsheet size={16} /> Unduh CSV / Excel
@@ -68,7 +68,9 @@ export default function FoodSecurityView() {
       <div className="dash-card">
         <div className="dash-card-head">
           <div>
-            <h2>Peringkat Skor Indeks Ketahanan Pangan (IKP) per Kecamatan</h2>
+            <h2 className="section-title-editorial">
+              Peringkat Skor Indeks Ketahanan Pangan (IKP) per Kecamatan
+            </h2>
             <p>Data IKP Kota Bogor Tahun 2026 (0 = Rawan, 100 = Sangat Aman)</p>
           </div>
         </div>
