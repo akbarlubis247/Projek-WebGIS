@@ -24,7 +24,6 @@ import PublicContentEditorView from './components/admin/PublicContentEditorView'
 
 // Super Admin Management Views
 import SuperAdminView from './components/superadmin/SuperAdminView';
-import { INITIAL_ADMINS_LIST } from './data/bogorData';
 import { clearStoredToken, fetchMeApi, getStoredToken } from './services/api';
 
 export default function App() {
@@ -36,10 +35,10 @@ export default function App() {
     name: 'Warga / Pengunjung',
     role: 'guest',
     email: '',
+    agency: '',
     isLoggedIn: false
   });
 
-  const [adminsList, setAdminsList] = useState(INITIAL_ADMINS_LIST);
   const [activePage, setActivePage] = useState('landing');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -56,11 +55,14 @@ export default function App() {
         if (res?.user) {
           setCurrentUser({
             id: res.user.id,
-            name: res.user.name || 'Admin Instansi',
+            name: res.user.name || (res.user.role === 'superadmin' ? 'Super Admin' : 'Admin Instansi'),
             role: res.user.role,
             email: res.user.email,
+            agency: res.user.agency || 'Pemerintah Kota Bogor',
+            last_login_at: res.user.last_login_at || null,
             isLoggedIn: true,
           });
+          setActivePage((prev) => (prev === 'landing' ? 'dashboard' : prev));
         }
       })
       .catch(() => {
@@ -77,6 +79,7 @@ export default function App() {
       name: 'Warga / Pengunjung',
       role: 'guest',
       email: '',
+      agency: '',
       isLoggedIn: false
     });
     setActivePage('landing');
@@ -85,9 +88,7 @@ export default function App() {
   // Handle Login Success
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
-    if (userData.role === 'superadmin') {
-      setActivePage('superadmin-mgmt');
-    } else if (userData.role === 'admin') {
+    if (userData.role === 'superadmin' || userData.role === 'admin') {
       setActivePage('dashboard');
     } else {
       setActivePage('landing');
@@ -96,19 +97,8 @@ export default function App() {
 
   // Render view content based on active page
   const renderView = () => {
-    // 1. SUPERADMIN VIEW (kecuali saat membuka editor konten CMS)
-    if (currentUser.role === 'superadmin' && activePage !== 'content-mgmt') {
-      return (
-        <SuperAdminView
-          admins={adminsList}
-          setAdmins={setAdminsList}
-          currentUser={currentUser}
-          onLogout={handleLogout}
-        />
-      );
-    }
+    const isAuthenticated = currentUser.isLoggedIn && (currentUser.role === 'admin' || currentUser.role === 'superadmin');
 
-    // 2. OPERATIONAL & PUBLIC VIEWS
     switch (activePage) {
       case 'landing':
         return (
@@ -120,11 +110,49 @@ export default function App() {
           />
         );
       case 'dashboard':
+        if (!isAuthenticated) {
+          return (
+            <LandingPageView
+              onOpenLogin={() => setIsLoginModalOpen(true)}
+              onSelectKecamatan={setSelectedKecamatan}
+              currentUser={currentUser}
+              onNavigate={setActivePage}
+            />
+          );
+        }
         return (
           <DashboardView
+            currentUser={currentUser}
             onNavigate={setActivePage}
             onSelectKecamatan={setSelectedKecamatan}
           />
+        );
+      case 'superadmin-mgmt':
+        if (currentUser.role === 'superadmin') {
+          return (
+            <SuperAdminView
+              currentUser={currentUser}
+              onNavigate={setActivePage}
+              onLogout={handleLogout}
+            />
+          );
+        }
+        return (
+          <div className="view-container animate-fade-in" style={{ padding: 32 }}>
+            <div className="dash-card" style={{ padding: 28, borderLeft: '4px solid #dc2626' }}>
+              <h2 style={{ marginTop: 0, color: '#991b1b' }}>Akses Terbatas (Khusus Super Admin)</h2>
+              <p style={{ color: '#475569' }}>
+                Halaman Manajemen Akun &amp; Audit Log hanya dapat diakses oleh pengguna dengan role <strong>superadmin</strong>.
+              </p>
+              <button
+                type="button"
+                className="primary-btn-sm"
+                onClick={() => setActivePage(isAuthenticated ? 'dashboard' : 'landing')}
+              >
+                Kembali ke {isAuthenticated ? 'Dashboard' : 'Beranda'}
+              </button>
+            </div>
+          </div>
         );
       case 'map-explorer':
         return (
@@ -149,11 +177,11 @@ export default function App() {
       case 'indicator-data':
         return <IndicatorDataView />;
       case 'data-entry':
-        return <DataEntryView />;
+        return isAuthenticated ? <DataEntryView currentUser={currentUser} /> : <LandingPageView onOpenLogin={() => setIsLoginModalOpen(true)} onSelectKecamatan={setSelectedKecamatan} />;
       case 'food-safety':
-        return <FoodSafetyMgmtView />;
+        return isAuthenticated ? <FoodSafetyMgmtView /> : <LandingPageView onOpenLogin={() => setIsLoginModalOpen(true)} onSelectKecamatan={setSelectedKecamatan} />;
       case 'content-mgmt':
-        return <PublicContentEditorView onNavigate={setActivePage} />;
+        return isAuthenticated ? <PublicContentEditorView onNavigate={setActivePage} /> : <LandingPageView onOpenLogin={() => setIsLoginModalOpen(true)} onSelectKecamatan={setSelectedKecamatan} />;
       case 'about':
         return <AboutView />;
       default:

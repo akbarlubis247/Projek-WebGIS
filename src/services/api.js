@@ -200,6 +200,62 @@ export async function listAuditLogsApi({ limit = 50, signal } = {}) {
   return requestJson(`/api/admin/audit-logs?limit=${limit}`, { auth: true, signal });
 }
 
+export async function changePasswordApi({ currentPassword, newPassword }) {
+  return requestJson('/api/auth/change-password', {
+    method: 'POST',
+    auth: true,
+    body: {
+      current_password: currentPassword,
+      new_password: newPassword,
+    },
+  });
+}
+
+export async function fetchAdminOverviewApi({ signal } = {}) {
+  return requestJson('/api/admin/overview', { auth: true, signal });
+}
+
+export async function updateManualIndicatorApi({ areaId, indicatorType, year, value, source }) {
+  return requestJson('/api/admin/indicators', {
+    method: 'POST',
+    auth: true,
+    body: {
+      area_id: areaId,
+      indicator_type: indicatorType,
+      year: Number(year),
+      value: Number(value),
+      ...(source ? { source } : {}),
+    },
+  });
+}
+
+export async function listUsersApi({ signal } = {}) {
+  return requestJson('/api/admin/users', { auth: true, signal });
+}
+
+export async function createUserApi(payload) {
+  return requestJson('/api/admin/users', {
+    method: 'POST',
+    auth: true,
+    body: payload,
+  });
+}
+
+export async function updateUserApi(id, payload) {
+  return requestJson(`/api/admin/users/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    auth: true,
+    body: payload,
+  });
+}
+
+export async function deleteUserApi(id) {
+  return requestJson(`/api/admin/users/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    auth: true,
+  });
+}
+
 // ---- Data Mappers ----
 
 export function extractKelurahanList(geoJson) {

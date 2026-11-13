@@ -144,6 +144,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
         name: user.name || (user.role === 'superadmin' ? 'Super Admin' : 'Admin Instansi'),
         role: user.role,
         email: user.email,
+        agency: user.agency || 'Pemerintah Kota Bogor',
+        last_login_at: user.last_login_at || null,
         isLoggedIn: true,
       });
       setPassword('');

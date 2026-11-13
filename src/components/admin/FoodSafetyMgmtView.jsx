@@ -27,16 +27,33 @@ export default function FoodSafetyMgmtView() {
     anim(heroPasarRef, 4);
   }, []);
 
+  const handleDownloadCsv = () => {
+    const header = ['ID Audit', 'Lokasi Inspeksi', 'Tanggal', 'Jenis Pengujian', 'Hasil Laboratorium', 'Status', 'Pemeriksa'];
+    const rows = SECURITY_AUDITS.map((a) => [a.id, a.lokasi, a.tanggal, a.jenis, a.hasil, a.status, a.pemeriksa]);
+    const csv = [header, ...rows]
+      .map((line) => line.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'log_keamanan_pangan_kota_bogor.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="view-container animate-fade-in">
       <div className="page-header">
         <h1 className="page-title-editorial">Manajemen Keamanan Pangan</h1>
         <div className="export-action-group">
-          <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Log Keamanan Pangan...')}>
+          <button type="button" className="btn-export-excel" onClick={handleDownloadCsv}>
             <FileSpreadsheet size={16} /> Unduh CSV / Excel
           </button>
-          <button className="btn-export-pdf" onClick={() => alert('Export Log Keamanan Pangan Kota Bogor (PDF)...')}>
-            <FileText size={16} /> Export PDF / Laporan
+          <button type="button" className="btn-export-pdf" onClick={() => window.print()}>
+            <FileText size={16} /> Cetak / Export PDF
           </button>
         </div>
       </div>
