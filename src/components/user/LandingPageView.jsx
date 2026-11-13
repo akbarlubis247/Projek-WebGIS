@@ -45,8 +45,8 @@ import {
   KECAMATAN_KOTA_BOGOR,
   FOOD_SECURITY_CATEGORIES
 } from '../../data/bogorData';
-import { KELURAHAN_68_BOGOR } from '../../data/bogorKelurahanData';
 import { LAYER_DEFINITIONS, getIndicatorClassification } from '../../data/indicatorStandards';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 import heroBg from '../../assets/hero-banner.png';
 import pdamFacilityImg from '../../assets/pdam-facility.jpg';
 import stuntingImg from '../../assets/stunting-prevention.jpg';
@@ -58,6 +58,7 @@ import { getPublicContent } from '../../data/defaultPublicContent';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function LandingPageView({ onOpenLogin, onSelectKecamatan, currentUser, onNavigate }) {
+  const { areasGeoJson, kelurahanList, facilitiesGeoJson } = useNutriMapData();
   const [content, setContent] = useState(getPublicContent());
   const [selectedKec, setSelectedKec] = useState(null);
   const [selectedKel, setSelectedKel] = useState(null);
@@ -1027,6 +1028,9 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
           {/* Main Map Canvas (70-75% Area) */}
           <div className="ladang-card-box map-main-panel">
             <MapView
+              geoJsonData={areasGeoJson}
+              kelurahanList={kelurahanList}
+              facilitiesData={facilitiesGeoJson}
               selectedKecamatan={selectedKec}
               selectedKelurahan={selectedKel}
               activeLayerFilter={activeMapLayer}
@@ -1409,13 +1413,13 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 {/* Daftar Kelurahan Cepat (Interactive Chips Sesuai Layer Aktif) */}
                 <div className="meta-stats-section">
                   <span className="group-title">
-                    KELURAHAN DI KEC. {selectedKec.nama.toUpperCase()} ({KELURAHAN_68_BOGOR.filter(k => k.kecamatan === selectedKec.nama).length})
+                    KELURAHAN DI KEC. {selectedKec.nama.toUpperCase()} ({kelurahanList.filter(k => k.kecamatan === selectedKec.nama).length})
                   </span>
                   <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '8px', lineHeight: 1.4 }}>
                     Menampilkan nilai <strong>{LAYER_DEFINITIONS[activeMapLayer]?.label}</strong>. Klik kelurahan untuk fokus di peta:
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                    {KELURAHAN_68_BOGOR.filter(k => k.kecamatan === selectedKec.nama).map((k) => {
+                    {kelurahanList.filter(k => k.kecamatan === selectedKec.nama).map((k) => {
                       const kVal = k[LAYER_DEFINITIONS[activeMapLayer]?.propKey || 'stunting'];
                       const kClass = getIndicatorClassification(activeMapLayer, kVal);
                       return (
@@ -1612,7 +1616,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                     </span>
                     <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
                       {(() => {
-                        const totalMatch = KELURAHAN_68_BOGOR.filter((k) => {
+                        const totalMatch = kelurahanList.filter((k) => {
                           const matchKec = panelKecTab === 'Semua' || k.kecamatan === panelKecTab;
                           const matchSearch =
                             !panelKelSearch ||
@@ -1688,7 +1692,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                       paddingRight: '3px'
                     }}
                   >
-                    {KELURAHAN_68_BOGOR
+                    {kelurahanList
                       .filter((k) => {
                         const matchKec = panelKecTab === 'Semua' || k.kecamatan === panelKecTab;
                         const matchSearch =

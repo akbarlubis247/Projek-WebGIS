@@ -13,9 +13,11 @@ import {
   MapPin,
   Info
 } from 'lucide-react';
-import { KELURAHAN_68_BOGOR, calculateSAW } from '../../data/bogorKelurahanData';
+import { useNutriMapData, useSawRankings } from '../../hooks/useNutriMapData';
 
 export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
+  const { kelurahanList } = useNutriMapData();
+
   // 1. Bobot Kriteria SAW (Default sesuai PRD WBS 1.4.3.2)
   // Stunting 40%, Kemiskinan 25%, Kerentanan Pangan 20%, Air Bersih 15%
   const [weights, setWeights] = useState({
@@ -29,14 +31,8 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
   const [filterZona, setFilterZona] = useState('ALL');
   const [selectedKelurahan, setSelectedKelurahan] = useState(null);
 
-  // Total Bobot
-  const totalWeight = weights.stunting + weights.kemiskinan + weights.kerentananPangan + weights.airBersih;
-  const isWeightValid = totalWeight === 100;
-
-  // Hitung Algoritma SAW secara reaktif
-  const sawResults = useMemo(() => {
-    return calculateSAW(KELURAHAN_68_BOGOR, weights);
-  }, [weights]);
+  // Hitung / ambil pemeringkatan SAW dari API /api/rankings (fallback lokal bila offline)
+  const { sawResults, isLive: isSawLive, totalWeight, isWeightValid } = useSawRankings(weights, kelurahanList);
 
   // Statistik Zona
   const zonaMerahCount = sawResults.filter(r => r.zonaClass === 'red').length;
@@ -281,7 +277,8 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
           </div>
 
           <span style={{ fontSize: 13, color: '#64748b' }}>
-            Menampilkan <strong>{filteredResults.length}</strong> dari 68 kelurahan
+            Menampilkan <strong>{filteredResults.length}</strong> dari {sawResults.length} kelurahan
+            {isSawLive ? ' (Live PostGIS SAW)' : ''}
           </span>
         </div>
 

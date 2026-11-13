@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -15,21 +15,34 @@ import {
   Sparkles
 } from 'lucide-react';
 import MapView from '../common/MapView';
-import { KELURAHAN_68_BOGOR } from '../../data/bogorKelurahanData';
-import { BOGOR_KELURAHAN_GEOJSON } from '../../data/bogorKelurahanGeoJSON';
+import { getIndicatorClassification } from '../../data/indicatorStandards';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 
 export default function MapExplorerView({ onNavigate }) {
+  const { areasGeoJson, kelurahanList, facilitiesGeoJson } = useNutriMapData();
   const [search, setSearch] = useState('');
   const [selectedKecamatanFilter, setSelectedKecamatanFilter] = useState('Semua Kecamatan');
-  const [selectedKel, setSelectedKel] = useState(KELURAHAN_68_BOGOR[0]);
+  const [selectedKel, setSelectedKel] = useState(() => kelurahanList[0]);
   const [activeLayerFilter, setActiveLayerFilter] = useState('stunting');
   const [showDrawer, setShowDrawer] = useState(true);
+
+  useEffect(() => {
+    if (!kelurahanList.length) return;
+    setSelectedKel((prev) => {
+      if (!prev) return kelurahanList[0];
+      return (
+        kelurahanList.find((k) => k.id === prev.id) ||
+        kelurahanList.find((k) => k.nama.toLowerCase() === (prev.nama || '').toLowerCase()) ||
+        kelurahanList[0]
+      );
+    });
+  }, [kelurahanList]);
 
   // Daftar Kecamatan Unik
   const kecamatanList = ['Semua Kecamatan', 'Bogor Tengah', 'Bogor Utara', 'Bogor Selatan', 'Bogor Timur', 'Bogor Barat', 'Tanah Sareal'];
 
   // Filter 68 Kelurahan
-  const filteredList = KELURAHAN_68_BOGOR.filter((item) => {
+  const filteredList = kelurahanList.filter((item) => {
     const matchesSearch = item.nama.toLowerCase().includes(search.toLowerCase());
     const matchesKec = selectedKecamatanFilter === 'Semua Kecamatan' || item.kecamatan === selectedKecamatanFilter;
     return matchesSearch && matchesKec;
@@ -37,7 +50,7 @@ export default function MapExplorerView({ onNavigate }) {
 
   // Handle Export GeoJSON Nyata
   const handleExportGeoJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(BOGOR_KELURAHAN_GEOJSON, null, 2));
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(areasGeoJson, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute('download', 'bogor_68_kelurahan_geodata.geojson');
@@ -56,14 +69,14 @@ export default function MapExplorerView({ onNavigate }) {
             className="kecamatan-map-select font-bold"
             value={selectedKel ? selectedKel.id : ''}
             onChange={(e) => {
-              const found = KELURAHAN_68_BOGOR.find((k) => k.id === e.target.value);
+              const found = kelurahanList.find((k) => k.id === e.target.value);
               if (found) {
                 setSelectedKel(found);
                 setShowDrawer(true);
               }
             }}
           >
-            {KELURAHAN_68_BOGOR.map((kel) => (
+            {kelurahanList.map((kel) => (
               <option key={kel.id} value={kel.id}>
                 📍 Kel. {kel.nama} (Kec. {kel.kecamatan})
               </option>
@@ -107,6 +120,9 @@ export default function MapExplorerView({ onNavigate }) {
       <div className="explorer-body">
         <div className="map-wrapper">
           <MapView
+            geoJsonData={areasGeoJson}
+            kelurahanList={kelurahanList}
+            facilitiesData={facilitiesGeoJson}
             selectedKecamatan={selectedKecamatanFilter}
             selectedKelurahan={selectedKel}
             onSelectKecamatan={(kec) => {
@@ -145,22 +161,27 @@ export default function MapExplorerView({ onNavigate }) {
 
             <div className="drawer-content">
               {/* Status Header */}
-              <div className="d-status-card modern-status-card">
-                <span className="dsc-lbl">Tingkat Prevalensi Balita Stunting</span>
-                <div className="dsc-val" style={{ color: selectedKel.stunting >= 16 ? '#dc2626' : (selectedKel.stunting >= 12 ? '#f59e0b' : '#16a34a') }}>
-                  {selectedKel.stunting}%
-                </div>
-                <div className="dsc-meter">
-                  <motion.div
-                    className="dsc-meter-fill"
-                    style={{ background: selectedKel.stunting >= 16 ? '#dc2626' : (selectedKel.stunting >= 12 ? '#f59e0b' : '#16a34a') }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(selectedKel.stunting * 3.5, 100)}%` }}
-                    transition={{ duration: 0.8 }}
-                  />
-                </div>
-                <small className="font-mono">Kategori: {selectedKel.stunting >= 16 ? 'Tinggi (Prioritas 1)' : (selectedKel.stunting >= 12 ? 'Sedang' : 'Terkendali')}</small>
-              </div>
+              {(() => {
+                const stuntingClass = getIndicatorClassification('stunting', selectedKel.stunting);
+                return (
+                  <div className="d-status-card modern-status-card">
+                    <span className="dsc-lbl">Tingkat Prevalensi Balita Stunting</span>
+                    <div className="dsc-val" style={{ color: stuntingClass.color }}>
+                      {selectedKel.stunting}%
+                    </div>
+                    <div className="dsc-meter">
+                      <motion.div
+                        className="dsc-meter-fill"
+                        style={{ background: stuntingClass.color }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min((selectedKel.stunting / 6) * 100, 100)}%` }}
+                        transition={{ duration: 0.8 }}
+                      />
+                    </div>
+                    <small className="font-mono">Kategori: {stuntingClass.status}</small>
+                  </div>
+                );
+              })()}
 
               {/* Statistics Grid 4 Indikator PRD */}
               <div className="d-stats-grid">

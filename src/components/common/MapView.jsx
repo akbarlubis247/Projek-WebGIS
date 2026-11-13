@@ -11,14 +11,14 @@ import {
   TrendingDown,
   Building2,
   Map as MapIcon,
+  MapPin,
   ChevronDown,
   ChevronUp,
   Info
 } from 'lucide-react';
-import { BOGOR_KELURAHAN_GEOJSON } from '../../data/bogorKelurahanGeoJSON';
 import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
-import { KELURAHAN_68_BOGOR } from '../../data/bogorKelurahanData';
 import { LAYER_DEFINITIONS, getIndicatorClassification } from '../../data/indicatorStandards';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 
 // Basemap URL Providers (Bebas Watermark & Open Source)
 const BASEMAP_PROVIDERS = {
@@ -58,18 +58,28 @@ export default function MapView({
   activeLayerFilter,
   activeLayer: activeLayerProp,
   onActiveLayerChange,
+  geoJsonData,
+  kelurahanList,
+  facilitiesData,
   height = '600px'
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
   const geojsonLayerRef = useRef(null);
+  const facilityLayerRef = useRef(null);
+
+  const liveHookData = useNutriMapData();
+  const activeGeoJson = geoJsonData || liveHookData.areasGeoJson;
+  const activeKelList = kelurahanList || liveHookData.kelurahanList;
+  const activeFacilities = facilitiesData || liveHookData.facilitiesGeoJson;
 
   // State Layer Aktif & Filter Kecamatan
   const [activeLayer, setActiveLayer] = useState(activeLayerFilter || activeLayerProp || 'stunting');
   const [activeBasemap, setActiveBasemap] = useState('osm');
   const [selectedKecFilter, setSelectedKecFilter] = useState('Semua Kecamatan');
   const [hoveredKelurahan, setHoveredKelurahan] = useState(null);
+  const [showFacilities, setShowFacilities] = useState(true);
 
   // Sinkronkan activeLayer jika prop berubah
   useEffect(() => {
@@ -133,7 +143,7 @@ export default function MapView({
   // Window bridge untuk interaksi tombol di dalam Leaflet Popup HTML
   useEffect(() => {
     window.__nutrimap_select_kel = (kelId) => {
-      const found = KELURAHAN_68_BOGOR.find((k) => k.id === kelId);
+      const found = activeKelList.find((k) => k.id === kelId);
       if (found) {
         if (onSelectKelurahan) onSelectKelurahan(found);
         const parent = KECAMATAN_KOTA_BOGOR.find((k) => k.nama === found.kecamatan);
@@ -143,7 +153,7 @@ export default function MapView({
     return () => {
       delete window.__nutrimap_select_kel;
     };
-  }, [onSelectKelurahan, onSelectKecamatan]);
+  }, [activeKelList, onSelectKelurahan, onSelectKecamatan]);
 
   // Logika Pewarnaan Choropleth Bergradasi 5 Tingkat Berbasis Standar Tunggal
   const getChoroplethColor = (val, layer) => {
@@ -312,7 +322,7 @@ export default function MapView({
     };
 
     // Pasang GeoJSON Layer dengan filter kelurahan terpilih
-    const geoLayer = L.geoJSON(BOGOR_KELURAHAN_GEOJSON, {
+    const geoLayer = L.geoJSON(activeGeoJson, {
       filter: (feature) => {
         // Jika ada kelurahan terpilih (dari klik chip/search/peta): HANYA TAMPILKAN KELURAHAN ITU SAJA
         if (selectedKelurahan) {
@@ -393,7 +403,7 @@ export default function MapView({
                   <strong style="color: ${classStunt.color}; font-size: 13px;">${p.stunting}%</strong>
                 </div>
                 <div style="height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
-                  <div style="height: 100%; width: ${Math.min((p.stunting / 25) * 100, 100)}%; background: ${classStunt.color}; border-radius: 3px;"></div>
+                  <div style="height: 100%; width: ${Math.min((p.stunting / 6) * 100, 100)}%; background: ${classStunt.color}; border-radius: 3px;"></div>
                 </div>
               </div>
 
@@ -459,7 +469,58 @@ export default function MapView({
         l.openPopup();
       });
     }
-  }, [activeLayer, selectedKecFilter, selectedKelurahan]);
+  }, [activeGeoJson, activeLayer, selectedKecFilter, selectedKelurahan]);
+
+  // Render Overlay Titik Fasilitas (Kesehatan, Rumah Sakit, Sentra Niaga)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    if (facilityLayerRef.current) {
+      map.removeLayer(facilityLayerRef.current);
+      facilityLayerRef.current = null;
+    }
+
+    if (!showFacilities || !activeFacilities?.features?.length) return;
+
+    const facLayer = L.geoJSON(activeFacilities, {
+      filter: (feature) => {
+        if (selectedKecFilter === 'Semua Kecamatan') return true;
+        return feature.properties?.kecamatan === selectedKecFilter;
+      },
+      pointToLayer: (feature, latlng) => {
+        const isMarket = feature.properties?.facility_type === 'market';
+        return L.circleMarker(latlng, {
+          radius: 6.5,
+          fillColor: isMarket ? '#7c3aed' : '#0d9488',
+          color: '#ffffff',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.95,
+        });
+      },
+      onEachFeature: (feature, layer) => {
+        const p = feature.properties || {};
+        const isMarket = p.facility_type === 'market';
+        const badgeLabel = isMarket ? 'Sentra Niaga / Pasar' : 'Fasilitas Kesehatan / RS';
+        const badgeBg = isMarket ? '#f3e8ff' : '#ccfbf1';
+        const badgeColor = isMarket ? '#6d28d9' : '#0f766e';
+        layer.bindPopup(
+          `<div style="font-family: 'Inter', sans-serif; min-width: 210px; font-size: 12px;">
+            <span style="display:inline-block; padding: 2px 7px; border-radius: 4px; background: ${badgeBg}; color: ${badgeColor}; font-weight: 700; font-size: 10.5px; margin-bottom: 5px;">
+              ${badgeLabel}
+            </span>
+            <h4 style="margin: 0 0 4px; font-size: 13.5px; font-weight: 700; color: #0f172a;">${p.name || 'Fasilitas'}</h4>
+            <p style="margin: 0 0 4px; color: #475569; font-size: 11.5px;">${p.address || 'Kota Bogor'}</p>
+            <div style="font-size: 10.5px; color: #94a3b8;">Sumber: ${p.source || 'Peta RBI 1:25.000'}</div>
+          </div>`,
+          { maxWidth: 260 }
+        );
+      },
+    }).addTo(map);
+
+    facilityLayerRef.current = facLayer;
+  }, [activeFacilities, showFacilities, selectedKecFilter]);
 
   // Map Controls
   const handleZoomIn = () => mapInstanceRef.current && mapInstanceRef.current.zoomIn();
@@ -723,6 +784,33 @@ export default function MapView({
             </div>
           )}
         </div>
+
+        {/* 4. Toggle Titik Fasilitas Kesehatan & Niaga */}
+        {activeFacilities?.features?.length > 0 && (
+          <button
+            type="button"
+            className="map-control-btn"
+            onClick={() => setShowFacilities((prev) => !prev)}
+            title="Tampilkan/Sembunyikan Titik Fasilitas Kesehatan & Pasar RBI"
+            style={{
+              padding: '8px 12px',
+              background: showFacilities ? '#f0fdfa' : '#ffffff',
+              border: showFacilities ? '1.5px solid #0d9488' : '1px solid #cbd5e1',
+              borderRadius: 8,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: 12.5,
+              fontWeight: 700,
+              color: showFacilities ? '#0f766e' : '#475569'
+            }}
+          >
+            <MapPin size={15} color={showFacilities ? '#0d9488' : '#64748b'} />
+            <span className="map-btn-text">Fasilitas ({activeFacilities.features.length})</span>
+          </button>
+        )}
       </div>
 
       {/* Zoom Controls di Kanan Atas */}

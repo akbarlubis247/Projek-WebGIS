@@ -11,11 +11,11 @@ export const LAYER_DEFINITIONS = {
     type: 'benefit', // Semakin tinggi semakin butuh penanganan (merah)
     legendTitle: 'Prevalensi Stunting (%)',
     thresholds: [
-      { min: 20.0, max: 100, label: '≥ 20.0% (Sangat Tinggi)', shortTier: 'Sangat Tinggi', status: 'Sangat Tinggi (Kritis)', color: '#991b1b', bg: '#fef2f2', border: '#fecaca', textBadge: '#991b1b' },
-      { min: 16.0, max: 19.99, label: '16.0% - 19.9% (Tinggi)', shortTier: 'Tinggi', status: 'Tinggi (Prioritas)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', textBadge: '#dc2626' },
-      { min: 13.0, max: 15.99, label: '13.0% - 15.9% (Sedang)', shortTier: 'Sedang', status: 'Sedang (Waspada)', color: '#f97316', bg: '#fff7ed', border: '#fed7aa', textBadge: '#ea580c' },
-      { min: 10.0, max: 12.99, label: '10.0% - 12.9% (Rendah)', shortTier: 'Rendah', status: 'Rendah (Terkendali)', color: '#facc15', bg: '#fefce8', border: '#fef08a', textBadge: '#ca8a04' },
-      { min: 0, max: 9.99, label: '< 10.0% (Sangat Rendah)', shortTier: 'Sangat Rendah', status: 'Sangat Rendah (Aman)', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', textBadge: '#16a34a' }
+      { min: 4.5, max: 100, label: '≥ 4.5% (Sangat Tinggi)', shortTier: 'Sangat Tinggi', status: 'Sangat Tinggi (Kritis)', color: '#991b1b', bg: '#fef2f2', border: '#fecaca', textBadge: '#991b1b' },
+      { min: 3.5, max: 4.49, label: '3.5% - 4.4% (Tinggi)', shortTier: 'Tinggi', status: 'Tinggi (Prioritas)', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', textBadge: '#dc2626' },
+      { min: 2.5, max: 3.49, label: '2.5% - 3.4% (Sedang)', shortTier: 'Sedang', status: 'Sedang (Waspada)', color: '#f97316', bg: '#fff7ed', border: '#fed7aa', textBadge: '#ea580c' },
+      { min: 1.5, max: 2.49, label: '1.5% - 2.4% (Rendah)', shortTier: 'Rendah', status: 'Rendah (Terkendali)', color: '#facc15', bg: '#fefce8', border: '#fef08a', textBadge: '#ca8a04' },
+      { min: 0, max: 1.49, label: '< 1.5% (Sangat Rendah)', shortTier: 'Sangat Rendah', status: 'Sangat Rendah (Aman)', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', textBadge: '#16a34a' }
     ]
   },
   kemiskinan: {
@@ -43,11 +43,11 @@ export const LAYER_DEFINITIONS = {
     type: 'benefit',
     legendTitle: 'Kerentanan Pangan (Skor 0-100)',
     thresholds: [
-      { min: 50, max: 100, label: '≥ 50 (Sangat Rawan)', shortTier: 'Sangat Rawan', status: 'Sangat Rawan (Kritis)', color: '#991b1b', bg: '#fef2f2', border: '#fecaca', textBadge: '#991b1b' },
-      { min: 40, max: 49.99, label: '40 - 49 (Rawan)', shortTier: 'Rawan', status: 'Rawan Pangan', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', textBadge: '#dc2626' },
-      { min: 30, max: 39.99, label: '30 - 39 (Waspada)', shortTier: 'Waspada', status: 'Waspada Pangan', color: '#f97316', bg: '#fff7ed', border: '#fed7aa', textBadge: '#ea580c' },
-      { min: 20, max: 29.99, label: '20 - 29 (Aman)', shortTier: 'Aman', status: 'Aman Pangan', color: '#facc15', bg: '#fefce8', border: '#fef08a', textBadge: '#ca8a04' },
-      { min: 0, max: 19.99, label: '< 20 (Sangat Aman)', shortTier: 'Sangat Aman', status: 'Sangat Aman', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', textBadge: '#16a34a' }
+      { min: 32.0, max: 100, label: '≥ 32.0 (Sangat Rawan)', shortTier: 'Sangat Rawan', status: 'Sangat Rawan (Kritis)', color: '#991b1b', bg: '#fef2f2', border: '#fecaca', textBadge: '#991b1b' },
+      { min: 30.0, max: 31.99, label: '30.0 - 31.9 (Rawan)', shortTier: 'Rawan', status: 'Rawan Pangan', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', textBadge: '#dc2626' },
+      { min: 27.0, max: 29.99, label: '27.0 - 29.9 (Waspada)', shortTier: 'Waspada', status: 'Waspada Pangan', color: '#f97316', bg: '#fff7ed', border: '#fed7aa', textBadge: '#ea580c' },
+      { min: 24.0, max: 26.99, label: '24.0 - 26.9 (Aman)', shortTier: 'Aman', status: 'Aman Pangan', color: '#facc15', bg: '#fefce8', border: '#fef08a', textBadge: '#ca8a04' },
+      { min: 0, max: 23.99, label: '< 24.0 (Sangat Aman)', shortTier: 'Sangat Aman', status: 'Sangat Aman', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', textBadge: '#16a34a' }
     ]
   },
   air: {
@@ -59,11 +59,11 @@ export const LAYER_DEFINITIONS = {
     type: 'cost', // Semakin rendah persentase semakin merah (krisis air)
     legendTitle: 'Akses Air Bersih Layak (%)',
     thresholds: [
-      { min: 0, max: 80.0, label: '≤ 80.0% (Krisis Air / Buruk)', shortTier: 'Krisis / Buruk', status: 'Krisis Air (Buruk)', color: '#991b1b', bg: '#fef2f2', border: '#fecaca', textBadge: '#991b1b' },
-      { min: 80.01, max: 85.0, label: '81.0% - 85.0% (Rentan)', shortTier: 'Rentan', status: 'Rentan Air', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', textBadge: '#dc2626' },
-      { min: 85.01, max: 90.0, label: '86.0% - 90.0% (Cukup)', shortTier: 'Cukup', status: 'Cukup', color: '#f97316', bg: '#fff7ed', border: '#fed7aa', textBadge: '#ea580c' },
-      { min: 90.01, max: 95.0, label: '91.0% - 95.0% (Baik)', shortTier: 'Baik', status: 'Baik', color: '#facc15', bg: '#fefce8', border: '#fef08a', textBadge: '#ca8a04' },
-      { min: 95.01, max: 100, label: '> 95.0% (Sangat Baik)', shortTier: 'Sangat Baik', status: 'Sangat Baik (Aman)', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', textBadge: '#16a34a' }
+      { min: 0, max: 40.0, label: '≤ 40.0% (Krisis Air / Buruk)', shortTier: 'Krisis / Buruk', status: 'Krisis Air (Buruk)', color: '#991b1b', bg: '#fef2f2', border: '#fecaca', textBadge: '#991b1b' },
+      { min: 40.01, max: 59.99, label: '40.1% - 59.9% (Rentan)', shortTier: 'Rentan', status: 'Rentan Air', color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', textBadge: '#dc2626' },
+      { min: 60.0, max: 79.99, label: '60.0% - 79.9% (Cukup)', shortTier: 'Cukup', status: 'Cukup', color: '#f97316', bg: '#fff7ed', border: '#fed7aa', textBadge: '#ea580c' },
+      { min: 80.0, max: 94.99, label: '80.0% - 94.9% (Baik)', shortTier: 'Baik', status: 'Baik', color: '#facc15', bg: '#fefce8', border: '#fef08a', textBadge: '#ca8a04' },
+      { min: 95.0, max: 100, label: '≥ 95.0% (Sangat Baik)', shortTier: 'Sangat Baik', status: 'Sangat Baik (Aman)', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', textBadge: '#16a34a' }
     ]
   }
 };
