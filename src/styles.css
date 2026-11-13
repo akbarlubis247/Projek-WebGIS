@@ -28,18 +28,21 @@ html {
   --terracotta-rich: #C86446;
   --terracotta-light: #FDF0EC;
 
-  /* Government GIS Color System - Modern Light Sage */
-  --primary-green: #2D6A4F;
-  --bright-green: #40916C;
-  --dark-green: #1B4332;
-  --light-green: #EAF3EC;
+  /* NutriMap Professional Geospatial Color System */
+  --primary-green: #147A55;
+  --dark-green: #073F32;
+  --emerald: #20B879;
+  --bright-green: #20B879;
+  --light-green: #EAF7EE;
+  --cream: #F7F7F0;
+  --white: #FFFFFF;
 
   --bg-main: #FAF8F5;
   --bg-card: #FFFFFF;
-  --bg-sidebar: #1E281F;
+  --bg-sidebar: #073F32;
   --bg-header: #FFFFFF;
 
-  --text-main: #241D1B;
+  --text-main: #172B25;
   --text-muted: #6B6059;
   --text-light: #948B83;
   --border-color: #E8E2D6;
@@ -148,15 +151,16 @@ a {
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--earth-border);
+  background: #FFFFFF;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
   padding: 0 36px;
   height: 72px;
-  color: var(--earth-dark);
+  color: var(--text-main, #172B25);
   display: flex;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(35, 28, 26, 0.03);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .navbar-container {
@@ -179,17 +183,17 @@ a {
 .brand-logo-clean {
   width: 38px;
   height: 38px;
-  background: var(--forest-leaf-light);
-  border: 1px solid #CBE3D1;
+  background: var(--light-green, #EAF7EE);
+  border: 1px solid #C6ECD4;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--forest-leaf);
+  color: var(--primary-green, #147A55);
 }
 
 .brand-icon {
-  color: var(--forest-leaf);
+  color: var(--primary-green, #147A55);
 }
 
 .nav-brand-text {
@@ -206,7 +210,7 @@ a {
 .n-title {
   font-weight: 800;
   font-size: 1.15rem;
-  color: var(--earth-dark);
+  color: var(--text-main, #172B25);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -214,8 +218,9 @@ a {
 .n-badge-city {
   font-size: 0.65rem;
   font-weight: 800;
-  color: var(--earth-cocoa);
-  background: var(--earth-sand-strip);
+  color: var(--primary-green, #147A55);
+  background: var(--light-green, #EAF7EE);
+  border: 1px solid #C6ECD4;
   padding: 1px 6px;
   border-radius: 4px;
   letter-spacing: 0.06em;
@@ -223,7 +228,7 @@ a {
 
 .n-subtitle {
   font-size: 0.72rem;
-  color: var(--text-muted);
+  color: var(--text-muted, #6B6059);
   font-weight: 500;
 }
 
@@ -232,11 +237,10 @@ a {
   position: absolute;
   top: 0;
   left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #10B981, #059669, #0284C7, #00E5FF);
+  height: 2.5px;
+  background: var(--emerald, #20B879);
   z-index: 1002;
   transition: width 0.08s ease-out;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6), 0 0 4px rgba(2, 132, 199, 0.4);
 }
 
 .nav-links-desktop {
@@ -255,7 +259,7 @@ a {
   height: 72px;
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-muted, #6B6059);
   font-size: 0.88rem;
   font-weight: 600;
   border-radius: 0;
@@ -265,12 +269,12 @@ a {
 }
 
 .nav-item-link:hover {
-  color: var(--earth-dark);
+  color: var(--primary-green, #147A55);
   background: transparent;
 }
 
 .nav-item-link.active {
-  color: var(--forest-leaf);
+  color: var(--primary-green, #147A55);
   font-weight: 700;
   background: transparent;
 }
@@ -280,24 +284,17 @@ a {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 3.5px;
-  background: linear-gradient(90deg, #10B981 0%, #059669 60%, #0284C7 100%);
+  height: 3px;
+  background: var(--emerald, #20B879);
   border-radius: 999px 999px 0 0;
   pointer-events: none;
   will-change: transform, width;
   transition: transform 0.12s cubic-bezier(0.25, 1, 0.5, 1), width 0.12s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: 0 -2px 10px rgba(16, 185, 129, 0.45);
+  box-shadow: 0 -2px 8px rgba(32, 184, 121, 0.4);
 }
 
 .indicator-glow {
-  position: absolute;
-  top: -3px;
-  left: 15%;
-  right: 15%;
-  height: 6px;
-  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.8) 0%, rgba(16, 185, 129, 0) 70%);
-  filter: blur(2px);
-  pointer-events: none;
+  display: none;
 }
 
 .nav-actions {
@@ -306,60 +303,27 @@ a {
   gap: 12px;
 }
 
-.nav-replay-intro-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(14, 165, 233, 0.08);
-  color: #0284C7;
-  border: 1px solid rgba(14, 165, 233, 0.35);
-  border-radius: 9999px;
-  padding: 8px 16px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08);
-}
-
-.nav-replay-intro-btn:hover {
-  background: linear-gradient(135deg, #0284C7, #00E5FF);
-  color: #FFFFFF;
-  border-color: #00E5FF;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
-}
-
-.replay-sparkle-icon {
-  color: #0284C7;
-  transition: color 0.2s ease, transform 0.25s ease;
-}
-
-.nav-replay-intro-btn:hover .replay-sparkle-icon {
-  color: #FFFFFF;
-  transform: rotate(15deg) scale(1.1);
-}
-
 .nav-login-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--forest-leaf);
+  background: var(--primary-green, #147A55);
   color: #FFFFFF;
-  border: 1px solid var(--forest-leaf);
+  border: 1px solid var(--primary-green, #147A55);
   border-radius: 9999px;
-  padding: 8px 18px;
-  font-size: 0.82rem;
-  font-weight: 600;
+  padding: 8px 20px;
+  font-size: 0.84rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(45, 106, 79, 0.18);
+  box-shadow: 0 2px 8px rgba(20, 122, 85, 0.22);
 }
 
 .nav-login-btn:hover {
-  background: var(--forest-deep);
-  border-color: var(--forest-deep);
+  background: var(--dark-green, #073F32);
+  border-color: var(--dark-green, #073F32);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(7, 63, 50, 0.32);
 }
 
 .mobile-nav-toggle {
@@ -1005,114 +969,555 @@ a {
    Ladang Lima Inspired Natural Editorial UI Components (NutriMap Kota Bogor)
    ========================================================================== */
 
-/* 1. HERO SHOWCASE SECTION (LADANG LIMA FULL-BLEED STYLE) */
-.hero-showcase-section {
+/* ==========================================================================
+   1. HERO BACKGROUND IMAGE CAROUSEL (PROFESSIONAL GEOSPATIAL PLATFORM)
+   ========================================================================== */
+.hero-slider-section {
   width: 100%;
-  background: #FAF8F5;
-  padding: 0;
-  margin: 0;
-  display: block;
-}
-
-.hero-showcase-container {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
   position: relative;
-}
-
-.hero-banner-frame {
-  position: relative;
-  width: 100%;
-  border-radius: 0;
+  background-color: var(--dark-green, #073F32);
   overflow: hidden;
-  box-shadow: none;
-  border: none;
-  background: #EAF4F7;
 }
 
-.hero-banner-image {
+.hero-slider-container {
   width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
+  height: 620px;
+  min-height: 580px;
+  max-height: 650px;
+  position: relative;
+  overflow: hidden;
 }
 
-.hero-interactive-buttons {
+@media (max-width: 992px) {
+  .hero-slider-container {
+    height: 540px;
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-slider-container {
+    height: 520px;
+    min-height: 480px;
+  }
+}
+
+/* Background Image Layer with Ken Burns subtle zoom */
+.hero-slider-bg-layer {
   position: absolute;
-  bottom: 28px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  z-index: 10;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 10px 30px rgba(10, 40, 60, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
-.hero-btn-map {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 26px;
-  background: #02538F;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(2, 83, 143, 0.35);
+.hero-slide-bg-item {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.0);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 6s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity, transform;
 }
 
-.hero-btn-map:hover {
-  background: #024170;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(2, 83, 143, 0.45);
+.hero-slide-bg-item.active {
+  opacity: 1;
+  transform: scale(1.04);
 }
 
-.hero-btn-admin {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 26px;
-  background: #FFFFFF;
-  color: #02538F;
-  border: 1.5px solid #02538F;
-  border-radius: 9999px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide-bg-item {
+    transition: opacity 0.4s ease;
+    transform: none !important;
+  }
+  .hero-slide-bg-item.active {
+    transform: none !important;
+  }
 }
 
-.hero-btn-admin:hover {
-  background: #F0F7FA;
-  transform: translateY(-2px);
+/* Dark Green Gradient Left Overlay */
+.hero-slider-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background: linear-gradient(
+    90deg,
+    rgba(7, 63, 50, 0.95) 0%,
+    rgba(7, 63, 50, 0.88) 35%,
+    rgba(7, 63, 50, 0.45) 65%,
+    rgba(7, 63, 50, 0) 100%
+  );
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
-  .hero-interactive-buttons {
-    bottom: 14px;
-    gap: 8px;
-    padding: 4px 8px;
+  .hero-slider-gradient-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(7, 63, 50, 0.92) 0%,
+      rgba(7, 63, 50, 0.85) 60%,
+      rgba(7, 63, 50, 0.5) 100%
+    );
   }
-  .hero-btn-map,
-  .hero-btn-admin {
-    padding: 8px 14px;
-    font-size: 0.78rem;
-    gap: 6px;
+}
+
+/* Hero Content Wrapper */
+.hero-slider-content-wrap {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 1560px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .hero-slider-content-wrap {
+    padding: 0 24px;
   }
+}
+
+.hero-slider-main-content {
+  max-width: 680px;
+  color: #FFFFFF;
+}
+
+/* Pill Badge */
+.hero-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(20, 122, 85, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+}
+
+.hero-pin-icon {
+  color: var(--emerald, #20B879);
+}
+
+/* Editorial Title */
+.hero-editorial-title {
+  font-family: var(--font-sans);
+  font-size: clamp(2.1rem, 4vw, 3.25rem);
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin: 0 0 16px 0;
+  max-width: 620px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+.hero-editorial-desc {
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 540px;
+  margin: 0 0 28px 0;
+  font-weight: 400;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* CTA Action */
+.hero-cta-action {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-primary-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--emerald, #20B879);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 9999px;
+  padding: 12px 24px 12px 28px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(32, 184, 121, 0.4);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-primary-cta:hover {
+  background-color: #179e65;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(32, 184, 121, 0.5);
+}
+
+.cta-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-green, #073F32);
+  transition: transform 0.2s ease;
+}
+
+.hero-primary-cta:hover .cta-icon-circle {
+  transform: translateX(3px);
+}
+
+/* Bottom Bar */
+.hero-slider-bottom-bar {
+  position: absolute;
+  bottom: 28px;
+  left: 48px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+  .hero-slider-bottom-bar {
+    left: 24px;
+    right: 24px;
+    bottom: 20px;
+  }
+}
+
+/* Pagination Dots */
+.hero-pagination-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-dot:hover {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.hero-dot.active {
+  width: 26px;
+  border-radius: 12px;
+  background: var(--emerald, #20B879);
+  box-shadow: 0 0 10px rgba(32, 184, 121, 0.7);
+}
+
+/* City Identity Watermark Badge */
+.hero-city-watermark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(7, 63, 50, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #FFFFFF;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .hero-city-watermark {
+    display: none;
+  }
+}
+
+.watermark-icon {
+  color: var(--emerald, #20B879);
+}
+
+.watermark-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.wm-city {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #FFFFFF;
+}
+
+.wm-tagline {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Navigation Arrows */
+.hero-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(7, 63, 50, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-nav-arrow:hover {
+  background: var(--dark-green, #073F32);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.arrow-prev {
+  left: 20px;
+}
+
+.arrow-next {
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  .hero-nav-arrow {
+    display: none; /* Mobile uses swipe */
+  }
+}
+
+/* Text Fade/Slide In animations */
+.animate-title {
+  animation: heroFadeSlideUp 0.45s ease-out forwards;
+}
+
+.animate-desc {
+  animation: heroFadeSlideUp 0.55s ease-out forwards;
+}
+
+@keyframes heroFadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   1B. SECTION INFORMASI NUTRIMAP (3 OVERVIEW CATEGORY CARDS)
+   ========================================================================== */
+.nutrimap-info-overview-section {
+  width: 100%;
+  background-color: var(--cream, #F7F7F0);
+  padding: 56px 24px 64px 24px;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
+}
+
+.overview-container {
+  max-width: 1560px;
+  margin: 0 auto;
+}
+
+.info-overview-header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 40px auto;
+}
+
+.overview-sprout-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px auto;
+  border-radius: 50%;
+  background: var(--light-green, #EAF7EE);
+  color: var(--primary-green, #147A55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overview-title {
+  font-family: var(--font-sans);
+  font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+  font-weight: 800;
+  color: var(--text-main, #172B25);
+  letter-spacing: -0.02em;
+  margin: 0 0 10px 0;
+}
+
+.overview-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted, #6B6059);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Cards Grid */
+.info-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .info-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Individual Card */
+.info-overview-card {
+  border-radius: 16px;
+  padding: 24px 22px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-overview-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Card 1: Pangan */
+.card-pangan {
+  background: #EAF7EE;
+  border: 1px solid #C6ECD4;
+}
+
+/* Card 2: Air */
+.card-air {
+  background: #E8F4FD;
+  border: 1px solid #C5E5FA;
+}
+
+/* Card 3: Stunting */
+.card-stunting {
+  background: #FDF2EE;
+  border: 1px solid #FCD9CE;
+}
+
+/* Illustration Wrap */
+.card-illustration-wrap {
+  width: 110px;
+  height: 95px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-ill-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.06));
+}
+
+/* Content Wrap */
+.card-content-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main, #172B25);
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.card-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted, #6B6059);
+  line-height: 1.45;
+  margin: 0 0 16px 0;
+}
+
+/* Card Action Button */
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  align-self: flex-start;
+  transition: transform 0.2s ease;
+}
+
+.info-overview-card:hover .card-action-btn {
+  transform: translateX(4px);
+}
+
+.btn-arrow-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+}
+
+/* Button variants matching mockup */
+.btn-pangan {
+  color: var(--primary-green, #147A55);
+}
+.btn-pangan .btn-arrow-circle {
+  background-color: var(--emerald, #20B879);
+}
+
+.btn-air {
+  color: #0369A1;
+}
+.btn-air .btn-arrow-circle {
+  background-color: #0284C7;
+}
+
+.btn-stunting {
+  color: #C86446;
+}
+.btn-stunting .btn-arrow-circle {
+  background-color: #E76F51;
 }
 
 /* 1b. OLD HERO SECTION (FALLBACK) */

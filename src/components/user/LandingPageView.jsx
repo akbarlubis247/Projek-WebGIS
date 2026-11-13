@@ -48,6 +48,8 @@ import {
 import { LAYER_DEFINITIONS, getIndicatorClassification } from '../../data/indicatorStandards';
 import { useNutriMapData } from '../../hooks/useNutriMapData';
 import heroBg from '../../assets/hero-banner.png';
+import HeroSlider from './HeroSlider';
+import NutriMapOverviewCards from './NutriMapOverviewCards';
 import pdamFacilityImg from '../../assets/pdam-facility.jpg';
 import stuntingImg from '../../assets/stunting-prevention.jpg';
 import foodInspectionImg from '../../assets/food-inspection.jpg';
@@ -129,9 +131,9 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
       const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
       heroTl.fromTo(
-        '.hero-showcase-container',
-        { y: 35, opacity: 0, scale: 0.98 },
-        { y: 0, opacity: 1, scale: 1, duration: 1.2, ease: 'power3.out' }
+        '.hero-slider-section',
+        { y: 25, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out' }
       );
 
       // 2. Manifesto ScrollTrigger Reveal (Staggered Soft Fade-Up)
@@ -544,18 +546,23 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
 
   return (
     <div className="landing-single-page" ref={landingRef}>
-      {/* SECTION 1: HERO BANNER SHOWCASE (FULL BLEED EDGE-TO-EDGE) */}
-      <section id="beranda" className="hero-showcase-section">
-        <div className="hero-showcase-container">
-          <div className="hero-banner-frame">
-            <img
-              src={content.images?.heroBanner || heroBg}
-              alt="NutriMap Kota Bogor - Ketahanan Pangan Tangguh, Akses Air Bersih & Gizi Sehat"
-              className="hero-banner-image"
-            />
-          </div>
-        </div>
+      {/* SECTION 1: HERO BANNER CAROUSEL SLIDER */}
+      <section id="beranda" className="hero-slider-section">
+        <HeroSlider
+          onActionClick={(layer) => {
+            if (layer) setActiveMapLayer(layer);
+            handleScrollToMap();
+          }}
+        />
       </section>
+
+      {/* SECTION 1B: JELAJAHI INFORMASI NUTRIMAP (3 CARDS) */}
+      <NutriMapOverviewCards
+        onSelectCategory={(layer) => {
+          if (layer) setActiveMapLayer(layer);
+          handleScrollToMap();
+        }}
+      />
 
       {/* SECTION 2: EDITORIAL MANIFESTO STRIP (WARM LINEN STYLE) */}
       <section className="ladang-manifesto-section">

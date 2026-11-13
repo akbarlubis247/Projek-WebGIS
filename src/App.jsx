@@ -27,8 +27,8 @@ import SuperAdminView from './components/superadmin/SuperAdminView';
 import { INITIAL_ADMINS_LIST } from './data/bogorData';
 
 export default function App() {
-  // Intro Screen State
-  const [showIntro, setShowIntro] = useState(true);
+  // Intro Screen State (Disabled by default in production for instant clean loading)
+  const [showIntro, setShowIntro] = useState(false);
 
   // Roles: 'guest' (Public Warga) | 'admin' (Staff Admin SIG) | 'superadmin' (Super Admin Management)
   const [currentUser, setCurrentUser] = useState({
