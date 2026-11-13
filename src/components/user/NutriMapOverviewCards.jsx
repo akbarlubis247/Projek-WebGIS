@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sprout, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 import illPangan from '../../assets/ill_pangan_trans.png';
 import illAir from '../../assets/ill_air_trans.png';
@@ -47,9 +47,6 @@ export default function NutriMapOverviewCards({ onSelectCategory }) {
       <div className="overview-container">
         {/* Section Header */}
         <div className="info-overview-header">
-          <div className="overview-sprout-icon" aria-hidden="true">
-            <Sprout size={20} />
-          </div>
           <h2 className="overview-title">Jelajahi Informasi NutriMap</h2>
           <p className="overview-subtitle">
             Akses data spasial untuk mendukung ketahanan pangan dan kesehatan di Kota Bogor
@@ -94,3 +91,4 @@ export default function NutriMapOverviewCards({ onSelectCategory }) {
     </section>
   );
 }
+

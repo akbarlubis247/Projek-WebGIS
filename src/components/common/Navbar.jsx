@@ -175,7 +175,6 @@ export default function Navbar({ onOpenLogin }) {
           <div className="nav-brand-text">
             <div className="n-title-row">
               <span className="n-title">NutriMap</span>
-              <span className="n-badge-city">BOGOR</span>
             </div>
             <span className="n-subtitle">Sistem Informasi Geografis Ketahanan Pangan</span>
           </div>
