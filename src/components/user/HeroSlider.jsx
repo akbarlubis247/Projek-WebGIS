@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, MapPin, ArrowRight, Building2, Landmark } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 import slideBogorAerial from '../../assets/slide-bogor-aerial.jpg';
 import slideRiceFields from '../../assets/slide-rice-fields.jpg';
@@ -140,12 +140,6 @@ export default function HeroSlider({ onActionClick }) {
       {/* Hero Content Container */}
       <div className="hero-slider-content-wrap">
         <div className="hero-slider-main-content">
-          {/* Pill Badge */}
-          <div className="hero-pill-badge">
-            <MapPin size={14} className="hero-pin-icon" />
-            <span>{activeSlide.badge}</span>
-          </div>
-
           {/* Heading */}
           <h1 key={`title-${current}`} className="hero-editorial-title animate-title">
             {activeSlide.title}
@@ -171,9 +165,8 @@ export default function HeroSlider({ onActionClick }) {
           </div>
         </div>
 
-        {/* Bottom Bar: Pagination Dots (Left) and City Watermark Badge (Right) */}
+        {/* Bottom Bar: Pagination Dots */}
         <div className="hero-slider-bottom-bar">
-          {/* Pagination Dots */}
           <div className="hero-pagination-dots" role="tablist" aria-label="Pilih Slide">
             {HERO_SLIDES.map((slide, idx) => {
               const isActive = idx === current;
@@ -189,15 +182,6 @@ export default function HeroSlider({ onActionClick }) {
                 />
               );
             })}
-          </div>
-
-          {/* City Identity Motto Badge */}
-          <div className="hero-city-watermark">
-            <Landmark size={22} className="watermark-icon" />
-            <div className="watermark-meta">
-              <span className="wm-city">Kota Bogor</span>
-              <span className="wm-tagline">Lebih Sehat, Lebih Sejahtera</span>
-            </div>
           </div>
         </div>
       </div>
@@ -223,3 +207,4 @@ export default function HeroSlider({ onActionClick }) {
     </div>
   );
 }
+
