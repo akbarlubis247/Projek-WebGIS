@@ -11,12 +11,14 @@ import {
   UserCheck,
   ShieldCheck
 } from 'lucide-react';
+import { clearStoredToken, loginApi } from '../../services/api';
 
-export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList }) {
+export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
   const [selectedRoleTab, setSelectedRoleTab] = useState('admin'); // 'admin' | 'superadmin'
-  const [email, setEmail] = useState('admin@bogorkota.go.id');
-  const [password, setPassword] = useState('admin123password');
+  const [email, setEmail] = useState('admin@nutrimap.test');
+  const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Refs untuk GSAP Selector
   const modalBodyRef = useRef(null);
@@ -73,11 +75,11 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
             setSelectedRoleTab(role);
             setErrorMessage('');
             if (isSuper) {
-              setEmail('superadmin@bogorkota.go.id');
-              setPassword('superadmin123');
+              setEmail('superadmin@nutrimap.test');
+              setPassword('');
             } else {
-              setEmail('admin@bogorkota.go.id');
-              setPassword('admin123password');
+              setEmail('admin@nutrimap.test');
+              setPassword('');
             }
 
             if (formHeadingRef.current) {
@@ -106,53 +108,50 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
       setSelectedRoleTab(role);
       setErrorMessage('');
       if (isSuper) {
-        setEmail('superadmin@bogorkota.go.id');
-        setPassword('superadmin123');
+        setEmail('superadmin@nutrimap.test');
+        setPassword('');
       } else {
-        setEmail('admin@bogorkota.go.id');
-        setPassword('admin123password');
+        setEmail('admin@nutrimap.test');
+        setPassword('');
       }
       isAnimatingRef.current = false;
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+    if (!email.trim() || !password) {
+      setErrorMessage('Email dan kata sandi wajib diisi.');
+      return;
+    }
 
-    if (selectedRoleTab === 'superadmin') {
-      if (email.toLowerCase() === 'superadmin@bogorkota.go.id' && password === 'superadmin123') {
-        onLoginSuccess({
-          name: 'Super Admin Utama',
-          role: 'superadmin',
-          email: email,
-          isLoggedIn: true
-        });
-        onClose();
-      } else {
-        setErrorMessage('Email atau kata sandi Superadmin salah! (Gunakan: superadmin@bogorkota.go.id / superadmin123)');
+    setIsSubmitting(true);
+    try {
+      const res = await loginApi(email.trim(), password);
+      const user = res?.user;
+      if (!user) {
+        throw new Error('Respons login dari server tidak lengkap');
       }
-    } else {
-      const foundAdmin = adminsList.find(a => a.email.toLowerCase() === email.toLowerCase());
-      if (foundAdmin) {
-        onLoginSuccess({
-          name: foundAdmin.nama,
-          role: 'admin',
-          email: foundAdmin.email,
-          isLoggedIn: true
-        });
-        onClose();
-      } else if (email && password) {
-        onLoginSuccess({
-          name: 'Staff Admin Kota',
-          role: 'admin',
-          email: email,
-          isLoggedIn: true
-        });
-        onClose();
-      } else {
-        setErrorMessage('Silakan masukkan email dan kata sandi admin!');
+      if (selectedRoleTab === 'superadmin' && user.role !== 'superadmin') {
+        clearStoredToken();
+        setErrorMessage('Akun ini tidak memiliki hak akses Super Admin.');
+        return;
       }
+
+      onLoginSuccess({
+        id: user.id,
+        name: user.name || (user.role === 'superadmin' ? 'Super Admin' : 'Admin Instansi'),
+        role: user.role,
+        email: user.email,
+        isLoggedIn: true,
+      });
+      setPassword('');
+      onClose();
+    } catch (err) {
+      setErrorMessage(err.message || 'Gagal melakukan autentikasi ke backend.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -272,8 +271,8 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
                     e.preventDefault();
                     alert(
                       selectedRoleTab === 'superadmin'
-                        ? 'Akun Demo Superadmin:\nEmail: superadmin@bogorkota.go.id\nPassword: superadmin123'
-                        : 'Akun Demo Staff Admin:\nEmail: admin@bogorkota.go.id\nPassword: admin123password'
+                        ? 'Hubungi pengelola server untuk kredensial SUPERADMIN_EMAIL & SUPERADMIN_PASSWORD pada konfigurasi backend (.env).'
+                        : 'Gunakan kredensial ADMIN_EMAIL & ADMIN_PASSWORD yang terdaftar pada konfigurasi backend (.env).'
                     );
                   }}
                 >
@@ -283,12 +282,17 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, adminsList
 
               <motion.button
                 type="submit"
+                disabled={isSubmitting}
                 className="dark-emerald-submit-btn"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
               >
                 <span id="submit-btn-text" ref={submitBtnTextRef} className="animate-on-change">
-                  {selectedRoleTab === 'superadmin' ? 'Masuk sebagai Super Admin' : 'Masuk sebagai Admin'}
+                  {isSubmitting
+                    ? 'Memverifikasi...'
+                    : selectedRoleTab === 'superadmin'
+                      ? 'Masuk sebagai Super Admin'
+                      : 'Masuk sebagai Admin'}
                 </span>
                 <LogIn size={16} />
               </motion.button>

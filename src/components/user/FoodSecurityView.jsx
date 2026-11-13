@@ -2,10 +2,16 @@ import React, { useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { Utensils, ShieldCheck, AlertTriangle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 
 export default function FoodSecurityView() {
-  const sortedByIKP = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.panganSkor - a.panganSkor);
+  const { kecamatanList } = useNutriMapData();
+  const sortedByIKP = [...kecamatanList].sort((a, b) => b.panganSkor - a.panganSkor);
+  const avgIkp = kecamatanList.length
+    ? kecamatanList.reduce((s, k) => s + Number(k.panganSkor || 0), 0) / kecamatanList.length
+    : 0;
+  const safeCount = kecamatanList.filter((k) => k.panganStatus === 'Sangat Aman' || k.panganStatus === 'Aman').length;
+  const warnCount = Math.max(kecamatanList.length - safeCount, 0);
 
   const avgIkpRef = useRef(null);
   const safeCountRef = useRef(null);
@@ -18,10 +24,10 @@ export default function FoodSecurityView() {
       if (!cu.error) cu.start();
     };
 
-    anim(avgIkpRef, 85.2, { decimalPlaces: 1 });
-    anim(safeCountRef, 4);
-    anim(warnCountRef, 2);
-  }, []);
+    anim(avgIkpRef, avgIkp, { decimalPlaces: 1 });
+    anim(safeCountRef, safeCount);
+    anim(warnCountRef, warnCount);
+  }, [avgIkp, safeCount, warnCount]);
 
   return (
     <div className="view-container animate-fade-in">

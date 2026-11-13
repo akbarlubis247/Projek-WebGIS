@@ -16,7 +16,6 @@ import {
   ChevronUp,
   Info
 } from 'lucide-react';
-import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
 import { LAYER_DEFINITIONS, getIndicatorClassification } from '../../data/indicatorStandards';
 import { useNutriMapData } from '../../hooks/useNutriMapData';
 
@@ -72,6 +71,7 @@ export default function MapView({
   const liveHookData = useNutriMapData();
   const activeGeoJson = geoJsonData || liveHookData.areasGeoJson;
   const activeKelList = kelurahanList || liveHookData.kelurahanList;
+  const activeKecList = liveHookData.kecamatanList;
   const activeFacilities = facilitiesData || liveHookData.facilitiesGeoJson;
 
   // State Layer Aktif & Filter Kecamatan
@@ -146,14 +146,14 @@ export default function MapView({
       const found = activeKelList.find((k) => k.id === kelId);
       if (found) {
         if (onSelectKelurahan) onSelectKelurahan(found);
-        const parent = KECAMATAN_KOTA_BOGOR.find((k) => k.nama === found.kecamatan);
+        const parent = activeKecList.find((k) => k.nama === found.kecamatan);
         if (parent && onSelectKecamatan) onSelectKecamatan(parent, found);
       }
     };
     return () => {
       delete window.__nutrimap_select_kel;
     };
-  }, [activeKelList, onSelectKelurahan, onSelectKecamatan]);
+  }, [activeKelList, activeKecList, onSelectKelurahan, onSelectKecamatan]);
 
   // Logika Pewarnaan Choropleth Bergradasi 5 Tingkat Berbasis Standar Tunggal
   const getChoroplethColor = (val, layer) => {
@@ -222,7 +222,7 @@ export default function MapView({
         onSelectKelurahan(null);
       }
     } else {
-      const matchedKec = KECAMATAN_KOTA_BOGOR.find((k) => k.nama === kecName);
+      const matchedKec = activeKecList.find((k) => k.nama === kecName);
       if (matchedKec && onSelectKecamatan) {
         onSelectKecamatan(matchedKec);
       }
@@ -363,7 +363,7 @@ export default function MapView({
             if (onSelectKelurahan) onSelectKelurahan(p);
 
             // Sinkronkan juga objek kecamatan induknya ke parent
-            const parentKec = KECAMATAN_KOTA_BOGOR.find((k) => k.nama === p.kecamatan);
+            const parentKec = activeKecList.find((k) => k.nama === p.kecamatan);
             if (parentKec && onSelectKecamatan) {
               onSelectKecamatan(parentKec, p);
             }

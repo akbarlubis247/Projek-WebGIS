@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Upload,
   FileSpreadsheet,
@@ -8,27 +8,60 @@ import {
   Eye,
   Trash2,
   Save,
-  Check,
   Building2,
   RefreshCw,
-  FileText
+  FileText,
+  XCircle,
+  Clock
 } from 'lucide-react';
-import { KELURAHAN_68_BOGOR } from '../../data/bogorKelurahanData';
+import {
+  createUploadApi,
+  listUploadsApi,
+  publishUploadApi,
+  rejectUploadApi
+} from '../../services/api';
+import { refreshNutriMapData } from '../../hooks/useNutriMapData';
+
+const INDICATOR_OPTIONS = [
+  { value: 'stunting', label: 'Prevalensi Stunting (%)' },
+  { value: 'kemiskinan', label: 'Tingkat Kemiskinan / DTKS (%)' },
+  { value: 'pangan', label: 'Kerentanan Pangan (Skor 0-100)' },
+  { value: 'air', label: 'Akses Sanitasi Air Bersih (%)' }
+];
 
 export default function DataEntryView() {
   const [dragActive, setDragActive] = useState(false);
+  const [rawFile, setRawFile] = useState(null);
   const [csvFile, setCsvFile] = useState(null);
   const [parsedRows, setParsedRows] = useState([]);
   const [csvHeaders, setCsvHeaders] = useState([]);
+  const [indicatorType, setIndicatorType] = useState('stunting');
+  const [year, setYear] = useState(2025);
+  const [sourceName, setSourceName] = useState('Dinas Kesehatan / Bappeda Kota Bogor');
+  const [serverUpload, setServerUpload] = useState(null);
+  const [uploadHistory, setUploadHistory] = useState([]);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Standar Header CSV yang diharapkan
-  const REQUIRED_HEADERS = ['kelurahan', 'kecamatan', 'stunting', 'kemiskinan', 'kerentanan_pangan', 'air_bersih'];
+  const loadHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const res = await listUploadsApi();
+      setUploadHistory(Array.isArray(res?.data) ? res.data : []);
+    } catch {
+      // Abaikan jika backend belum login / offline
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
 
-  // Handle Drag Over
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -39,33 +72,32 @@ export default function DataEntryView() {
     }
   };
 
-  // Parse Raw CSV text
-  const parseCSVContent = (text, fileName) => {
+  const parseCSVContent = (text, file) => {
     setErrorMsg('');
     setSuccessMsg('');
+    setServerUpload(null);
 
     try {
-      const lines = text.trim().split(/\r\n|\n/).filter(line => line.trim().length > 0);
+      const lines = text.trim().split(/\r\n|\n/).filter((line) => line.trim().length > 0);
       if (lines.length < 2) {
         setErrorMsg('Berkas CSV kosong atau hanya memiliki baris judul (header).');
         return;
       }
 
-      // Ambil Header (bersihkan tanda kutip & spasi)
-      const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
+      const headers = lines[0].split(',').map((h) => h.trim().replace(/^["']|["']$/g, '').toLowerCase());
       setCsvHeaders(headers);
 
-      // Cek apakah ada minimal 4 indikator utama
-      const hasCore = headers.includes('stunting') && (headers.includes('kelurahan') || headers.includes('nama'));
-      if (!hasCore) {
-        setErrorMsg('Format berkas tidak sesuai standar. Kolom wajib mencakup minimal "kelurahan" dan "stunting". Silakan gunakan templat CSV yang disediakan.');
+      const hasArea = headers.some((h) =>
+        ['kelurahan', 'nama_kelurahan', 'wadmkd', 'kode_wilayah', 'area_id', 'id', 'nama'].includes(h)
+      );
+      if (!hasArea) {
+        setErrorMsg('Format berkas tidak sesuai standar. Kolom wajib mencakup minimal "kelurahan" atau "kode_wilayah".');
         return;
       }
 
-      // Parse Baris Data
       const rows = [];
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+        const values = lines[i].split(',').map((v) => v.trim().replace(/^["']|["']$/g, ''));
         if (values.length === headers.length) {
           const rowObj = {};
           headers.forEach((h, idx) => {
@@ -80,70 +112,108 @@ export default function DataEntryView() {
         return;
       }
 
+      setRawFile(file);
       setParsedRows(rows);
-      setCsvFile({ name: fileName, size: (text.length / 1024).toFixed(1) + ' KB', count: rows.length });
-      setSuccessMsg(`Berkas "${fileName}" berhasil diurai! Ditemukan ${rows.length} baris data kelurahan.`);
+      setCsvFile({ name: file.name, size: (text.length / 1024).toFixed(1) + ' KB', count: rows.length });
+      setSuccessMsg(`Berkas "${file.name}" siap diunggah (${rows.length} baris). Klik "Upload & Validasi Server" untuk memproses.`);
     } catch (err) {
       setErrorMsg('Gagal membaca berkas CSV: ' + err.message);
     }
   };
 
-  // Handle File Input Change
-  const handleFileChange = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) {
-      if (!file.name.endsWith('.csv') && file.type !== 'text/csv') {
-        setErrorMsg('Format berkas harus berformat .CSV!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        parseCSVContent(event.target.result, file.name);
-      };
-      reader.readAsText(file);
+  const handleSelectedFile = (file) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+      setErrorMsg('Format berkas harus berformat .CSV!');
+      return;
     }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      parseCSVContent(event.target.result, file);
+    };
+    reader.readAsText(file);
   };
 
-  // Handle Drop
+  const handleFileChange = (e) => handleSelectedFile(e.target.files?.[0]);
+
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+    handleSelectedFile(e.dataTransfer.files?.[0]);
+  };
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (!file.name.endsWith('.csv') && file.type !== 'text/csv') {
-        setErrorMsg('Hanya berkas berformat .CSV yang diperbolehkan!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        parseCSVContent(event.target.result, file.name);
-      };
-      reader.readAsText(file);
+  // Step 1: Upload CSV ke Backend (/api/admin/uploads) untuk validasi wilayah & rentang nilai
+  const handleUploadAndValidate = async () => {
+    if (!rawFile) return;
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsProcessing(true);
+    try {
+      const res = await createUploadApi({
+        file: rawFile,
+        indicatorType,
+        year,
+        source: sourceName,
+      });
+      setServerUpload(res);
+      setSuccessMsg(
+        `Validasi server selesai (ID: ${res.data.id}): ${res.validation.summary.valid_row_count} valid, ` +
+        `${res.validation.summary.invalid_row_count} tidak valid, ${res.validation.summary.unmatched_row_count} tidak cocok. Klik "Publikasikan" untuk memperbarui database.`
+      );
+      await loadHistory();
+    } catch (err) {
+      setErrorMsg(`Gagal mengunggah CSV ke server: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  // Simpan / Commit Data ke Sistem
-  const handleCommitData = () => {
+  // Step 2a: Publikasikan Upload Pending -> PostGIS indicators + refresh cache UI
+  const handlePublish = async (uploadId) => {
+    setErrorMsg('');
+    setSuccessMsg('');
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      const res = await publishUploadApi(uploadId);
+      await refreshNutriMapData();
+      setServerUpload((prev) => (prev?.data?.id === uploadId ? { ...prev, data: res.data } : prev));
+      setSuccessMsg(`Sukses! ${res.published_rows} baris indikator berhasil dipublikasikan ke PostGIS dan peta diperbarui.`);
+      await loadHistory();
+    } catch (err) {
+      setErrorMsg(`Gagal mempublikasikan data: ${err.message}`);
+    } finally {
       setIsProcessing(false);
-      setSuccessMsg(`Sukses! ${parsedRows.length} data indikator kelurahan berhasil diperbarui ke sistem penyimpanan WebGIS.`);
-    }, 1200);
+    }
   };
 
-  // Unduh Contoh Templat CSV
+  // Step 2b: Tolak Upload Pending
+  const handleReject = async (uploadId) => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setIsProcessing(true);
+    try {
+      const res = await rejectUploadApi(uploadId);
+      setServerUpload((prev) => (prev?.data?.id === uploadId ? { ...prev, data: res.data } : prev));
+      setSuccessMsg(`Upload ${uploadId} ditandai sebagai ditolak.`);
+      await loadHistory();
+    } catch (err) {
+      setErrorMsg(`Gagal menolak upload: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleDownloadTemplate = () => {
     const templateContent = [
       'kelurahan,kecamatan,stunting,kemiskinan,kerentanan_pangan,air_bersih',
-      'Babakan,Bogor Tengah,7.2,2.8,18.5,97.4',
-      'Babakan Pasar,Bogor Tengah,14.1,6.9,35.2,92.0',
-      'Bantarjati,Bogor Utara,9.2,3.8,22.0,95.0',
-      'Batutulis,Bogor Selatan,15.0,6.8,38.0,88.0',
-      'Baranangsiang,Bogor Timur,9.5,3.9,22.5,95.5',
-      'Bubulak,Bogor Barat,18.0,8.2,46.0,83.0',
-      'Cibadak,Tanah Sareal,14.8,6.5,36.0,89.0'
+      'Babakan,Bogor Tengah,5.08,5.94,29.95,7.26',
+      'Babakan Pasar,Bogor Tengah,2.10,4.85,26.10,82.50',
+      'Bantarjati,Bogor Utara,1.85,3.20,24.50,91.00',
+      'Batutulis,Bogor Selatan,3.40,6.80,30.10,64.00',
+      'Baranangsiang,Bogor Timur,2.20,3.90,25.40,85.00',
+      'Bubulak,Bogor Barat,3.90,7.20,31.20,58.00',
+      'Cibadak,Tanah Sareal,2.80,5.50,28.60,76.00'
     ].join('\n');
 
     const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
@@ -156,11 +226,12 @@ export default function DataEntryView() {
     document.body.removeChild(link);
   };
 
-  // Reset file
   const handleClear = () => {
+    setRawFile(null);
     setCsvFile(null);
     setParsedRows([]);
     setCsvHeaders([]);
+    setServerUpload(null);
     setErrorMsg('');
     setSuccessMsg('');
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -168,14 +239,13 @@ export default function DataEntryView() {
 
   return (
     <div className="view-container animate-fade-in" style={{ padding: '24px 32px' }}>
-      {/* Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 className="page-title-editorial" style={{ fontSize: 26, fontWeight: 800, margin: 0, color: '#0f172a' }}>
             Portal Entri &amp; Pengunggahan Data Indikator (CSV)
           </h1>
           <p style={{ margin: '6px 0 0', color: '#64748b', fontSize: 14 }}>
-            Fasilitas bagi administrator instansi (Dinkes/Bappeda) untuk mengunggah dataset 4 indikator 68 kelurahan Kota Bogor secara massal.
+            Alur terhubung API: Unggah CSV -&gt; Validasi Server (<code>pending</code>) -&gt; Publikasi ke Supabase PostGIS.
           </p>
         </div>
         <button
@@ -198,9 +268,53 @@ export default function DataEntryView() {
         </button>
       </div>
 
+      {/* Metadata Parameter Upload */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20, background: '#fff', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+            Jenis Indikator *
+          </label>
+          <select
+            value={indicatorType}
+            onChange={(e) => setIndicatorType(e.target.value)}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+          >
+            {INDICATOR_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+            Tahun Data *
+          </label>
+          <input
+            type="number"
+            min="2015"
+            max="2035"
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+            Sumber Data Resmi
+          </label>
+          <input
+            type="text"
+            value={sourceName}
+            onChange={(e) => setSourceName(e.target.value)}
+            placeholder="FSVA / Aksi Konvergensi"
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+          />
+        </div>
+      </div>
+
       {/* Grid: Upload Area & Petunjuk Format */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginBottom: 28 }}>
-        {/* Drag and Drop Zone */}
         <div
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -220,75 +334,39 @@ export default function DataEntryView() {
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
           }}
         >
-          <div style={{
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            background: '#e0f2fe',
-            color: '#0284c7',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16
-          }}>
+          <div style={{ width: 56, height: 56, borderRadius: 28, background: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
             <Upload size={28} />
           </div>
-
           <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-            Tarik & Lepas Berkas CSV ke Sini
+            Tarik &amp; Lepas Berkas CSV ke Sini
           </h3>
-          <p style={{ margin: '0 0 18px', color: '#64748b', fontSize: 13, maxWidth: 360 }}>
-            Mendukung format file <code>.csv</code> standar UTF-8 dengan ukuran maksimal 5 MB mencakup 68 kelurahan.
+          <p style={{ margin: '0 0 18px', color: '#64748b', fontSize: 13, maxWidth: 380 }}>
+            Mendukung format <code>.csv</code> UTF-8 hingga 5 MB untuk memperbarui nilai indikator 68 kelurahan secara tervalidasi.
           </p>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
-
+          <input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} style={{ display: 'none' }} />
           <button
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
-            style={{
-              padding: '10px 20px',
-              background: '#0284c7',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8
-            }}
+            style={{ padding: '10px 20px', background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
           >
             <FileSpreadsheet size={16} /> Pilih Berkas dari Komputer
           </button>
         </div>
 
-        {/* Informasi Aturan Format Kolom */}
         <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
           <h4 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <FileText size={16} color="#0284c7" /> Standar Format Kolom CSV
+            <FileText size={16} color="#0284c7" /> Standar Kolom Backend
           </h4>
           <p style={{ fontSize: 12, color: '#64748b', margin: '0 0 12px' }}>
-            Agar modul kalkulasi SAW dan peta Leaflet membaca data dengan benar, berkas harus memiliki baris judul kolom:
+            Backend menerima kolom wilayah (<code>kelurahan</code> atau <code>kode_wilayah</code>) dan kolom nilai indikator:
           </p>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: '#334155', lineHeight: '20px' }}>
-            <li><code>kelurahan</code> : Nama kelurahan resmi</li>
-            <li><code>kecamatan</code> : Nama kecamatan di Kota Bogor</li>
-            <li><code>stunting</code> : Persentase prevalensi balita stunting</li>
-            <li><code>kemiskinan</code> : Persentase kemiskinan / DTKS</li>
-            <li><code>kerentanan_pangan</code> : Skor kerawanan (0-100)</li>
-            <li><code>air_bersih</code> : Persentase akses sanitasi air</li>
+            <li><code>kelurahan</code> / <code>kode_wilayah</code> : Pengenal wilayah resmi</li>
+            <li><code>kecamatan</code> : Opsional, pembeda nama kelurahan</li>
+            <li><code>value</code> atau kolom indikator (<code>stunting</code>, <code>kemiskinan</code>, <code>kerentanan_pangan</code>, <code>air_bersih</code>)</li>
           </ul>
         </div>
       </div>
 
-      {/* Alert Error / Success */}
       {errorMsg && (
         <div style={{ padding: 14, background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, color: '#b91c1c', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, fontSize: 13 }}>
           <AlertCircle size={18} />
@@ -303,18 +381,18 @@ export default function DataEntryView() {
         </div>
       )}
 
-      {/* Pratinjau 5 Baris Data Pertama (Sesuai Acceptance Criteria PRD) */}
+      {/* Pratinjau & Aksi Upload / Validasi / Publish */}
       {parsedRows.length > 0 && (
-        <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Eye size={20} color="#059669" />
               <div>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
-                  Pratinjau Data CSV ({csvFile?.name} — {parsedRows.length} Baris)
+                  Pratinjau CSV ({csvFile?.name} — {parsedRows.length} Baris)
                 </h3>
                 <span style={{ fontSize: 12, color: '#64748b' }}>
-                  Menampilkan 5 baris pertama data indikator untuk verifikasi sebelum disimpan.
+                  Target: <strong>{indicatorType}</strong> tahun <strong>{year}</strong>
                 </span>
               </div>
             </div>
@@ -322,20 +400,58 @@ export default function DataEntryView() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={handleClear}
+                disabled={isProcessing}
                 style={{ padding: '8px 14px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                <Trash2 size={14} /> Batalkan
+                <Trash2 size={14} /> Reset
               </button>
-              <button
-                onClick={handleCommitData}
-                disabled={isProcessing}
-                style={{ padding: '8px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                {isProcessing ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-                {isProcessing ? 'Menyimpan...' : 'Simpan ke Basis Data'}
-              </button>
+              {!serverUpload && (
+                <button
+                  onClick={handleUploadAndValidate}
+                  disabled={isProcessing}
+                  style={{ padding: '8px 18px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  {isProcessing ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
+                  {isProcessing ? 'Memvalidasi...' : 'Upload & Validasi Server'}
+                </button>
+              )}
+              {serverUpload?.data?.status === 'pending' && (
+                <>
+                  <button
+                    onClick={() => handleReject(serverUpload.data.id)}
+                    disabled={isProcessing}
+                    style={{ padding: '8px 14px', background: '#fee2e2', color: '#b91c1c', border: '1px solid #fca5a5', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <XCircle size={14} /> Tolak
+                  </button>
+                  <button
+                    onClick={() => handlePublish(serverUpload.data.id)}
+                    disabled={isProcessing || !serverUpload.validation?.summary?.valid_row_count}
+                    style={{ padding: '8px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <CheckCircle2 size={14} /> Publikasikan ke Supabase ({serverUpload.validation?.summary?.valid_row_count || 0})
+                  </button>
+                </>
+              )}
             </div>
           </div>
+
+          {serverUpload?.validation && (
+            <div style={{ display: 'flex', gap: 16, marginBottom: 14, fontSize: 12.5 }}>
+              <span style={{ padding: '4px 10px', borderRadius: 6, background: '#dcfce7', color: '#15803d', fontWeight: 700 }}>
+                Valid: {serverUpload.validation.summary.valid_row_count}
+              </span>
+              <span style={{ padding: '4px 10px', borderRadius: 6, background: '#fee2e2', color: '#b91c1c', fontWeight: 700 }}>
+                Invalid: {serverUpload.validation.summary.invalid_row_count}
+              </span>
+              <span style={{ padding: '4px 10px', borderRadius: 6, background: '#fef3c7', color: '#b45309', fontWeight: 700 }}>
+                Unmatched: {serverUpload.validation.summary.unmatched_row_count}
+              </span>
+              <span style={{ padding: '4px 10px', borderRadius: 6, background: '#f1f5f9', color: '#334155', fontWeight: 700 }}>
+                Status: {serverUpload.data.status}
+              </span>
+            </div>
+          )}
 
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
@@ -365,6 +481,78 @@ export default function DataEntryView() {
           </div>
         </div>
       )}
+
+      {/* Riwayat Upload Server */}
+      <div style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Clock size={18} color="#0284c7" /> Riwayat Unggahan Dataset (Backend)
+          </h3>
+          <button
+            onClick={loadHistory}
+            disabled={isLoadingHistory}
+            style={{ padding: '6px 12px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <RefreshCw size={13} /> Muat Ulang
+          </button>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+            <thead style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+              <tr>
+                <th style={{ padding: '10px 12px', color: '#475569' }}>ID</th>
+                <th style={{ padding: '10px 12px', color: '#475569' }}>Berkas</th>
+                <th style={{ padding: '10px 12px', color: '#475569' }}>Indikator / Tahun</th>
+                <th style={{ padding: '10px 12px', color: '#475569' }}>Valid / Invalid / Unmatched</th>
+                <th style={{ padding: '10px 12px', color: '#475569' }}>Status</th>
+                <th style={{ padding: '10px 12px', color: '#475569' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {uploadHistory.length ? (
+                uploadHistory.slice(0, 10).map((u) => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontSize: 12 }}>{u.id}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 600 }}>{u.filename}</td>
+                    <td style={{ padding: '10px 12px' }}>{u.indicator_type} ({u.period})</td>
+                    <td style={{ padding: '10px 12px' }}>{u.valid_row_count} / {u.invalid_row_count} / {u.unmatched_row_count}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 700, textTransform: 'uppercase', fontSize: 11.5 }}>{u.status}</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      {u.status === 'pending' ? (
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            onClick={() => handlePublish(u.id)}
+                            disabled={isProcessing || !u.valid_row_count}
+                            style={{ padding: '4px 10px', background: '#059669', color: '#fff', border: 'none', borderRadius: 5, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                          >
+                            Publish
+                          </button>
+                          <button
+                            onClick={() => handleReject(u.id)}
+                            disabled={isProcessing}
+                            style={{ padding: '4px 10px', background: '#fee2e2', color: '#b91c1c', border: 'none', borderRadius: 5, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                          >
+                            Tolak
+                          </button>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#64748b', fontSize: 12 }}>Selesai</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" style={{ padding: 16, textAlign: 'center', color: '#64748b' }}>
+                    Belum ada riwayat unggahan CSV dari sesi admin.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

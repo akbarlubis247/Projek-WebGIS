@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // Common / Shared Layout Components
 import Navbar from './components/common/Navbar';
 import Sidebar from './components/common/Sidebar';
@@ -25,6 +25,7 @@ import PublicContentEditorView from './components/admin/PublicContentEditorView'
 // Super Admin Management Views
 import SuperAdminView from './components/superadmin/SuperAdminView';
 import { INITIAL_ADMINS_LIST } from './data/bogorData';
+import { clearStoredToken, fetchMeApi, getStoredToken } from './services/api';
 
 export default function App() {
   // Intro Screen State (Disabled by default in production for instant clean loading)
@@ -45,8 +46,33 @@ export default function App() {
   const [selectedKecamatan, setSelectedKecamatan] = useState(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  useEffect(() => {
+    const token = getStoredToken();
+    if (!token) return undefined;
+
+    const controller = new AbortController();
+    fetchMeApi({ signal: controller.signal })
+      .then((res) => {
+        if (res?.user) {
+          setCurrentUser({
+            id: res.user.id,
+            name: res.user.name || 'Admin Instansi',
+            role: res.user.role,
+            email: res.user.email,
+            isLoggedIn: true,
+          });
+        }
+      })
+      .catch(() => {
+        clearStoredToken();
+      });
+
+    return () => controller.abort();
+  }, []);
+
   // Handle Logout
   const handleLogout = () => {
+    clearStoredToken();
     setCurrentUser({
       name: 'Warga / Pengunjung',
       role: 'guest',
@@ -115,6 +141,7 @@ export default function App() {
       case 'priority-areas':
         return (
           <PriorityAreasView
+            currentUser={currentUser}
             onSelectKecamatan={setSelectedKecamatan}
             onNavigate={setActivePage}
           />
