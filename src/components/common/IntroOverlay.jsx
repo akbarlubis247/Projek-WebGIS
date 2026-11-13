@@ -416,11 +416,11 @@ export default function IntroOverlay({ onFinish }) {
           <span className="badge-text">SISTEM INFORMASI GEOGRAFIS • KOTA BOGOR</span>
         </div>
 
-        {/* Heading 1: Sesuai Gambar */}
+        {/* Heading 1 */}
         <h1 className="intro-modal-title intro-anim-item">
           Selamat Datang<br />
           di Web GIS<br />
-          Kelompok 12
+          NutriMap Bogor
         </h1>
 
         {/* Subheading: Sesuai Gambar */}
