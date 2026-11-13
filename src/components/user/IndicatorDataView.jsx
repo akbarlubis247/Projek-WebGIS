@@ -1,21 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import { TableProperties, Search, Filter, AlertTriangle, Download, FileSpreadsheet, FileText, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { KECAMATAN_DATA, FOOD_SECURITY_CATEGORIES } from '../../data/bogorData';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 
 export default function IndicatorDataView() {
+  const { kecamatanList } = useNutriMapData();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua Status');
   const [filterPrioritas, setFilterPrioritas] = useState('Semua Prioritas');
   const [exportNotification, setExportNotification] = useState('');
 
   const filteredData = useMemo(() => {
-    return KECAMATAN_DATA.filter(item => {
+    return kecamatanList.filter(item => {
       const matchSearch = item.nama.toLowerCase().includes(search.toLowerCase()) || item.pusat.toLowerCase().includes(search.toLowerCase());
       const matchStatus = filterStatus === 'Semua Status' || item.panganStatus === filterStatus;
       const matchPrioritas = filterPrioritas === 'Semua Prioritas' || item.prioritas === filterPrioritas;
       return matchSearch && matchStatus && matchPrioritas;
     });
-  }, [search, filterStatus, filterPrioritas]);
+  }, [kecamatanList, search, filterStatus, filterPrioritas]);
 
   const handleExportCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,ID,Nama Kecamatan,Pusat,Penduduk,Status Pangan,Skor IKP,Air Bersih,Stunting,Kemiskinan,Prioritas\n";

@@ -11,12 +11,14 @@ import {
   ChevronRight,
   TrendingUp,
   MapPin,
-  Info
+  Info,
+  Save
 } from 'lucide-react';
+import { calculateSawRunApi } from '../../services/api';
 import { useNutriMapData, useSawRankings } from '../../hooks/useNutriMapData';
 
-export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
-  const { kelurahanList } = useNutriMapData();
+export default function PriorityAreasView({ currentUser, onSelectKecamatan, onNavigate }) {
+  const { kelurahanList, refreshNonce } = useNutriMapData();
 
   // 1. Bobot Kriteria SAW (Default sesuai PRD WBS 1.4.3.2)
   // Stunting 40%, Kemiskinan 25%, Kerentanan Pangan 20%, Air Bersih 15%
@@ -30,9 +32,30 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterZona, setFilterZona] = useState('ALL');
   const [selectedKelurahan, setSelectedKelurahan] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('');
+  const [isSavingSnapshot, setIsSavingSnapshot] = useState(false);
 
   // Hitung / ambil pemeringkatan SAW dari API /api/rankings (fallback lokal bila offline)
-  const { sawResults, isLive: isSawLive, totalWeight, isWeightValid } = useSawRankings(weights, kelurahanList);
+  const { sawResults, isLive: isSawLive, year: sawYear, totalWeight, isWeightValid } = useSawRankings(weights, kelurahanList, refreshNonce);
+
+  const isAdmin = currentUser?.isLoggedIn && (currentUser.role === 'admin' || currentUser.role === 'superadmin');
+
+  const handleSaveSnapshot = async () => {
+    if (!isWeightValid || !isAdmin) return;
+    setIsSavingSnapshot(true);
+    setSaveStatus('');
+    try {
+      const res = await calculateSawRunApi({
+        ...(sawYear ? { year: sawYear } : {}),
+        weights,
+      });
+      setSaveStatus(`Snapshot SAW tersimpan (${res?.run?.id || 'OK'} • ${res?.run?.weight_version || 'custom'}).`);
+    } catch (err) {
+      setSaveStatus(`Gagal menyimpan snapshot SAW: ${err.message}`);
+    } finally {
+      setIsSavingSnapshot(false);
+    }
+  };
 
   // Statistik Zona
   const zonaMerahCount = sawResults.filter(r => r.zonaClass === 'red').length;
@@ -100,11 +123,26 @@ export default function PriorityAreasView({ onSelectKecamatan, onNavigate }) {
           </p>
         </div>
         <div className="export-action-group" style={{ display: 'flex', gap: 10 }}>
+          {isAdmin && (
+            <button
+              onClick={handleSaveSnapshot}
+              disabled={!isWeightValid || isSavingSnapshot}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: isWeightValid ? '#0284c7' : '#94a3b8', color: '#fff', border: 'none', borderRadius: 8, cursor: isWeightValid ? 'pointer' : 'not-allowed', fontWeight: 600 }}
+            >
+              <Save size={16} /> {isSavingSnapshot ? 'Menyimpan...' : 'Simpan Snapshot SAW'}
+            </button>
+          )}
           <button className="btn-export-excel" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', background: '#059669', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
             <FileSpreadsheet size={16} /> Unduh CSV Hasil SAW
           </button>
         </div>
       </div>
+
+      {saveStatus && (
+        <div style={{ marginBottom: 18, padding: '10px 14px', borderRadius: 8, background: saveStatus.startsWith('Gagal') ? '#fee2e2' : '#dcfce7', color: saveStatus.startsWith('Gagal') ? '#b91c1c' : '#15803d', fontSize: 13, fontWeight: 600 }}>
+          {saveStatus}
+        </div>
+      )}
 
       {/* Ringkasan Zona Prioritas */}
       <div className="stat-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, marginBottom: 24 }}>

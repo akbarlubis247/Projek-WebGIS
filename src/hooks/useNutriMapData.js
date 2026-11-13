@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BOGOR_KELURAHAN_GEOJSON } from '../data/bogorKelurahanGeoJSON';
 import { KELURAHAN_68_BOGOR, calculateSAW } from '../data/bogorKelurahanData';
+import { KECAMATAN_KOTA_BOGOR } from '../data/bogorData';
 import {
+  aggregateKecamatanFromKelurahan,
   extractKelurahanList,
   fetchAreasGeoJSON,
   fetchFacilitiesGeoJSON,
@@ -12,10 +14,18 @@ import {
 
 let cachedSnapshot = null;
 let inflightPromise = null;
+let globalRefreshNonce = 0;
+const listeners = new Set();
 
-function loadSnapshotOnce() {
-  if (cachedSnapshot) return Promise.resolve(cachedSnapshot);
-  if (inflightPromise) return inflightPromise;
+function notifyListeners(snapshot) {
+  for (const listener of listeners) {
+    listener(snapshot, globalRefreshNonce);
+  }
+}
+
+function loadSnapshotOnce(force = false) {
+  if (cachedSnapshot && !force) return Promise.resolve(cachedSnapshot);
+  if (inflightPromise && !force) return inflightPromise;
 
   inflightPromise = Promise.all([
     fetchAreasGeoJSON(),
@@ -41,6 +51,7 @@ function loadSnapshotOnce() {
         dataSource: areasRes?.meta?.data_source || 'postgis',
       };
       cachedSnapshot = snapshot;
+      notifyListeners(snapshot);
       return snapshot;
     })
     .finally(() => {
@@ -51,10 +62,20 @@ function loadSnapshotOnce() {
 }
 
 /**
- * Mengambil data spasial 68 kelurahan & titik fasilitas dari backend API (/api/areas, /api/facilities),
+ * Memicu muat ulang seluruh cache data spasial & ranking setelah admin mempublikasikan dataset baru.
+ */
+export async function refreshNutriMapData() {
+  globalRefreshNonce += 1;
+  cachedSnapshot = null;
+  return loadSnapshotOnce(true);
+}
+
+/**
+ * Mengambil data spasial 68 kelurahan, agregat 6 kecamatan, & titik fasilitas dari backend API,
  * dengan fallback otomatis ke data lokal apabila backend sedang offline.
  */
 export function useNutriMapData() {
+  const [refreshNonce, setRefreshNonce] = useState(globalRefreshNonce);
   const [state, setState] = useState(() => ({
     areasGeoJson: cachedSnapshot?.areasGeoJson || BOGOR_KELURAHAN_GEOJSON,
     facilitiesGeoJson: cachedSnapshot?.facilitiesGeoJson || { type: 'FeatureCollection', features: [] },
@@ -66,19 +87,19 @@ export function useNutriMapData() {
   }));
 
   useEffect(() => {
-    if (cachedSnapshot) return undefined;
+    const onUpdate = (snapshot, nextNonce) => {
+      setRefreshNonce(nextNonce);
+      setState({
+        ...snapshot,
+        isLoading: false,
+        error: null,
+      });
+    };
+    listeners.add(onUpdate);
 
-    let active = true;
-    loadSnapshotOnce()
-      .then((snapshot) => {
-        if (!active) return;
-        setState({
-          ...snapshot,
-          isLoading: false,
-          error: null,
-        });
-      })
-      .catch((err) => {
+    if (!cachedSnapshot) {
+      let active = true;
+      loadSnapshotOnce().catch((err) => {
         if (!active) return;
         setState((prev) => ({
           ...prev,
@@ -88,9 +109,14 @@ export function useNutriMapData() {
           error: err.message || 'Gagal menghubungi API NutriMap',
         }));
       });
+      return () => {
+        active = false;
+        listeners.delete(onUpdate);
+      };
+    }
 
     return () => {
-      active = false;
+      listeners.delete(onUpdate);
     };
   }, []);
 
@@ -99,9 +125,16 @@ export function useNutriMapData() {
     return parsed.length ? parsed : KELURAHAN_68_BOGOR;
   }, [state.areasGeoJson]);
 
+  const kecamatanList = useMemo(() => {
+    return aggregateKecamatanFromKelurahan(kelurahanList, KECAMATAN_KOTA_BOGOR);
+  }, [kelurahanList]);
+
   return {
     ...state,
     kelurahanList,
+    kecamatanList,
+    refreshNonce,
+    refresh: refreshNutriMapData,
   };
 }
 
@@ -109,7 +142,7 @@ export function useNutriMapData() {
  * Mengambil hasil pemeringkatan SAW dari GET /api/rankings sesuai bobot kriteria,
  * dengan fallback lokal calculateSAW apabila API tidak tersedia.
  */
-export function useSawRankings(weights, kelurahanList) {
+export function useSawRankings(weights, kelurahanList, refreshNonce = 0) {
   const totalWeight =
     Number(weights.stunting || 0) +
     Number(weights.kemiskinan || 0) +
@@ -163,6 +196,7 @@ export function useSawRankings(weights, kelurahanList) {
     };
   }, [
     isWeightValid,
+    refreshNonce,
     weights.stunting,
     weights.kemiskinan,
     weights.kerentananPangan,

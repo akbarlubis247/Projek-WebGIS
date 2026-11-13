@@ -42,7 +42,6 @@ import {
 import MapView from '../common/MapView';
 import {
   KOTA_BOGOR_STATS,
-  KECAMATAN_KOTA_BOGOR,
   FOOD_SECURITY_CATEGORIES
 } from '../../data/bogorData';
 import { LAYER_DEFINITIONS, getIndicatorClassification } from '../../data/indicatorStandards';
@@ -60,7 +59,7 @@ import { getPublicContent } from '../../data/defaultPublicContent';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function LandingPageView({ onOpenLogin, onSelectKecamatan, currentUser, onNavigate }) {
-  const { areasGeoJson, kelurahanList, facilitiesGeoJson } = useNutriMapData();
+  const { areasGeoJson, kelurahanList, kecamatanList, facilitiesGeoJson } = useNutriMapData();
   const [content, setContent] = useState(getPublicContent());
   const [selectedKec, setSelectedKec] = useState(null);
   const [selectedKel, setSelectedKel] = useState(null);
@@ -116,7 +115,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
   const countUpAnimatedRef = useRef(false);
 
   // Filtered Table Data for Data Indikator Section
-  const filteredData = KECAMATAN_KOTA_BOGOR.filter((item) => {
+  const filteredData = kecamatanList.filter((item) => {
     const matchSearch =
       item.nama.toLowerCase().includes(searchTable.toLowerCase()) ||
       item.pusat.toLowerCase().includes(searchTable.toLowerCase());
@@ -954,7 +953,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 </tr>
               </thead>
               <tbody>
-                {KECAMATAN_KOTA_BOGOR.map((kec) => {
+                {kecamatanList.map((kec) => {
                   const isSelected = selectedKec?.id === kec.id;
                   const statusClass = kec.panganStatus.toLowerCase().replace(/\s+/g, '-');
                   return (
@@ -1049,7 +1048,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
               onSelectKelurahan={(kel) => {
                 setSelectedKel(kel);
                 if (kel) {
-                  const parent = KECAMATAN_KOTA_BOGOR.find(
+                  const parent = kecamatanList.find(
                     (k) => k.nama.toLowerCase() === (kel.kecamatan || '').toLowerCase()
                   );
                   if (parent) setSelectedKec(parent);
@@ -1267,10 +1266,10 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                       </div>
 
                       {(() => {
-                        const parentKec = KECAMATAN_KOTA_BOGOR.find(
+                        const parentKec = kecamatanList.find(
                           (k) => k.nama.toLowerCase() === (selectedKel.kecamatan || '').toLowerCase()
                         );
-                        const kecAvgStunting = parentKec ? parentKec.stunting : 14.5;
+                        const kecAvgStunting = parentKec ? parentKec.stunting : 2.43;
                         const diff = selectedKel.stunting - kecAvgStunting;
                         return (
                           <div className="meta-data-row">
@@ -1717,7 +1716,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                             type="button"
                             onClick={() => {
                               setSelectedKel(k);
-                              const parent = KECAMATAN_KOTA_BOGOR.find(
+                              const parent = kecamatanList.find(
                                 (item) => item.nama.toLowerCase() === (k.kecamatan || '').toLowerCase()
                               );
                               if (parent) setSelectedKec(parent);
@@ -1867,7 +1866,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
           <div style={{ width: '100%', height: isMobile ? 310 : 380, marginTop: 20 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={KECAMATAN_KOTA_BOGOR}
+                data={kecamatanList}
                 margin={isMobile ? { top: 28, right: 8, left: -22, bottom: 25 } : { top: 28, right: 25, left: -5, bottom: 20 }}
               >
                 <defs>
@@ -1904,7 +1903,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                   tick={{ fontSize: isMobile ? 10 : 12, fill: '#8C827A', fontWeight: 500 }}
                   tickLine={false}
                   axisLine={false}
-                  domain={[0, activeChartMetric === 'stunting' ? 28 : 115]}
+                  domain={[0, activeChartMetric === 'stunting' ? 8 : 115]}
                 />
                 <Tooltip
                   cursor={{ fill: 'rgba(45, 90, 60, 0.05)', radius: 10 }}
@@ -1947,11 +1946,11 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                     style={{ fill: '#241D1B', fontSize: isMobile ? 10 : 13, fontWeight: 800 }}
                     offset={isMobile ? 6 : 10}
                   />
-                  {KECAMATAN_KOTA_BOGOR.map((entry, index) => {
+                  {kecamatanList.map((entry, index) => {
                     let fill = 'url(#barGradientIKP)';
                     if (activeChartMetric === 'airBersih') fill = 'url(#barGradientAir)';
                     if (activeChartMetric === 'stunting') {
-                      fill = entry.stunting > 15 ? 'url(#barGradientStuntingHigh)' : 'url(#barGradientStunting)';
+                      fill = entry.stunting >= 3.2 ? 'url(#barGradientStuntingHigh)' : 'url(#barGradientStunting)';
                     }
                     return <Cell key={`cell-${index}`} fill={fill} />;
                   })}

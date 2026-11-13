@@ -26,17 +26,23 @@ import {
 import MapView from '../common/MapView';
 import {
   KOTA_BOGOR_STATS,
-  KECAMATAN_KOTA_BOGOR,
   MONTHLY_TREND,
   FOOD_SECURITY_CATEGORIES
 } from '../../data/bogorData';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 
 export default function DashboardView({ onNavigate, onSelectKecamatan }) {
-  const [selectedKec, setSelectedKec] = useState(KECAMATAN_KOTA_BOGOR[0]);
+  const { kecamatanList } = useNutriMapData();
+  const [selectedKec, setSelectedKec] = useState(() => kecamatanList[0]);
+
+  useEffect(() => {
+    if (!kecamatanList.length) return;
+    setSelectedKec((prev) => kecamatanList.find((k) => k.id === prev?.id) || kecamatanList[0]);
+  }, [kecamatanList]);
 
   // Priority count
-  const highRiskCount = KECAMATAN_KOTA_BOGOR.filter(k => k.prioritas === 'Tinggi' || k.prioritas === 'Sangat Tinggi').length;
-  const safeCount = KECAMATAN_KOTA_BOGOR.filter(k => k.panganStatus === 'Sangat Aman' || k.panganStatus === 'Aman').length;
+  const highRiskCount = kecamatanList.filter(k => k.prioritas === 'Tinggi' || k.prioritas === 'Sangat Tinggi').length;
+  const safeCount = kecamatanList.filter(k => k.panganStatus === 'Sangat Aman' || k.panganStatus === 'Aman').length;
 
   // CountUp Refs for Dashboard KPIs
   const heroIkpRef = useRef(null);
@@ -295,7 +301,7 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
             </button>
           </div>
           <div className="ranking-list">
-            {KECAMATAN_KOTA_BOGOR.filter(k => k.prioritas === 'Sangat Tinggi' || k.prioritas === 'Tinggi' || k.prioritas === 'Sedang')
+            {kecamatanList.filter(k => k.prioritas === 'Sangat Tinggi' || k.prioritas === 'Tinggi' || k.prioritas === 'Sedang')
               .slice(0, 4)
               .map((kec, idx) => (
                 <div key={kec.id} className="rank-item" onClick={() => setSelectedKec(kec)}>

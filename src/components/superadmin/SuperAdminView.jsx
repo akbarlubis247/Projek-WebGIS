@@ -14,13 +14,36 @@ import {
   LogOut,
   Key,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Activity
 } from 'lucide-react';
+import { listAuditLogsApi } from '../../services/api';
 
 export default function SuperAdminView({ admins, setAdmins, currentUser, onLogout }) {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [logsError, setLogsError] = useState('');
+
+  const loadAuditLogs = async () => {
+    setLoadingLogs(true);
+    setLogsError('');
+    try {
+      const res = await listAuditLogsApi({ limit: 30 });
+      setAuditLogs(Array.isArray(res?.data) ? res.data : []);
+    } catch (err) {
+      setLogsError(err.message || 'Gagal memuat audit log backend');
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAuditLogs();
+  }, []);
 
   const adminCountRef = useRef(null);
 
@@ -205,6 +228,61 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
                 <tr>
                   <td colSpan="7" className="text-center py-4">
                     Tidak ada data admin ditemukan dengan kata kunci "{search}".
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Audit Log Aktivitas Sistem dari Backend (/api/admin/audit-logs) */}
+      <div className="sa-card table-card" style={{ marginTop: 24 }}>
+        <div className="sa-table-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Activity size={18} color="#0284c7" />
+            <h3 style={{ margin: 0 }}>Log Aktivitas Sistem (Backend Audit Trail)</h3>
+          </div>
+          <button
+            type="button"
+            className="table-action-btn edit-btn"
+            onClick={loadAuditLogs}
+            disabled={loadingLogs}
+          >
+            <RefreshCw size={14} /> {loadingLogs ? 'Memuat...' : 'Refresh Log'}
+          </button>
+        </div>
+
+        {logsError && (
+          <div style={{ padding: '10px 16px', color: '#b91c1c', fontSize: 13 }}>{logsError}</div>
+        )}
+
+        <div className="sa-table-wrapper">
+          <table className="sa-data-table">
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>User ID</th>
+                <th>Aksi</th>
+                <th>Resource</th>
+                <th>Resource ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.length > 0 ? (
+                auditLogs.map((log, idx) => (
+                  <tr key={log.id || idx}>
+                    <td style={{ fontSize: 12 }}>{log.created_at ? new Date(log.created_at).toLocaleString('id-ID') : '-'}</td>
+                    <td style={{ fontSize: 12 }}>{log.user_id || '-'}</td>
+                    <td><strong>{log.action}</strong></td>
+                    <td>{log.resource || '-'}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{log.resource_id || '-'}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center py-4">
+                    {loadingLogs ? 'Memuat audit log...' : 'Belum ada catatan audit log.'}
                   </td>
                 </tr>
               )}

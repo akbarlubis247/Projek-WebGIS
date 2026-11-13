@@ -2,13 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { HeartPulse, Users, ShieldAlert, Award, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 import { getPublicContent } from '../../data/defaultPublicContent';
 import stuntingImg from '../../assets/stunting-prevention.jpg';
 
 export default function WelfareView() {
   const [content, setContent] = useState(getPublicContent());
-  const sortedByStunting = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.stunting - a.stunting);
+  const { kecamatanList } = useNutriMapData();
+  const sortedByStunting = [...kecamatanList].sort((a, b) => b.stunting - a.stunting);
+  const avgStunting = kecamatanList.length
+    ? kecamatanList.reduce((s, k) => s + Number(k.stunting || 0), 0) / kecamatanList.length
+    : 0;
+  const highRiskCount = kecamatanList.filter((k) => k.prioritas === 'Tinggi').length;
+  const lowRiskCount = kecamatanList.filter((k) => k.prioritas === 'Rendah').length;
 
   const avgStuntingRef = useRef(null);
   const warnKecRef = useRef(null);
@@ -30,13 +36,13 @@ export default function WelfareView() {
       if (!cu.error) cu.start();
     };
 
-    anim(avgStuntingRef, 12.4, { decimalPlaces: 1, suffix: '%' });
-    anim(warnKecRef, 2);
-    anim(lowKecRef, 1);
-    anim(heroStuntingRef, 12.4, { decimalPlaces: 1, suffix: '%' });
+    anim(avgStuntingRef, avgStunting, { decimalPlaces: 2, suffix: '%' });
+    anim(warnKecRef, highRiskCount);
+    anim(lowKecRef, lowRiskCount);
+    anim(heroStuntingRef, avgStunting, { decimalPlaces: 2, suffix: '%' });
     anim(heroTargetRef, 10, { suffix: '%' });
     anim(heroPosyanduRef, 863);
-  }, []);
+  }, [avgStunting, highRiskCount, lowRiskCount]);
 
   return (
     <div className="view-container animate-fade-in">

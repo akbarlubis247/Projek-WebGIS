@@ -2,13 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import { Droplets, CheckCircle, AlertCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { KECAMATAN_KOTA_BOGOR } from '../../data/bogorData';
+import { useNutriMapData } from '../../hooks/useNutriMapData';
 import { getPublicContent } from '../../data/defaultPublicContent';
 import pdamFacilityImg from '../../assets/pdam-facility.jpg';
 
 export default function CleanWaterView() {
   const [content, setContent] = useState(getPublicContent());
-  const sortedByAir = [...KECAMATAN_KOTA_BOGOR].sort((a, b) => b.airBersih - a.airBersih);
+  const { kecamatanList } = useNutriMapData();
+  const sortedByAir = [...kecamatanList].sort((a, b) => b.airBersih - a.airBersih);
+  const avgAir = kecamatanList.length
+    ? kecamatanList.reduce((s, k) => s + Number(k.airBersih || 0), 0) / kecamatanList.length
+    : 0;
+  const southKec = kecamatanList.find((k) => k.nama === 'Bogor Selatan');
+  const southAir = southKec ? Number(southKec.airBersih || 0) : avgAir;
 
   const avgAirRef = useRef(null);
   const southAirRef = useRef(null);
@@ -28,11 +34,11 @@ export default function CleanWaterView() {
       if (!cu.error) cu.start();
     };
 
-    anim(avgAirRef, 90.8, { decimalPlaces: 1, suffix: '%' });
-    anim(southAirRef, 81.5, { decimalPlaces: 1, suffix: '%' });
+    anim(avgAirRef, avgAir, { decimalPlaces: 1, suffix: '%' });
+    anim(southAirRef, southAir, { decimalPlaces: 1, suffix: '%' });
     anim(heroProdRef, 2400, { formattingFn: (n) => Math.round(n).toLocaleString('id-ID') + ' L/detik' });
-    anim(heroKecRef, 6);
-  }, []);
+    anim(heroKecRef, kecamatanList.length || 6);
+  }, [avgAir, southAir, kecamatanList.length]);
 
   return (
     <div className="view-container animate-fade-in">
