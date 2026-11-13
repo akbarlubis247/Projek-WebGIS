@@ -2,31 +2,75 @@ import React, { useState, useEffect, useRef } from 'react';
 import { CountUp } from 'countup.js';
 import {
   UserPlus,
-  Shield,
   Trash2,
   Edit,
   Search,
-  Lock,
   Mail,
   User,
   CheckCircle,
   X,
-  LogOut,
   Key,
   ShieldCheck,
   AlertCircle,
   RefreshCw,
-  Activity
+  Activity,
+  Building2,
+  Power,
+  ArrowLeft
 } from 'lucide-react';
-import { listAuditLogsApi } from '../../services/api';
+import {
+  listAuditLogsApi,
+  listUsersApi,
+  createUserApi,
+  updateUserApi,
+  deleteUserApi
+} from '../../services/api';
 
-export default function SuperAdminView({ admins, setAdmins, currentUser, onLogout }) {
+export default function SuperAdminView({ currentUser, onNavigate }) {
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [usersError, setUsersError] = useState('');
+
   const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
-  const [editingAdmin, setEditingAdmin] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [modalError, setModalError] = useState('');
+
   const [auditLogs, setAuditLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [logsError, setLogsError] = useState('');
+  const [notification, setNotification] = useState('');
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'admin',
+    agency: 'Bappeda Kota Bogor',
+    is_active: true,
+  });
+
+  const adminCountRef = useRef(null);
+
+  const showToast = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(''), 3800);
+  };
+
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    setUsersError('');
+    try {
+      const res = await listUsersApi();
+      setUsers(Array.isArray(res?.data) ? res.data : []);
+    } catch (err) {
+      setUsersError(err.message || 'Gagal memuat daftar akun dari Supabase');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
   const loadAuditLogs = async () => {
     setLoadingLogs(true);
@@ -41,89 +85,130 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
     }
   };
 
-  useEffect(() => {
-    loadAuditLogs();
-  }, []);
+  const refreshAll = async () => {
+    await Promise.all([loadUsers(), loadAuditLogs()]);
+  };
 
-  const adminCountRef = useRef(null);
+  useEffect(() => {
+    refreshAll();
+  }, []);
 
   useEffect(() => {
     if (adminCountRef.current) {
-      const cu = new CountUp(adminCountRef.current, admins.length, { startVal: 0, duration: 1.0, useEasing: true });
+      const cu = new CountUp(adminCountRef.current, users.length, { startVal: 0, duration: 0.8, useEasing: true });
       if (!cu.error) cu.start();
     }
-  }, [admins.length]);
+  }, [users.length]);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    nama: '',
-    email: '',
-    password: '',
-    status: 'Aktif'
+  const filteredUsers = users.filter((u) => {
+    const q = search.toLowerCase();
+    const matchesSearch =
+      (u.name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.agency || '').toLowerCase().includes(q);
+    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
+    return matchesSearch && matchesRole;
   });
 
-  const [notification, setNotification] = useState('');
-
-  const filteredAdmins = admins.filter((a) =>
-    a.nama.toLowerCase().includes(search.toLowerCase()) ||
-    a.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const activeCount = users.filter((u) => u.is_active !== false).length;
+  const superadminCount = users.filter((u) => u.role === 'superadmin').length;
 
   const handleOpenAddModal = () => {
-    setEditingAdmin(null);
-    setFormData({ nama: '', email: '', password: '', status: 'Aktif' });
-    setShowModal(true);
-  };
-
-  const handleOpenEditModal = (admin) => {
-    setEditingAdmin(admin);
+    setEditingUser(null);
+    setModalError('');
     setFormData({
-      nama: admin.nama,
-      email: admin.email,
-      password: admin.password || '',
-      status: admin.status || 'Aktif'
+      name: '',
+      email: '',
+      password: '',
+      role: 'admin',
+      agency: 'Bappeda Kota Bogor',
+      is_active: true,
     });
     setShowModal(true);
   };
 
-  const handleDeleteAdmin = (id, nama) => {
-    if (window.confirm(`Apakah Anda yakin ingin menghapus akun admin "${nama}"?`)) {
-      setAdmins(admins.filter((a) => a.id !== id));
-      showToast(`Akun admin "${nama}" berhasil dihapus.`);
+  const handleOpenEditModal = (user) => {
+    setEditingUser(user);
+    setModalError('');
+    setFormData({
+      name: user.name || '',
+      email: user.email || '',
+      password: '',
+      role: user.role || 'admin',
+      agency: user.agency || 'Pemerintah Kota Bogor',
+      is_active: user.is_active !== false,
+    });
+    setShowModal(true);
+  };
+
+  const handleToggleActive = async (user) => {
+    if (Number(user.id) === Number(currentUser?.id)) {
+      setUsersError('Anda tidak dapat menonaktifkan akun Anda sendiri yang sedang login.');
+      return;
+    }
+    try {
+      const nextState = user.is_active === false;
+      await updateUserApi(user.id, { is_active: nextState });
+      showToast(`Akun "${user.name}" berhasil ${nextState ? 'diaktifkan' : 'dinonaktifkan'} di Supabase.`);
+      await refreshAll();
+    } catch (err) {
+      setUsersError(err.message || 'Gagal mengubah status akun');
     }
   };
 
-  const handleSaveForm = (e) => {
+  const handleDeleteUser = async (user) => {
+    if (Number(user.id) === Number(currentUser?.id)) {
+      setUsersError('Anda tidak dapat menghapus akun Anda sendiri yang sedang login.');
+      return;
+    }
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus permanen akun "${user.name}" (${user.email}) dari Supabase?`)) {
+      return;
+    }
+    try {
+      await deleteUserApi(user.id);
+      showToast(`Akun "${user.name}" berhasil dihapus dari database.`);
+      await refreshAll();
+    } catch (err) {
+      setUsersError(err.message || 'Gagal menghapus akun');
+    }
+  };
+
+  const handleSaveForm = async (e) => {
     e.preventDefault();
-    if (editingAdmin) {
-      // Update existing admin
-      setAdmins(
-        admins.map((a) =>
-          a.id === editingAdmin.id
-            ? { ...a, nama: formData.nama, email: formData.email, password: formData.password, status: formData.status }
-            : a
-        )
-      );
-      showToast(`Data admin "${formData.nama}" berhasil diperbarui.`);
-    } else {
-      // Add new admin
-      const newAdmin = {
-        id: `ADM-00${admins.length + 1}`,
-        nama: formData.nama,
-        email: formData.email,
-        password: formData.password,
-        status: formData.status,
-        ditambahkan: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
-      };
-      setAdmins([...admins, newAdmin]);
-      showToast(`Admin baru "${formData.nama}" berhasil ditambahkan!`);
+    setModalError('');
+    setIsSaving(true);
+    try {
+      if (editingUser) {
+        const payload = {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          role: formData.role,
+          agency: formData.agency.trim(),
+          is_active: formData.is_active,
+        };
+        if (formData.password.trim()) {
+          payload.password = formData.password;
+        }
+        await updateUserApi(editingUser.id, payload);
+        showToast(`Data akun "${payload.name}" berhasil diperbarui di Supabase.`);
+      } else {
+        await createUserApi({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          password: formData.password,
+          role: formData.role,
+          agency: formData.agency.trim(),
+          is_active: formData.is_active,
+        });
+        showToast(`Akun baru "${formData.name.trim()}" (${formData.role}) berhasil disimpan ke Supabase!`);
+      }
+      setShowModal(false);
+      await refreshAll();
+    } catch (err) {
+      setModalError(err.message || 'Gagal menyimpan data akun ke server');
+    } finally {
+      setIsSaving(false);
     }
-    setShowModal(false);
-  };
-
-  const showToast = (msg) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(''), 3500);
   };
 
   return (
@@ -132,19 +217,24 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
       <div className="superadmin-hero">
         <div className="sa-hero-left">
           <div className="sa-badge">
-            <ShieldCheck size={16} /> Portal Khusus Super Admin
+            <ShieldCheck size={16} /> Portal Tata Kelola Akun &amp; Audit Supabase
           </div>
           <h1 className="page-title-editorial">
-            Manajemen Akun &amp; Hak Akses Admin
+            Manajemen Akun &amp; Hak Akses Sistem
           </h1>
           <p>
-            Kelola daftar email dan kata sandi staff admin yang diberikan hak akses operasional SIG NutriMap Kota Bogor.
+            Seluruh akun pengelola SIG NutriMap tersimpan terenkripsi (bcrypt) di tabel <code>users</code> Supabase PostgreSQL dan tercatat pada Audit Trail sistem.
           </p>
         </div>
 
-        <div className="sa-hero-right">
-          <button className="primary-btn" onClick={handleOpenAddModal}>
-            <UserPlus size={18} /> Tambah Admin Baru
+        <div className="sa-hero-right" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {onNavigate && (
+            <button type="button" className="outline-btn" onClick={() => onNavigate('dashboard')}>
+              <ArrowLeft size={16} /> Dashboard Eksekutif
+            </button>
+          )}
+          <button type="button" className="primary-btn" onClick={handleOpenAddModal}>
+            <UserPlus size={18} /> Tambah Akun Baru
           </button>
         </div>
       </div>
@@ -155,21 +245,66 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
         </div>
       )}
 
-      {/* Admin Stats & List Table Card */}
+      {usersError && (
+        <div className="alert-toast" style={{ background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', marginBottom: 16 }}>
+          <AlertCircle size={18} /> {usersError}
+        </div>
+      )}
+
+      {/* Ringkasan Akun Live */}
+      <div className="stat-cards-grid" style={{ marginBottom: 20 }}>
+        <div className="stat-card emerald">
+          <div className="sc-icon"><User size={22} /></div>
+          <div className="sc-info">
+            <span className="sc-label">Total Akun Terdaftar</span>
+            <h3 className="sc-value"><span ref={adminCountRef}>{users.length}</span> Akun</h3>
+            <span className="sc-desc">Tabel Supabase <code>public.users</code></span>
+          </div>
+        </div>
+        <div className="stat-card cyan">
+          <div className="sc-icon"><CheckCircle size={22} /></div>
+          <div className="sc-info">
+            <span className="sc-label">Status Aktif / Non-Aktif</span>
+            <h3 className="sc-value">{activeCount} Aktif / {users.length - activeCount} Non-Aktif</h3>
+            <span className="sc-desc">Kontrol akses login JWT real-time</span>
+          </div>
+        </div>
+        <div className="stat-card amber">
+          <div className="sc-icon"><ShieldCheck size={22} /></div>
+          <div className="sc-info">
+            <span className="sc-label">Distribusi Role RBAC</span>
+            <h3 className="sc-value">{superadminCount} Super Admin • {users.length - superadminCount} Staff Admin</h3>
+            <span className="sc-desc">Otorisasi endpoint berjenjang</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Users Table Card */}
       <div className="dash-card table-card">
-        <div className="table-tools-header">
+        <div className="table-tools-header" style={{ gap: 12, flexWrap: 'wrap' }}>
           <div className="t-search">
             <Search size={18} className="icon" />
             <input
               type="text"
-              placeholder="Cari admin berdasarkan nama atau email..."
+              placeholder="Cari berdasarkan nama, email, atau instansi..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="sa-total-badge">
-            Total Admin Terdaftar: <strong><span ref={adminCountRef}>{admins.length}</span> Akun</strong>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+            >
+              <option value="all">Semua Role</option>
+              <option value="admin">Staff Admin</option>
+              <option value="superadmin">Super Admin</option>
+            </select>
+            <button type="button" className="table-action-btn edit-btn" onClick={refreshAll} disabled={loadingUsers}>
+              <RefreshCw size={14} /> {loadingUsers ? 'Memuat...' : 'Sync Supabase'}
+            </button>
           </div>
         </div>
 
@@ -177,57 +312,98 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
           <table>
             <thead>
               <tr>
-                <th>ID Admin</th>
-                <th>Nama Lengkap Admin</th>
-                <th>Alamat Email (Login)</th>
-                <th>Kata Sandi</th>
-                <th>Tanggal Pendaftaran</th>
+                <th>ID</th>
+                <th>Nama &amp; Instansi</th>
+                <th>Email Login</th>
+                <th>Role</th>
+                <th>Login Terakhir</th>
                 <th>Status Akses</th>
                 <th style={{ textAlign: 'right' }}>Aksi Pengaturan</th>
               </tr>
             </thead>
             <tbody>
-              {filteredAdmins.length > 0 ? (
-                filteredAdmins.map((item) => (
-                  <tr key={item.id}>
-                    <td className="text-muted font-semibold" style={{ letterSpacing: '0.02em' }}>{item.id}</td>
-                    <td>
-                      <span className="font-bold text-main">{item.nama}</span>
-                    </td>
-                    <td className="text-emerald font-medium">{item.email}</td>
-                    <td className="text-muted">
-                      <span className="sa-password-badge">{item.password ? '•••••••• (' + item.password + ')' : '••••••••'}</span>
-                    </td>
-                    <td className="text-muted">{item.ditambahkan || '01 Sep 2026'}</td>
-                    <td>
-                      <span className={`badge ${item.status === 'Aktif' ? 'sangat-aman' : 'sangat-rawan'}`}>
-                        {item.status || 'Aktif'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <div className="sa-table-actions">
-                        <button
-                          className="table-action-btn edit-btn"
-                          onClick={() => handleOpenEditModal(item)}
-                          title="Edit Admin"
+              {loadingUsers && users.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-4">Memuat daftar akun dari Supabase...</td>
+                </tr>
+              ) : filteredUsers.length > 0 ? (
+                filteredUsers.map((item) => {
+                  const isSelf = Number(item.id) === Number(currentUser?.id);
+                  const isActive = item.is_active !== false;
+                  return (
+                    <tr key={item.id}>
+                      <td className="text-muted font-mono">#{item.id}</td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <span className="font-bold text-main">
+                            {item.name} {isSelf && <span style={{ fontSize: 11, color: '#0284c7' }}>(Anda)</span>}
+                          </span>
+                          <span style={{ fontSize: 12, color: '#64748b' }}>{item.agency || 'Pemerintah Kota Bogor'}</span>
+                        </div>
+                      </td>
+                      <td className="text-emerald font-medium font-mono">{item.email}</td>
+                      <td>
+                        <span
+                          className="role-pill font-mono"
+                          style={{
+                            padding: '3px 9px',
+                            borderRadius: 999,
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                            background: item.role === 'superadmin' ? '#e0e7ff' : '#ecfdf5',
+                            color: item.role === 'superadmin' ? '#3730a3' : '#047857',
+                          }}
                         >
-                          <Edit size={14} /> Edit
-                        </button>
-                        <button
-                          className="table-action-btn delete-btn"
-                          onClick={() => handleDeleteAdmin(item.id, item.nama)}
-                          title="Hapus Admin"
-                        >
-                          <Trash2 size={14} /> Hapus
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {item.role === 'superadmin' ? 'superadmin' : 'admin'}
+                        </span>
+                      </td>
+                      <td className="text-muted" style={{ fontSize: 12 }}>
+                        {item.last_login_at ? new Date(item.last_login_at).toLocaleString('id-ID') : 'Belum pernah login'}
+                      </td>
+                      <td>
+                        <span className={`badge ${isActive ? 'sangat-aman' : 'sangat-rawan'}`}>
+                          {isActive ? 'Aktif' : 'Non-Aktif'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div className="sa-table-actions">
+                          <button
+                            type="button"
+                            className="table-action-btn edit-btn"
+                            onClick={() => handleOpenEditModal(item)}
+                            title="Edit Akun & Password"
+                          >
+                            <Edit size={14} /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="table-action-btn"
+                            disabled={isSelf}
+                            onClick={() => handleToggleActive(item)}
+                            title={isSelf ? 'Akun sendiri aktif' : isActive ? 'Nonaktifkan Akun' : 'Aktifkan Akun'}
+                            style={{ opacity: isSelf ? 0.45 : 1 }}
+                          >
+                            <Power size={14} /> {isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                          </button>
+                          <button
+                            type="button"
+                            className="table-action-btn delete-btn"
+                            disabled={isSelf}
+                            onClick={() => handleDeleteUser(item)}
+                            title={isSelf ? 'Tidak dapat menghapus akun sendiri' : 'Hapus Akun'}
+                            style={{ opacity: isSelf ? 0.45 : 1 }}
+                          >
+                            <Trash2 size={14} /> Hapus
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan="7" className="text-center py-4">
-                    Tidak ada data admin ditemukan dengan kata kunci "{search}".
+                    Tidak ada akun yang sesuai dengan filter saat ini.
                   </td>
                 </tr>
               )}
@@ -241,7 +417,7 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
         <div className="sa-table-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Activity size={18} color="#0284c7" />
-            <h3 style={{ margin: 0 }}>Log Aktivitas Sistem (Backend Audit Trail)</h3>
+            <h3 style={{ margin: 0 }}>Log Aktivitas Sistem (Supabase Audit Trail)</h3>
           </div>
           <button
             type="button"
@@ -262,7 +438,7 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
             <thead>
               <tr>
                 <th>Waktu</th>
-                <th>User ID</th>
+                <th>Aktor</th>
                 <th>Aksi</th>
                 <th>Resource</th>
                 <th>Resource ID</th>
@@ -273,7 +449,9 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
                 auditLogs.map((log, idx) => (
                   <tr key={log.id || idx}>
                     <td style={{ fontSize: 12 }}>{log.created_at ? new Date(log.created_at).toLocaleString('id-ID') : '-'}</td>
-                    <td style={{ fontSize: 12 }}>{log.user_id || '-'}</td>
+                    <td style={{ fontSize: 12 }}>
+                      {log.user_name ? `${log.user_name} (${log.user_email || `#${log.user_id}`})` : log.user_email || (log.user_id ? `User #${log.user_id}` : 'Sistem')}
+                    </td>
                     <td><strong>{log.action}</strong></td>
                     <td>{log.resource || '-'}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{log.resource_id || '-'}</td>
@@ -291,11 +469,11 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
         </div>
       </div>
 
-      {/* Add / Edit Admin Modal */}
+      {/* Add / Edit User Modal */}
       {showModal && (
         <div className="modal-backdrop animate-fade-in">
           <div className="login-modal-card animate-zoom-in">
-            <button className="modal-close-btn" onClick={() => setShowModal(false)}>
+            <button type="button" className="modal-close-btn" onClick={() => setShowModal(false)}>
               <X size={20} />
             </button>
 
@@ -303,21 +481,27 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
               <div className="login-icon-box">
                 <UserPlus size={28} className="text-emerald" />
               </div>
-              <h2>{editingAdmin ? 'Edit Account Admin' : 'Tambah Admin Baru'}</h2>
-              <p>Tentukan alamat email dan password untuk login admin</p>
+              <h2>{editingUser ? `Edit Akun #${editingUser.id}` : 'Tambah Akun Pengelola Baru'}</h2>
+              <p>Disimpan permanen ke tabel <code>users</code> Supabase dengan hash bcrypt</p>
             </div>
+
+            {modalError && (
+              <div style={{ padding: 10, borderRadius: 8, background: '#fee2e2', color: '#991b1b', fontSize: 13, marginBottom: 12 }}>
+                {modalError}
+              </div>
+            )}
 
             <form onSubmit={handleSaveForm} className="login-form">
               <label>
-                Nama Lengkap Admin *
+                Nama Lengkap *
                 <div className="input-wrap">
                   <User size={18} className="i-icon" />
                   <input
                     type="text"
                     required
-                    placeholder="Contoh: Budi Santoso, ST"
-                    value={formData.nama}
-                    onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+                    placeholder="Contoh: Budi Santoso, S.T."
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
               </label>
@@ -329,7 +513,7 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
                   <input
                     type="email"
                     required
-                    placeholder="admin@bogorkota.go.id"
+                    placeholder="staff@nutrimap.test"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
@@ -337,33 +521,62 @@ export default function SuperAdminView({ admins, setAdmins, currentUser, onLogou
               </label>
 
               <label>
-                Kata Sandi (Password) *
+                Instansi / Perangkat Daerah *
                 <div className="input-wrap">
-                  <Key size={18} className="i-icon" />
+                  <Building2 size={18} className="i-icon" />
                   <input
                     type="text"
                     required
-                    placeholder="Masukkan kata sandi baru"
+                    placeholder="Bappeda / Dinas Kesehatan Kota Bogor"
+                    value={formData.agency}
+                    onChange={(e) => setFormData({ ...formData, agency: e.target.value })}
+                  />
+                </div>
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <label>
+                  Role Sistem *
+                  <select
+                    className="status-select-input"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  >
+                    <option value="admin">Staff Admin (admin)</option>
+                    <option value="superadmin">Super Admin (superadmin)</option>
+                  </select>
+                </label>
+
+                <label>
+                  Status Akses
+                  <select
+                    className="status-select-input"
+                    value={formData.is_active ? 'active' : 'inactive'}
+                    onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'active' })}
+                  >
+                    <option value="active">Aktif (Dapat Login)</option>
+                    <option value="inactive">Non-Aktif (Diblokir)</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                {editingUser ? 'Kata Sandi Baru (Opsional — kosongkan bila tetap)' : 'Kata Sandi (Minimal 6 karakter) *'}
+                <div className="input-wrap">
+                  <Key size={18} className="i-icon" />
+                  <input
+                    type="password"
+                    required={!editingUser}
+                    minLength={editingUser ? undefined : 6}
+                    placeholder={editingUser ? 'Biarkan kosong jika tidak diubah' : 'Minimal 6 karakter'}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                 </div>
               </label>
 
-              <label>
-                Status Akun Akses
-                <select
-                  className="status-select-input"
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                >
-                  <option value="Aktif">Aktif (Dapat Login)</option>
-                  <option value="Non-Aktif">Non-Aktif (Akses Diblokir)</option>
-                </select>
-              </label>
-
-              <button type="submit" className="primary-btn login-submit-btn">
-                {editingAdmin ? 'Simpan Perubahan' : 'Daftarkan Admin'}
+              <button type="submit" className="primary-btn login-submit-btn" disabled={isSaving}>
+                {isSaving ? 'Menyimpan ke Supabase...' : editingUser ? 'Simpan Perubahan Akun' : 'Daftarkan Akun ke Supabase'}
               </button>
             </form>
           </div>

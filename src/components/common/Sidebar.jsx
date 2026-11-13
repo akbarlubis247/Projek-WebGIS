@@ -43,8 +43,18 @@ export const GUEST_MENU_ITEMS = [
 ];
 
 export const SUPERADMIN_MENU_ITEMS = [
-  { id: 'superadmin-mgmt', label: 'Kelola Admin & Hak Akses', icon: UserPlus, category: 'Super Admin' },
-  { id: 'content-mgmt', label: 'Kelola Foto & Konten CMS', icon: FileEdit, category: 'Super Admin' },
+  { id: 'dashboard', label: 'Dashboard Eksekutif', icon: LayoutDashboard, category: 'Kontrol Sistem' },
+  { id: 'superadmin-mgmt', label: 'Akun & Audit Log', icon: UserPlus, category: 'Kontrol Sistem' },
+  { id: 'content-mgmt', label: 'Kelola Konten Publik (CMS)', icon: FileEdit, category: 'Kontrol Sistem' },
+  { id: 'data-entry', label: 'Entri Data (Manual & CSV)', icon: FilePlus, category: 'Operasional & Data GIS' },
+  { id: 'priority-areas', label: 'Prioritas Wilayah (SAW)', icon: AlertTriangle, category: 'Operasional & Data GIS' },
+  { id: 'map-explorer', label: 'Eksplorasi Peta', icon: MapPinned, category: 'Operasional & Data GIS' },
+  { id: 'indicator-data', label: 'Data Indikator Kota', icon: TableProperties, category: 'Operasional & Data GIS' },
+  { id: 'food-safety', label: 'Keamanan Pangan', icon: ShieldCheck, category: 'Operasional & Data GIS' },
+  { id: 'food-security', label: 'Ketahanan Pangan', icon: Utensils, category: 'Detail Indikator' },
+  { id: 'welfare', label: 'Kesejahteraan & Stunting', icon: HeartPulse, category: 'Detail Indikator' },
+  { id: 'clean-water', label: 'Akses Air Bersih', icon: Droplets, category: 'Detail Indikator' },
+  { id: 'about', label: 'Tentang NutriMap', icon: Info, category: 'Detail Indikator' },
 ];
 
 export default function Sidebar({
@@ -63,7 +73,7 @@ export default function Sidebar({
 
   if (currentUser.role === 'superadmin') {
     menuItems = SUPERADMIN_MENU_ITEMS;
-    categories = ['Super Admin'];
+    categories = ['Kontrol Sistem', 'Operasional & Data GIS', 'Detail Indikator'];
   } else if (currentUser.role === 'admin') {
     menuItems = ADMIN_MENU_ITEMS;
     categories = ['Utama', 'Detail Indikator', 'Manajemen Data', 'Pengaturan'];

@@ -18,18 +18,21 @@ import {
   createUploadApi,
   listUploadsApi,
   publishUploadApi,
-  rejectUploadApi
+  rejectUploadApi,
+  updateManualIndicatorApi
 } from '../../services/api';
-import { refreshNutriMapData } from '../../hooks/useNutriMapData';
+import { refreshNutriMapData, useNutriMapData } from '../../hooks/useNutriMapData';
 
 const INDICATOR_OPTIONS = [
-  { value: 'stunting', label: 'Prevalensi Stunting (%)' },
-  { value: 'kemiskinan', label: 'Tingkat Kemiskinan / DTKS (%)' },
-  { value: 'pangan', label: 'Kerentanan Pangan (Skor 0-100)' },
-  { value: 'air', label: 'Akses Sanitasi Air Bersih (%)' }
+  { value: 'stunting', label: 'Prevalensi Stunting (%)', min: 0, max: 100 },
+  { value: 'kemiskinan', label: 'Tingkat Kemiskinan / DTKS (%)', min: 0, max: 100 },
+  { value: 'pangan', label: 'Kerentanan Pangan (Skor 0-100)', min: 0, max: 100 },
+  { value: 'air', label: 'Akses Sanitasi Air Bersih (%)', min: 0, max: 100 }
 ];
 
-export default function DataEntryView() {
+export default function DataEntryView({ currentUser }) {
+  const { kelurahanList } = useNutriMapData();
+  const [entryMode, setEntryMode] = useState('csv'); // 'csv' | 'manual'
   const [dragActive, setDragActive] = useState(false);
   const [rawFile, setRawFile] = useState(null);
   const [csvFile, setCsvFile] = useState(null);
@@ -45,6 +48,52 @@ export default function DataEntryView() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Manual Entry State
+  const [manualAreaId, setManualAreaId] = useState('');
+  const [manualValue, setManualValue] = useState('');
+
+  useEffect(() => {
+    if (!manualAreaId && kelurahanList.length) {
+      setManualAreaId(kelurahanList[0].id);
+    }
+  }, [kelurahanList, manualAreaId]);
+
+  const selectedManualArea = kelurahanList.find((k) => k.id === manualAreaId) || kelurahanList[0] || null;
+
+  const handleManualSave = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+    if (!selectedManualArea) {
+      setErrorMsg('Pilih kelurahan terlebih dahulu.');
+      return;
+    }
+    const numVal = Number(manualValue);
+    if (!Number.isFinite(numVal) || numVal < 0 || numVal > 100) {
+      setErrorMsg('Nilai indikator harus angka antara 0 dan 100.');
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      const res = await updateManualIndicatorApi({
+        areaId: selectedManualArea.id,
+        indicatorType,
+        year,
+        value: numVal,
+        source: sourceName,
+      });
+      await refreshNutriMapData();
+      setSuccessMsg(
+        `Sukses! Indikator ${res.data.indicator_type} Kelurahan ${res.data.nama} (${res.data.kecamatan}) tahun ${res.data.year} diperbarui menjadi ${res.data.value} di Supabase.`
+      );
+      setManualValue('');
+    } catch (err) {
+      setErrorMsg(`Gagal menyimpan pembaruan manual: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const loadHistory = async () => {
     setIsLoadingHistory(true);
@@ -268,7 +317,56 @@ export default function DataEntryView() {
         </button>
       </div>
 
-      {/* Metadata Parameter Upload */}
+      {/* Mode Switcher: CSV Batch vs Input Manual Kelurahan */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            type="button"
+            onClick={() => { setEntryMode('csv'); setErrorMsg(''); setSuccessMsg(''); }}
+            style={{
+              padding: '9px 16px',
+              borderRadius: 8,
+              border: entryMode === 'csv' ? '1px solid #0284c7' : '1px solid #cbd5e1',
+              background: entryMode === 'csv' ? '#0284c7' : '#ffffff',
+              color: entryMode === 'csv' ? '#ffffff' : '#334155',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <Upload size={15} /> Unggah Batch CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => { setEntryMode('manual'); setErrorMsg(''); setSuccessMsg(''); }}
+            style={{
+              padding: '9px 16px',
+              borderRadius: 8,
+              border: entryMode === 'manual' ? '1px solid #059669' : '1px solid #cbd5e1',
+              background: entryMode === 'manual' ? '#059669' : '#ffffff',
+              color: entryMode === 'manual' ? '#ffffff' : '#334155',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <Building2 size={15} /> Input Manual Kelurahan
+          </button>
+        </div>
+        {currentUser?.role && (
+          <span style={{ fontSize: 12, color: '#64748b' }}>
+            Akses Aktif: <strong>{currentUser.name}</strong> ({currentUser.role})
+          </span>
+        )}
+      </div>
+
+      {/* Metadata Parameter Upload / Input Manual */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20, background: '#fff', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
         <div>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
@@ -313,8 +411,87 @@ export default function DataEntryView() {
         </div>
       </div>
 
-      {/* Grid: Upload Area & Petunjuk Format */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginBottom: 28 }}>
+      {entryMode === 'manual' ? (
+        <form
+          onSubmit={handleManualSave}
+          style={{ background: '#ffffff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 22, marginBottom: 28 }}
+        >
+          <h3 style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 700, color: '#0f172a' }}>
+            Pembaruan Nilai Indikator Satu Kelurahan (Langsung ke Supabase PostGIS)
+          </h3>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: '#64748b' }}>
+            Pilih kelurahan sasaran dan masukkan nilai terbaru; perubahan langsung tercatat di audit log dan memperbarui peta choropleth serta SAW.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 14, alignItems: 'end' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                Pilih Kelurahan (68 Wilayah Kota Bogor) *
+              </label>
+              <select
+                value={manualAreaId}
+                onChange={(e) => setManualAreaId(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+              >
+                {kelurahanList.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.id} — Kel. {k.nama} (Kec. {k.kecamatan})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                Nilai Baru ({indicatorType}) *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                required
+                placeholder="Contoh: 4.25"
+                value={manualValue}
+                onChange={(e) => setManualValue(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13 }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isProcessing}
+              style={{
+                padding: '10px 18px',
+                background: '#059669',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: 8,
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Save size={15} /> {isProcessing ? 'Menyimpan...' : 'Simpan ke Supabase'}
+            </button>
+          </div>
+
+          {selectedManualArea && (
+            <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: '#f8fafc', fontSize: 12.5, color: '#334155', display: 'flex', gap: 18, flexWrap: 'wrap' }}>
+              <span>Nilai Saat Ini ({selectedManualArea.nama}):</span>
+              <span>Stunting: <b>{selectedManualArea.stunting}%</b></span>
+              <span>Kemiskinan: <b>{selectedManualArea.kemiskinan}%</b></span>
+              <span>Kerentanan Pangan: <b>{selectedManualArea.kerentananPangan}</b></span>
+              <span>Air Bersih: <b>{selectedManualArea.airBersih}%</b></span>
+            </div>
+          )}
+        </form>
+      ) : (
+        /* Grid: Upload Area & Petunjuk Format */
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginBottom: 28 }}>
         <div
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -366,6 +543,7 @@ export default function DataEntryView() {
           </ul>
         </div>
       </div>
+      )}
 
       {errorMsg && (
         <div style={{ padding: 14, background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, color: '#b91c1c', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, fontSize: 13 }}>
