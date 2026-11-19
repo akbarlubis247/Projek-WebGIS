@@ -1,462 +1,256 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import gsap from 'gsap';
-import {
-  ArrowRight,
-  Sparkles
-} from 'lucide-react';
-import introBgImg from '../../assets/intro-bg.png';
-import { getPublicContent } from '../../data/defaultPublicContent';
+import { MountSalakSilhouette } from './BogorDecorations';
+import slideBogorAerial from '../../assets/slide-bogor-aerial.jpg';
 
+/**
+ * Cinematic Documentary Intro — Bogor Geographic Identity
+ * Durasi maksimal: 5.00 detik.
+ * 
+ * Konsep:
+ * - 0.00–1.00s: Opening Atmosphere (Lanskap Kota Bogor & siluet Gunung Salak fade-in lembut, slow zoom)
+ * - 1.00–2.50s: Geographic Identity (Koordinat geografis, elevasi, dan siluet Gunung Salak khas Bogor)
+ * - 2.00–4.00s: Brand Reveal (Judul editorial NUTRIMAP & Subtitle Sistem Informasi Geospasial Kota Bogor)
+ * - 4.10–5.00s: Seamless Transition (Dissolve/fade out halus menuju website utama tanpa blank screen)
+ * 
+ * Interaktivitas & Aksesibilitas:
+ * - Tombol "Lewati Intro" (Skip) & tombol keyboard "Escape" langsung mempercepat transisi (0.25s).
+ * - Mendukung prefers-reduced-motion (otomatis langsung masuk website tanpa animasi).
+ * - Session persistence: otomatis ditandai di sessionStorage setelah selesai/dilewati.
+ */
 export default function IntroOverlay({ onFinish }) {
-  const [content] = useState(() => getPublicContent());
-  const [countdown, setCountdown] = useState(5);
-  const [isVisible, setIsVisible] = useState(true);
-
-  // Element Refs
   const overlayRef = useRef(null);
-  const bgRef = useRef(null);
-  const cardRef = useRef(null);
+  const bgImgRef = useRef(null);
+  const topBarRef = useRef(null);
+  const bottomBarRef = useRef(null);
+  const identityClusterRef = useRef(null);
+  const brandClusterRef = useRef(null);
   const progressFillRef = useRef(null);
+  const skipBtnRef = useRef(null);
 
-  // Flags & Animations
   const isExiting = useRef(false);
-  const progressTweenRef = useRef(null);
-  const countdownIntervalRef = useRef(null);
-  const floatingTweensRef = useRef([]);
+  const tlRef = useRef(null);
 
-  // Trigger smooth theater curtain exit
-  const triggerExit = () => {
+  const triggerExit = useCallback((isImmediate = false) => {
     if (isExiting.current) return;
     isExiting.current = true;
 
-    // Clear countdown & active tweens
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
+    if (tlRef.current) {
+      tlRef.current.kill();
     }
-    if (progressTweenRef.current) {
-      progressTweenRef.current.kill();
-    }
-    floatingTweensRef.current.forEach((t) => t && t.kill());
 
-    const exitTl = gsap.timeline({
+    if (!overlayRef.current) {
+      if (onFinish) onFinish();
+      return;
+    }
+
+    // Segera matikan pointer-events agar website di baliknya langsung responsif
+    overlayRef.current.style.pointerEvents = 'none';
+
+    gsap.to(overlayRef.current, {
+      opacity: 0,
+      duration: isImmediate ? 0.25 : 0.85,
+      ease: 'power2.inOut',
       onComplete: () => {
-        setIsVisible(false);
         if (onFinish) onFinish();
       }
     });
+  }, [onFinish]);
 
-    // 1. Card & pins scale down and fade out
-    exitTl.to(
-      [cardRef.current, '.intro-gis-pin'],
-      {
-        scale: 0.85,
-        opacity: 0,
-        y: -15,
-        duration: 0.45,
-        ease: 'power2.in',
-        stagger: 0.05
-      }
-    );
-
-    // 2. Overlay curtains up like a theater curtain
-    exitTl.to(
-      overlayRef.current,
-      {
-        y: '-100%',
-        duration: 0.95,
-        ease: 'power4.inOut'
-      },
-      '-=0.15'
-    );
-
-    // 3. Main website smooth reveal
-    exitTl.fromTo(
-      '#main-website',
-      {
-        opacity: 0.7,
-        scale: 0.985,
-        filter: 'blur(3px)'
-      },
-      {
-        opacity: 1,
-        scale: 1,
-        filter: 'blur(0px)',
-        duration: 0.8,
-        ease: 'power3.out',
-        clearProps: 'transform,filter,scale'
-      },
-      '-=0.65'
-    );
-  };
+  const handleSkip = useCallback(() => {
+    triggerExit(true);
+  }, [triggerExit]);
 
   useEffect(() => {
-    // 1. Entrance Animation Timeline
-    const ctx = gsap.context(() => {
-      const entranceTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    // 1. Accessibility: Check prefers-reduced-motion
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      triggerExit(true);
+      return;
+    }
 
-      // Background smooth scale in
-      entranceTl.fromTo(
-        bgRef.current,
-        { scale: 1.08, filter: 'blur(6px)' },
-        { scale: 1, filter: 'blur(0px)', duration: 1.2, ease: 'power2.out' },
+    // 2. Keyboard Accessibility: Tombol Escape untuk melewati intro
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleSkip();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    // 3. Focus skip button for keyboard navigation accessibility
+    if (skipBtnRef.current) {
+      skipBtnRef.current.focus();
+    }
+
+    // 4. GSAP Cinematic Documentary Timeline (Total Durasi: 5.00 Detik)
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          triggerExit(false);
+        }
+      });
+      tlRef.current = tl;
+
+      // 0.00 - 5.00s: Continuous slow camera zoom (Ken Burns documentary effect)
+      gsap.fromTo(
+        bgImgRef.current,
+        { scale: 1.08, y: 0 },
+        { scale: 1.01, y: -6, duration: 5.0, ease: 'sine.out' }
+      );
+
+      // 0.00 - 5.00s: Timeline progress bar tracking from 0% to 100%
+      gsap.fromTo(
+        progressFillRef.current,
+        { width: '0%' },
+        { width: '100%', duration: 5.0, ease: 'linear' }
+      );
+
+      // 0.00 - 0.70s: Initial Overlay Fade-In
+      tl.fromTo(
+        overlayRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.7, ease: 'power2.out' },
         0
       );
 
-      // Main Modal Card Entrance (Zoom-in + Fade-in with elastic bounce)
-      entranceTl.fromTo(
-        cardRef.current,
-        { scale: 0.65, opacity: 0, y: 50 },
-        { scale: 1, opacity: 1, y: 0, duration: 1.0, ease: 'back.out(1.35)' },
-        0.15
+      // 0.40 - 1.10s: Top Bar & Bottom Coordinates Fade-In
+      tl.fromTo(
+        [topBarRef.current, bottomBarRef.current],
+        { opacity: 0, y: (i) => (i === 0 ? -10 : 10) },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' },
+        0.4
       );
 
-      // Card Staggered text & items
-      entranceTl.fromTo(
-        '.intro-anim-item',
-        { y: 22, opacity: 0, filter: 'blur(4px)' },
-        {
-          y: 0,
-          opacity: 1,
-          filter: 'blur(0px)',
-          duration: 0.65,
-          stagger: 0.12,
-          ease: 'power2.out'
-        },
-        0.45
+      // 0.90 - 2.00s: Geographic Identity (Mount Salak silhouette & Eyebrow text)
+      tl.fromTo(
+        identityClusterRef.current,
+        { opacity: 0, y: 14, filter: 'blur(3px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.85, ease: 'power2.out' },
+        0.9
       );
 
-      // GIS Pins bounce-in
-      entranceTl.fromTo(
-        '.intro-gis-pin',
-        { scale: 0, opacity: 0, y: -50 },
+      // 1.80 - 3.20s: Brand Reveal (NUTRIMAP & Subtitle) with soft tracking
+      tl.fromTo(
+        brandClusterRef.current,
+        { opacity: 0, y: 20, filter: 'blur(4px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.05, ease: 'power2.out' },
+        1.8
+      );
+
+      // 4.15 - 5.00s: Seamless Cinematic Dissolve to Main Website
+      tl.to(
+        overlayRef.current,
         {
-          scale: 1,
-          opacity: 1,
-          y: 0,
+          opacity: 0,
           duration: 0.85,
-          stagger: 0.14,
-          ease: 'bounce.out'
-        },
-        0.35
-      );
-
-
-
-      // Continuous Floating / Bouncing Animation for All 6 Pins
-      const pinFloatConfigs = [
-        { sel: '.intro-pin-blue', y: '-=12', dur: 2.3, delay: 0.0 },
-        { sel: '.intro-pin-green', y: '+=10', dur: 2.6, delay: 0.4 },
-        { sel: '.intro-pin-amber', y: '-=10', dur: 2.8, delay: 0.2 },
-        { sel: '.intro-pin-amber2', y: '+=11', dur: 2.1, delay: 0.6 },
-        { sel: '.intro-pin-teal', y: '-=9', dur: 2.4, delay: 0.3 },
-        { sel: '.intro-pin-violet', y: '+=13', dur: 2.7, delay: 0.5 },
-      ];
-      pinFloatConfigs.forEach(({ sel, y, dur, delay }) => {
-        floatingTweensRef.current.push(
-          gsap.to(sel, { y, duration: dur, repeat: -1, yoyo: true, ease: 'sine.inOut', delay })
-        );
-      });
-
-      // 5-Second Timer Progress Bar
-      progressTweenRef.current = gsap.fromTo(
-        progressFillRef.current,
-        { width: '0%' },
-        {
-          width: '100%',
-          duration: 5.0,
-          ease: 'linear',
-          onComplete: () => {
-            triggerExit();
+          ease: 'power2.inOut',
+          onStart: () => {
+            if (overlayRef.current) {
+              overlayRef.current.style.pointerEvents = 'none';
+            }
           }
-        }
+        },
+        4.15
       );
     }, overlayRef);
 
-    // Countdown interval (5 down to 1)
-    let timeLeft = 5;
-    countdownIntervalRef.current = setInterval(() => {
-      timeLeft -= 1;
-      if (timeLeft >= 0) {
-        setCountdown(timeLeft);
-      }
-    }, 1000);
-
-    // Mouse Movement Parallax
-    const handleMouseMove = (e) => {
-      if (isExiting.current || !overlayRef.current) return;
-      const { innerWidth, innerHeight } = window;
-      const normX = e.clientX / innerWidth - 0.5;
-      const normY = e.clientY / innerHeight - 0.5;
-
-      gsap.to(bgRef.current, {
-        x: -normX * 22,
-        y: -normY * 22,
-        duration: 0.6,
-        ease: 'power1.out'
-      });
-
-      gsap.to('.intro-gis-pin', {
-        x: normX * 32,
-        y: normY * 32,
-        duration: 0.6,
-        ease: 'power1.out'
-      });
-
-
-
-      gsap.to(cardRef.current, {
-        x: normX * 14,
-        y: normY * 14,
-        duration: 0.6,
-        ease: 'power1.out'
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('keydown', handleKeyDown);
       ctx.revert();
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-      }
-      if (progressTweenRef.current) {
-        progressTweenRef.current.kill();
-      }
     };
-  }, []);
-
-  if (!isVisible) return null;
+  }, [handleSkip, triggerExit]);
 
   return (
-    <div id="intro-overlay" className="intro-overlay" ref={overlayRef}>
-      {/* Background Layer with GIS Landscape & Map Grid */}
-      <div className="intro-bg-layer" ref={bgRef}>
+    <div
+      id="cinematic-intro"
+      className="cinematic-intro-root"
+      ref={overlayRef}
+      role="dialog"
+      aria-label="Pengantar Sinematik NutriMap Kota Bogor"
+      aria-modal="true"
+    >
+      {/* 1. Cinematic Background Layer with Ken Burns slow zoom */}
+      <div className="cinematic-bg-wrap">
         <img
-          src={content.images?.introBg || introBgImg}
-          alt="WebGIS NutriMap Bogor Intro Background"
-          className="intro-bg-img"
+          src={slideBogorAerial}
+          alt="Lanskap Udara Kota Bogor dan Gunung Salak"
+          className="cinematic-bg-img"
+          ref={bgImgRef}
         />
-        {/* Subtle Cyber Grid & Vignette Overlay */}
-        <div className="intro-vignette-overlay" />
-        <div className="intro-scanline-fx" />
+        {/* Forest Green Documentary Grade & Soft Vignette */}
+        <div className="cinematic-overlay-grade" />
       </div>
 
-      {/* ============================================================
-          FLOATING GIS MAP PINS (Blue, Green, Red) with Pulsing Halos
-          ============================================================ */}
-
-      {/* 1. BLUE GIS PIN (Top Center-Left) */}
-      <div className="intro-gis-pin intro-pin-blue">
-        <div className="pin-pulse-halo blue" />
-        <div className="pin-pulse-halo blue delayed" />
-        <div className="pin-svg-wrap">
-          <svg width="46" height="58" viewBox="0 0 46 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pinBlueGrad" x1="23" y1="0" x2="23" y2="58" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#3B82F6" />
-                <stop offset="100%" stopColor="#1D4ED8" />
-              </linearGradient>
-              <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#3B82F6" floodOpacity="0.6" />
-              </filter>
-            </defs>
-            <path
-              d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z"
-              fill="url(#pinBlueGrad)"
-              filter="url(#glowBlue)"
-            />
-            <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#93C5FD" strokeWidth="2.5" />
-          </svg>
-        </div>
-        <div className="pin-tag-badge blue">
-          <span className="dot" />
-          <span>Bogor Tengah</span>
-        </div>
+      {/* 2. Minimalist Cartographic Reticles / Lines (Bogor Geographic Identity) */}
+      <div className="cinematic-reticle-layer" aria-hidden="true">
+        <div className="cinematic-reticle-corner top-left" />
+        <div className="cinematic-reticle-corner top-right" />
+        <div className="cinematic-reticle-corner bottom-left" />
+        <div className="cinematic-reticle-corner bottom-right" />
       </div>
 
-      {/* 2. GREEN GIS PIN (Top Center-Right) */}
-      <div className="intro-gis-pin intro-pin-green">
-        <div className="pin-pulse-halo green" />
-        <div className="pin-pulse-halo green delayed" />
-        <div className="pin-svg-wrap">
-          <svg width="42" height="54" viewBox="0 0 46 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pinGreenGrad" x1="23" y1="0" x2="23" y2="58" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#10B981" />
-                <stop offset="100%" stopColor="#047857" />
-              </linearGradient>
-              <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#10B981" floodOpacity="0.6" />
-              </filter>
-            </defs>
-            <path
-              d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z"
-              fill="url(#pinGreenGrad)"
-              filter="url(#glowGreen)"
-            />
-            <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#A7F3D0" strokeWidth="2.5" />
-          </svg>
-        </div>
-        <div className="pin-tag-badge green">
-          <span className="dot" />
-          <span>Bogor Timur</span>
-        </div>
-      </div>
-
-      {/* 3. AMBER GIS PIN — Bogor Selatan (Waspada) */}
-      <div className="intro-gis-pin intro-pin-amber">
-        <div className="pin-pulse-halo amber" />
-        <div className="pin-pulse-halo amber delayed" />
-        <div className="pin-svg-wrap">
-          <svg width="40" height="52" viewBox="0 0 46 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pinAmberGrad" x1="23" y1="0" x2="23" y2="58" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#F59E0B" />
-                <stop offset="100%" stopColor="#B45309" />
-              </linearGradient>
-              <filter id="glowAmber" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="7" floodColor="#F59E0B" floodOpacity="0.7" />
-              </filter>
-            </defs>
-            <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pinAmberGrad)" filter="url(#glowAmber)" />
-            <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#FDE68A" strokeWidth="2.5" />
-          </svg>
-        </div>
-        <div className="pin-tag-badge amber">
-          <span className="dot" />
-          <span>Bogor Selatan</span>
-        </div>
-      </div>
-
-      {/* 4. AMBER2 GIS PIN — Bogor Barat (Waspada) */}
-      <div className="intro-gis-pin intro-pin-amber2">
-        <div className="pin-pulse-halo amber" />
-        <div className="pin-pulse-halo amber delayed" />
-        <div className="pin-svg-wrap">
-          <svg width="38" height="48" viewBox="0 0 46 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pinAmber2Grad" x1="23" y1="0" x2="23" y2="58" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#FBBF24" />
-                <stop offset="100%" stopColor="#92400E" />
-              </linearGradient>
-              <filter id="glowAmber2" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="7" floodColor="#FBBF24" floodOpacity="0.65" />
-              </filter>
-            </defs>
-            <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pinAmber2Grad)" filter="url(#glowAmber2)" />
-            <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#FCD34D" strokeWidth="2.5" />
-          </svg>
-        </div>
-        <div className="pin-tag-badge amber">
-          <span className="dot" />
-          <span>Bogor Barat</span>
-        </div>
-      </div>
-
-      {/* 5. TEAL GIS PIN — Bogor Utara (Aman) */}
-      <div className="intro-gis-pin intro-pin-teal">
-        <div className="pin-pulse-halo teal" />
-        <div className="pin-pulse-halo teal delayed" />
-        <div className="pin-svg-wrap">
-          <svg width="40" height="52" viewBox="0 0 46 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pinTealGrad" x1="23" y1="0" x2="23" y2="58" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#14B8A6" />
-                <stop offset="100%" stopColor="#0F766E" />
-              </linearGradient>
-              <filter id="glowTeal" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#14B8A6" floodOpacity="0.65" />
-              </filter>
-            </defs>
-            <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pinTealGrad)" filter="url(#glowTeal)" />
-            <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#99F6E4" strokeWidth="2.5" />
-          </svg>
-        </div>
-        <div className="pin-tag-badge teal">
-          <span className="dot" />
-          <span>Bogor Utara</span>
-        </div>
-      </div>
-
-      {/* 6. VIOLET GIS PIN — Tanah Sareal (Aman) */}
-      <div className="intro-gis-pin intro-pin-violet">
-        <div className="pin-pulse-halo violet" />
-        <div className="pin-pulse-halo violet delayed" />
-        <div className="pin-svg-wrap">
-          <svg width="40" height="52" viewBox="0 0 46 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="pinVioletGrad" x1="23" y1="0" x2="23" y2="58" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#8B5CF6" />
-                <stop offset="100%" stopColor="#5B21B6" />
-              </linearGradient>
-              <filter id="glowViolet" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#8B5CF6" floodOpacity="0.65" />
-              </filter>
-            </defs>
-            <path d="M23 0C10.2975 0 0 10.2975 0 23C0 39.5 23 58 23 58C23 58 46 39.5 46 23C46 10.2975 35.7025 0 23 0Z" fill="url(#pinVioletGrad)" filter="url(#glowViolet)" />
-            <circle cx="23" cy="22" r="9" fill="#0A192F" stroke="#DDD6FE" strokeWidth="2.5" />
-          </svg>
-        </div>
-        <div className="pin-tag-badge violet">
-          <span className="dot" />
-          <span>Tanah Sareal</span>
-        </div>
-      </div>
-
-
-
-      {/* ============================================================
-          CENTER GLASSMORPHISM CARD (MAIN MODAL)
-          ============================================================ */}
-      <div className="intro-modal-card" ref={cardRef}>
-        {/* Top Tech Badge */}
-        <div className="intro-card-badge intro-anim-item">
-          <span className="badge-glow-dot" />
-          <span className="badge-text">SISTEM INFORMASI GEOGRAFIS • KOTA BOGOR</span>
+      {/* 3. Top Institutional Coordinates Header Bar */}
+      <header className="cinematic-top-bar" ref={topBarRef}>
+        <div className="cinematic-top-left">
+          <span className="cinematic-coord-badge">
+            <span className="coord-dot" />
+            KOTA BOGOR · 6° 35′ 47″ LS &nbsp;106° 47′ 54″ BT
+          </span>
+          <span className="cinematic-elev-badge">ELEVASI 265 — 2.211 MDPL</span>
         </div>
 
-        {/* Heading 1 */}
-        <h1 className="intro-modal-title intro-anim-item">
-          Selamat Datang<br />
-          di Web GIS<br />
-          NutriMap Bogor
-        </h1>
-
-        {/* Subheading: Sesuai Gambar */}
-        <p className="intro-modal-subtitle intro-anim-item">
-          Ketahanan Pangan Tangguh, Akses Air Bersih, dan Gizi Sehat Kota Bogor
-        </p>
-
-        {/* Timer Countdown & Progress Bar (5s) */}
-        <div className="intro-timer-section intro-anim-item">
-          <div className="intro-timer-header">
-            <span className="timer-info-text">
-              <Sparkles size={13} className="sparkle-icon" />
-              <span>Memasuki WebGIS dalam</span>
-            </span>
-            <span className="timer-counter-pill">{countdown} Detik</span>
-          </div>
-
-          <div className="intro-progress-track">
-            <div className="intro-progress-fill" ref={progressFillRef} />
-            <div className="intro-progress-glow" />
-          </div>
-        </div>
-
-        {/* Action Button: Skip / Masuk Ke Web */}
-        <div className="intro-action-box intro-anim-item">
+        {/* Skip Intro Button */}
+        <div className="cinematic-top-right">
           <button
             type="button"
-            className="intro-skip-button"
-            onClick={triggerExit}
-            aria-label="Lewati intro dan masuk ke WebGIS"
+            className="cinematic-skip-btn"
+            onClick={handleSkip}
+            ref={skipBtnRef}
+            aria-label="Lewati Intro (Tekan tombol Escape)"
           >
-            <span>Lewati / Masuk Ke Web</span>
-            <ArrowRight size={18} className="skip-arrow-icon" />
+            <span>Lewati Intro</span>
+            <span className="skip-kbd-hint">Esc</span>
           </button>
         </div>
-      </div>
+      </header>
+
+      {/* 4. Center Documentary Content Container */}
+      <main className="cinematic-center-stage">
+        {/* Identity Crest: Siluet Gunung Salak & Eyebrow */}
+        <div className="cinematic-identity-cluster" ref={identityClusterRef}>
+          <div className="cinematic-salak-frame" aria-hidden="true">
+            <MountSalakSilhouette width={170} height={52} color="#C9B98E" opacity={0.65} />
+          </div>
+          <div className="cinematic-eyebrow">
+            <span className="cinematic-eyebrow-line" />
+            <span className="cinematic-eyebrow-text">KOTA BOGOR · INFORMASI GEOSPASIAL</span>
+            <span className="cinematic-eyebrow-line" />
+          </div>
+        </div>
+
+        {/* Brand Title & Subtitle */}
+        <div className="cinematic-brand-cluster" ref={brandClusterRef}>
+          <h1 className="cinematic-brand-title">NUTRIMAP</h1>
+          <p className="cinematic-brand-subtitle">Sistem Informasi Geospasial Kota Bogor</p>
+          <div className="cinematic-pillars-row">
+            <span>Ketahanan Pangan</span>
+            <span className="pillar-bullet">•</span>
+            <span>Akses Air Bersih</span>
+            <span className="pillar-bullet">•</span>
+            <span>Pemantauan Gizi Terpadu</span>
+          </div>
+        </div>
+      </main>
+
+      {/* 5. Bottom Timeline / Elapsed 5-Second Bar */}
+      <footer className="cinematic-bottom-bar" ref={bottomBarRef}>
+        <div className="cinematic-meta-tag">
+          <span>PEMERINTAH KOTA BOGOR · SATU DATA SPASIAL</span>
+        </div>
+        <div className="cinematic-progress-track" aria-hidden="true">
+          <div className="cinematic-progress-fill" ref={progressFillRef} />
+        </div>
+      </footer>
     </div>
   );
 }

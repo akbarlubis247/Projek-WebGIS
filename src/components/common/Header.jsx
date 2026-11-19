@@ -17,9 +17,24 @@ export default function Header({
   return (
     <header className="app-header">
       <div className="header-left">
-
-
-
+        <button
+          className="sidebar-toggle-icon-btn"
+          onClick={onToggleSidebar}
+          title="Buka / Tutup Navigasi"
+        >
+          <Menu size={18} />
+        </button>
+        <div className="breadcrumb-trail">
+          <span className="bc-root">NutriMap</span>
+          <ChevronRight size={14} className="bc-divider" />
+          {currentMenuItem?.category && (
+            <>
+              <span className="bc-category">{currentMenuItem.category}</span>
+              <ChevronRight size={14} className="bc-divider" />
+            </>
+          )}
+          <span className="bc-current">{currentMenuItem?.label || 'Dashboard'}</span>
+        </div>
       </div>
 
       <div className="header-right">

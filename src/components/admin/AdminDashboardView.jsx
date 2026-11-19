@@ -5,7 +5,7 @@ import { USER_ROLES } from '../../data/bogorData';
 export default function AdminDashboardView({ currentUser }) {
   return (
     <div className="view-container animate-fade-in">
-      <div className="page-header">
+      <div className="page-header" style={{ borderBottom: '1px solid #E2E8EF' }}>
         <div>
           <h1 className="page-title-editorial">
             Admin Dashboard &amp; Manajemen Pengguna
@@ -47,7 +47,7 @@ export default function AdminDashboardView({ currentUser }) {
       <div className="dash-card table-card">
         <div className="dash-card-head">
           <div>
-            <h2>Daftar Pengguna Pengelola SIG NutriMap Bogor</h2>
+            <h2 className="section-title-editorial">Daftar Pengguna Pengelola SIG NutriMap Bogor</h2>
             <p>Pengelola dengan akses input data spasial dan verifikasi indikator</p>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function AdminDashboardView({ currentUser }) {
             <tbody>
               {USER_ROLES.map((u, i) => (
                 <tr key={u.id}>
-                  <td>0{i + 1}</td>
+                  <td><span style={{fontWeight: 600, color: '#94A3B8', fontSize: '0.78rem'}}>{`0${i+1}`}</span></td>
                   <td><b>{u.nama}</b></td>
                   <td className="font-mono text-muted">{u.email}</td>
                   <td>

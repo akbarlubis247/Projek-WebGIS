@@ -27,8 +27,34 @@ import SuperAdminView from './components/superadmin/SuperAdminView';
 import { clearStoredToken, fetchMeApi, getStoredToken } from './services/api';
 
 export default function App() {
-  // Intro Screen State (Disabled by default in production for instant clean loading)
-  const [showIntro, setShowIntro] = useState(false);
+  // Intro Screen State: Putar 1x per sesi browser (maksimal 5 detik sinematik)
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return false;
+      }
+      return !sessionStorage.getItem('nutrimap_intro_seen');
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const handleFinishIntro = () => {
+    try {
+      sessionStorage.setItem('nutrimap_intro_seen', 'true');
+    } catch (e) {}
+    setShowIntro(false);
+  };
+
+  // Listener untuk Replay Intro (misal dari footer navigasi)
+  React.useEffect(() => {
+    const handleReplay = () => {
+      setShowIntro(true);
+    };
+    window.addEventListener('nutrimap_replay_intro', handleReplay);
+    return () => window.removeEventListener('nutrimap_replay_intro', handleReplay);
+  }, []);
 
   // Roles: 'guest' (Public Warga) | 'admin' (Staff Admin SIG) | 'superadmin' (Super Admin Management)
   const [currentUser, setCurrentUser] = useState({
@@ -199,9 +225,9 @@ export default function App() {
 
   return (
     <>
-      {/* 1. OVERLAY INTERACTIVE INTRO SCREEN */}
+      {/* 1. OVERLAY CINEMATIC DOCUMENTARY INTRO SCREEN */}
       {showIntro && (
-        <IntroOverlay onFinish={() => setShowIntro(false)} />
+        <IntroOverlay onFinish={handleFinishIntro} />
       )}
 
       {/* 2. MAIN WEBSITE CONTAINER (Reveals smoothly after intro) */}

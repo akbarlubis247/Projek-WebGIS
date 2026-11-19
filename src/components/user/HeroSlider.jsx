@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { MountSalakSilhouette } from '../common/BogorDecorations';
 
 import slideBogorAerial from '../../assets/slide-bogor-aerial.jpg';
 import slideRiceFields from '../../assets/slide-rice-fields.jpg';
@@ -9,43 +10,51 @@ import slideHealthActivity from '../../assets/slide-health-activity.jpg';
 export const HERO_SLIDES = [
   {
     id: 1,
-    badge: 'NutriMap Bogor',
+    tag: 'GEOSPATIAL INTELLIGENCE',
+    badge: 'NutriMap Kota Bogor',
     title: 'Mengenal Potensi Wilayah Kota Bogor',
-    desc: 'Eksplorasi data ketahanan pangan, akses air bersih, dan gizi untuk masa depan yang lebih sehat.',
+    desc: 'Eksplorasi data ketahanan pangan terpadu, akses air bersih, dan pemantauan gizi anak untuk mewujudkan kebijakan wilayah yang presisi.',
     ctaText: 'Eksplorasi Peta Spasial',
     targetLayer: 'stunting',
     bg: slideBogorAerial,
-    alt: 'Foto aerial pemandangan Kota Bogor dan Gunung Salak'
+    alt: 'Foto aerial pemandangan Kota Bogor dan Gunung Salak',
+    caption: 'Bentang Alam & Administrasi 6 Kecamatan Kota Bogor'
   },
   {
     id: 2,
-    badge: 'NutriMap Bogor',
+    tag: 'KETAHANAN PANGAN',
+    badge: 'NutriMap Kota Bogor',
     title: 'Memetakan Potensi Pangan Kota Bogor',
-    desc: 'Informasi geografis untuk memahami potensi dan persebaran sumber pangan masyarakat.',
+    desc: 'Informasi geografis komprehensif untuk memahami potensi ketersediaan, distribusi komoditas, dan persebaran sumber pangan masyarakat.',
     ctaText: 'Jelajahi Peta Pangan',
     targetLayer: 'pangan',
     bg: slideRiceFields,
-    alt: 'Foto udara lahan pertanian dan persawahan hijau'
+    alt: 'Foto udara lahan pertanian dan persawahan hijau',
+    caption: 'Lahan Pertanian & Distribusi Komoditas Pangan'
   },
   {
     id: 3,
-    badge: 'NutriMap Bogor',
-    title: 'Memahami Akses Air Bersih',
-    desc: 'Eksplorasi persebaran sumber air dan informasi aksesibilitas jaringan air bersih kota.',
+    tag: 'SANITASI & AIR BERSIH',
+    badge: 'NutriMap Kota Bogor',
+    title: 'Memahami Akses Air Bersih Perkotaan',
+    desc: 'Eksplorasi persebaran sumber air baku, instalasi pengolahan PDAM Tirta Pakuan, dan cakupan sambungan rumah layak bagi warga.',
     ctaText: 'Lihat Akses Air Bersih',
     targetLayer: 'air',
     bg: slideWaterSource,
-    alt: 'Foto instalasi sumber dan penyaluran air bersih'
+    alt: 'Foto instalasi sumber dan penyaluran air bersih',
+    caption: 'Infrastruktur Jaringan Air Bersih & Reservoir Kota'
   },
   {
     id: 4,
-    badge: 'NutriMap Bogor',
-    title: 'Mendukung Generasi Bogor yang Lebih Sehat',
-    desc: 'Visualisasi informasi gizi dan stunting untuk mendukung pengambilan kebijakan terarah.',
+    tag: 'GIZI & KESEHATAN',
+    badge: 'NutriMap Kota Bogor',
+    title: 'Mendukung Generasi Bogor Bebas Stunting',
+    desc: 'Visualisasi indikator kesehatan balita, sebaran posyandu, dan prevalensi stunting berbasis kelurahan untuk intervensi tepat sasaran.',
     ctaText: 'Pantau Indeks Stunting',
     targetLayer: 'stunting',
     bg: slideHealthActivity,
-    alt: 'Foto aktivitas pelayanan kesehatan dan gizi masyarakat'
+    alt: 'Foto aktivitas pelayanan kesehatan dan gizi masyarakat',
+    caption: 'Intervensi Gizi Terintegrasi & Layanan Posyandu'
   }
 ];
 
@@ -68,12 +77,12 @@ export default function HeroSlider({ onActionClick }) {
     setCurrent(idx);
   };
 
-  // Autoplay 6 seconds, pauses on hover
+  // Autoplay otomatis tepat 5 detik (5000ms), jeda jika kursor hover
   useEffect(() => {
     if (isPaused) return;
     timerRef.current = setInterval(() => {
       nextSlide();
-    }, 6000);
+    }, 5000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -95,9 +104,9 @@ export default function HeroSlider({ onActionClick }) {
     const minSwipeDistance = 45;
 
     if (diff > minSwipeDistance) {
-      nextSlide(); // swipe left -> next
+      nextSlide();
     } else if (diff < -minSwipeDistance) {
-      prevSlide(); // swipe right -> prev
+      prevSlide();
     }
 
     touchStartXRef.current = null;
@@ -108,25 +117,23 @@ export default function HeroSlider({ onActionClick }) {
 
   return (
     <div
-      className="hero-slider-container"
+      className="hero-editorial-wrapper"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      aria-label="Carousel Pemandangan dan Informasi NutriMap Bogor"
+      aria-label="NutriMap Kota Bogor Editorial Hero"
     >
-      {/* Background Images with smooth fade and subtle Ken Burns zoom */}
-      <div className="hero-slider-bg-layer">
+      {/* 1. GAMBAR SEBAGAI FULL LATAR BELAKANG CAROUSEL (CROSS-FADE ANIMATION) */}
+      <div className="hero-bg-carousel-layer">
         {HERO_SLIDES.map((slide, idx) => {
           const isActive = idx === current;
           return (
             <div
               key={slide.id}
-              className={`hero-slide-bg-item ${isActive ? 'active' : ''}`}
-              style={{
-                backgroundImage: `url(${slide.bg})`
-              }}
+              className={`hero-bg-slide-item ${isActive ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${slide.bg})` }}
               role="img"
               aria-label={slide.alt}
             />
@@ -134,77 +141,81 @@ export default function HeroSlider({ onActionClick }) {
         })}
       </div>
 
-      {/* Dark Green Gradient Left Overlay - Ensures 100% typography legibility */}
-      <div className="hero-slider-gradient-overlay" />
+      {/* 2. OVERLAY GRADIENT EDITORIAL HIJAU GELAP AGAR TEKS SANGAT JELAS & ELEGAN */}
+      <div className="hero-bg-editorial-overlay" />
 
-      {/* Hero Content Container */}
-      <div className="hero-slider-content-wrap">
-        <div className="hero-slider-main-content">
-          {/* Heading */}
-          <h1 key={`title-${current}`} className="hero-editorial-title animate-title">
+      {/* 3. TOMBOL NAVIGASI DI UJUNG PALING KIRI */}
+      <button
+        type="button"
+        className="hero-edge-nav-btn hero-edge-prev"
+        onClick={prevSlide}
+        aria-label="Slide sebelumnya"
+        title="Slide Sebelumnya"
+      >
+        <ChevronLeft size={24} />
+      </button>
+
+      {/* 4. TOMBOL NAVIGASI DI UJUNG PALING KANAN */}
+      <button
+        type="button"
+        className="hero-edge-nav-btn hero-edge-next"
+        onClick={nextSlide}
+        aria-label="Slide berikutnya"
+        title="Slide Berikutnya"
+      >
+        <ChevronRight size={24} />
+      </button>
+
+      {/* 5. KONTEN TEKS & INFORMASI (FOREGROUND) */}
+      <div className="hero-editorial-container">
+        <div className="hero-editorial-content">
+          {/* Eyebrow Label */}
+          <div className="hero-editorial-eyebrow">
+            <span className="eyebrow-accent-line" />
+            <span className="eyebrow-text">
+              KOTA BOGOR • {activeSlide.tag}
+            </span>
+          </div>
+
+          {/* Large Serif Title */}
+          <h1 key={`title-${current}`} className="hero-serif-heading animate-editorial-fade">
             {activeSlide.title}
           </h1>
 
-          {/* Description */}
-          <p key={`desc-${current}`} className="hero-editorial-desc animate-desc">
+          {/* Editorial Lead Description */}
+          <p key={`desc-${current}`} className="hero-editorial-lead animate-editorial-fade">
             {activeSlide.desc}
           </p>
 
-          {/* CTA Action Button */}
-          <div className="hero-cta-action">
-            <button
-              type="button"
-              className="hero-primary-cta"
-              onClick={() => onActionClick && onActionClick(activeSlide.targetLayer)}
-            >
-              <span>{activeSlide.ctaText}</span>
-              <div className="cta-icon-circle">
-                <ArrowRight size={15} />
+          {/* Slide Controls / Pagination */}
+          <div className="hero-editorial-actions">
+            <div className="hero-slider-pagination-wrap">
+              <div className="hero-dots-row" role="tablist" aria-label="Pilih Slide">
+                {HERO_SLIDES.map((slide, idx) => {
+                  const isActive = idx === current;
+                  return (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-label={`Buka slide ${idx + 1}: ${slide.title}`}
+                      className={`hero-dot-pill ${isActive ? 'active' : ''}`}
+                      onClick={() => goToSlide(idx)}
+                    />
+                  );
+                })}
               </div>
-            </button>
+            </div>
           </div>
         </div>
 
-        {/* Bottom Bar: Pagination Dots */}
-        <div className="hero-slider-bottom-bar">
-          <div className="hero-pagination-dots" role="tablist" aria-label="Pilih Slide">
-            {HERO_SLIDES.map((slide, idx) => {
-              const isActive = idx === current;
-              return (
-                <button
-                  key={slide.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-label={`Buka slide ${idx + 1}: ${slide.title}`}
-                  className={`hero-dot ${isActive ? 'active' : ''}`}
-                  onClick={() => goToSlide(idx)}
-                />
-              );
-            })}
-          </div>
+        {/* 6. ELEMEN DEKORATIF IDENTITAS BOGOR: SILUET GUNUNG SALAK */}
+        <div className="hero-salak-ornament" aria-hidden="true">
+          <MountSalakSilhouette width={160} height={52} color="#C9B98E" opacity={0.32} />
+          <span className="hero-salak-label">GUNUNG SALAK • 2.211 MDPL</span>
         </div>
       </div>
-
-      {/* Navigation Arrows: Left & Right */}
-      <button
-        type="button"
-        className="hero-nav-arrow arrow-prev"
-        onClick={prevSlide}
-        aria-label="Slide sebelumnya"
-      >
-        <ChevronLeft size={22} />
-      </button>
-
-      <button
-        type="button"
-        className="hero-nav-arrow arrow-next"
-        onClick={nextSlide}
-        aria-label="Slide berikutnya"
-      >
-        <ChevronRight size={22} />
-      </button>
     </div>
   );
 }
-
