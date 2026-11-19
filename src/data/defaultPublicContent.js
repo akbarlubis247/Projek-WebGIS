@@ -134,6 +134,21 @@ export const DEFAULT_PUBLIC_CONTENT = {
     marketChips: ["Pasar Anyar", "Pasar Bogor", "Pasar Sukasari", "Pasar Induk TU Kemang"],
     sourceText: "Sumber Data: Dinas Ketahanan Pangan & Balai POM",
   },
+  overviewSection: {
+    eyebrow: "",
+    title: "Fokus Informasi & Intervensi NutriMap",
+    description: "Tiga pilar strategis yang mengintegrasikan data geografis, indikator kesehatan masyarakat, dan ketahanan wilayah Kota Bogor.",
+  },
+  gallerySection: {
+    pill: "",
+    title: "Galeri Dokumentasi Lapangan Pemkot Bogor",
+    subtitle: "",
+    badgeText: "",
+  },
+  matrixSection: {
+    title: "Matriks Komparasi 6 Kecamatan Kota Bogor",
+    subtitle: "",
+  },
   spatialSection: {
     title: "Peta Spasial Ketahanan Pangan Kota Bogor",
     subtitle: "Eksplorasi kondisi 6 kecamatan Kota Bogor berdasarkan skor IKP, akses air minum layak, prevalensi stunting, dan sebaran fasilitas publik.",
@@ -141,6 +156,11 @@ export const DEFAULT_PUBLIC_CONTENT = {
   indicatorSection: {
     title: "Data Indikator Kota Bogor",
     subtitle: "Tabel interaktif kependudukan dan komparasi grafis indikator ketahanan pangan lintas kecamatan.",
+  },
+  methodologySection: {
+    tag: "",
+    title: "Sumber Data Resmi Kota Bogor",
+    subtitle: "Daftar portal dan lembaga penyedia data resmi Pemerintah Kota Bogor yang terintegrasi dalam sistem NutriMap.",
   },
   aboutSection: {
     title: "Tentang NutriMap Kota Bogor",
@@ -173,6 +193,23 @@ export function getPublicContent() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return DEFAULT_PUBLIC_CONTENT;
     const parsed = JSON.parse(saved);
+    // If spatialSection or indicatorSection subtitle is empty or unset, use default public subtitle
+    const spatialSubtitle = (parsed.spatialSection?.subtitle && parsed.spatialSection.subtitle.trim() !== "")
+      ? parsed.spatialSection.subtitle
+      : DEFAULT_PUBLIC_CONTENT.spatialSection.subtitle;
+
+    const indicatorSubtitle = (parsed.indicatorSection?.subtitle && parsed.indicatorSection.subtitle.trim() !== "")
+      ? parsed.indicatorSection.subtitle
+      : DEFAULT_PUBLIC_CONTENT.indicatorSection.subtitle;
+
+    const methodologyTitle = parsed.methodologySection?.title === "Sumber Data & Metodologi Pemetaan"
+      ? DEFAULT_PUBLIC_CONTENT.methodologySection.title
+      : (parsed.methodologySection?.title || DEFAULT_PUBLIC_CONTENT.methodologySection.title);
+
+    const methodologySubtitle = parsed.methodologySection?.subtitle === "NutriMap Kota Bogor menerapkan integrasi data geospasial terstandar nasional untuk mendukung pengambilan kebijakan berbasis bukti (data-driven policy)."
+      ? DEFAULT_PUBLIC_CONTENT.methodologySection.subtitle
+      : (parsed.methodologySection?.subtitle ?? DEFAULT_PUBLIC_CONTENT.methodologySection.subtitle);
+
     return {
       ...DEFAULT_PUBLIC_CONTENT,
       ...parsed,
@@ -196,8 +233,12 @@ export function getPublicContent() {
       spotlightPdam: { ...DEFAULT_PUBLIC_CONTENT.spotlightPdam, ...parsed.spotlightPdam },
       spotlightStunting: { ...DEFAULT_PUBLIC_CONTENT.spotlightStunting, ...parsed.spotlightStunting },
       spotlightFood: { ...DEFAULT_PUBLIC_CONTENT.spotlightFood, ...parsed.spotlightFood },
-      spatialSection: { ...DEFAULT_PUBLIC_CONTENT.spatialSection, ...parsed.spatialSection },
-      indicatorSection: { ...DEFAULT_PUBLIC_CONTENT.indicatorSection, ...parsed.indicatorSection },
+      overviewSection: { ...DEFAULT_PUBLIC_CONTENT.overviewSection, ...parsed.overviewSection },
+      gallerySection: { ...DEFAULT_PUBLIC_CONTENT.gallerySection, ...parsed.gallerySection },
+      matrixSection: { ...DEFAULT_PUBLIC_CONTENT.matrixSection, ...parsed.matrixSection },
+      spatialSection: { ...DEFAULT_PUBLIC_CONTENT.spatialSection, ...parsed.spatialSection, subtitle: spatialSubtitle },
+      indicatorSection: { ...DEFAULT_PUBLIC_CONTENT.indicatorSection, ...parsed.indicatorSection, subtitle: indicatorSubtitle },
+      methodologySection: { ...DEFAULT_PUBLIC_CONTENT.methodologySection, ...parsed.methodologySection, title: methodologyTitle, subtitle: methodologySubtitle },
       aboutSection: { ...DEFAULT_PUBLIC_CONTENT.aboutSection, ...parsed.aboutSection },
       footer: { ...DEFAULT_PUBLIC_CONTENT.footer, ...parsed.footer },
     };

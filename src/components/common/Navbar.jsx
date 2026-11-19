@@ -9,7 +9,7 @@ export const GUEST_NAV_ITEMS = [
   { id: 'tentang-nutrimap', label: 'Tentang NutriMap', icon: Info },
 ];
 
-export default function Navbar({ onOpenLogin }) {
+export default function Navbar({ activePage, setActivePage, onOpenLogin }) {
   const [activeSection, setActiveSection] = useState('beranda');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -49,10 +49,30 @@ export default function Navbar({ onOpenLogin }) {
     return () => ctx.revert();
   }, []);
 
-  // Smooth scroll handler
+  // Smooth scroll & page navigation handler
   const handleNavClick = (sectionId) => {
     setActiveSection(sectionId);
     setMobileMenuOpen(false);
+
+    // If currently on another view (e.g. 'map-explorer'), switch back to 'landing' first
+    if (activePage && activePage !== 'landing' && setActivePage) {
+      setActivePage('landing');
+      setTimeout(() => {
+        const targetEl = document.getElementById(sectionId);
+        if (targetEl) {
+          const headerOffset = 96;
+          const elementPosition = targetEl.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 120);
+      return;
+    }
 
     const targetEl = document.getElementById(sectionId);
     if (targetEl) {
@@ -64,6 +84,8 @@ export default function Navbar({ onOpenLogin }) {
         top: offsetPosition,
         behavior: 'smooth'
       });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 

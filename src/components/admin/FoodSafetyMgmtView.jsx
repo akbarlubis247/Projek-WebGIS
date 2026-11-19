@@ -29,7 +29,7 @@ export default function FoodSafetyMgmtView() {
 
   return (
     <div className="view-container animate-fade-in">
-      <div className="page-header">
+      <div className="page-header" style={{ paddingBottom: '16px', borderBottom: '1px solid #E2E8EF' }}>
         <h1 className="page-title-editorial">Manajemen Keamanan Pangan</h1>
         <div className="export-action-group">
           <button className="btn-export-excel" onClick={() => alert('Unduh CSV/Excel Log Keamanan Pangan...')}>

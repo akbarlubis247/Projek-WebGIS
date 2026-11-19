@@ -321,16 +321,16 @@ export default function MapView({
       };
     };
 
-    // Pasang GeoJSON Layer dengan filter kelurahan terpilih
+    // Pasang GeoJSON Layer dengan filter kecamatan
     const geoLayer = L.geoJSON(activeGeoJson, {
       filter: (feature) => {
-        // Jika ada kelurahan terpilih (dari klik chip/search/peta): HANYA TAMPILKAN KELURAHAN ITU SAJA
-        if (selectedKelurahan) {
-          const selId = selectedKelurahan.id;
-          const selNama = selectedKelurahan.nama ? selectedKelurahan.nama.toLowerCase().trim() : '';
-          const p = feature.properties;
-          const pNama = p.nama ? p.nama.toLowerCase().trim() : '';
-          return p.id === selId || (selNama && pNama === selNama);
+        // Jika filter kecamatan aktif, tampilkan seluruh kelurahan di kecamatan tersebut
+        if (selectedKecFilter && selectedKecFilter !== 'Semua Kecamatan') {
+          if (feature.properties.kecamatan === selectedKecFilter) return true;
+          if (selectedKelurahan && (feature.properties.id === selectedKelurahan.id || (feature.properties.nama && selectedKelurahan.nama && feature.properties.nama.toLowerCase().trim() === selectedKelurahan.nama.toLowerCase().trim()))) {
+            return true;
+          }
+          return false;
         }
         return true;
       },
@@ -459,15 +459,24 @@ export default function MapView({
 
     geojsonLayerRef.current = geoLayer;
 
-    // Jika sedang memilih kelurahan tertentu, fokuskan bounds kamera ke kelurahan tersebut dan buka popup
+    // Jika sedang memilih kelurahan tertentu, fokuskan kamera ke kelurahan tersebut dan buka popup
     if (selectedKelurahan) {
+      let targetLayer = null;
+      geoLayer.eachLayer((l) => {
+        const p = l.feature?.properties;
+        if (p && (p.id === selectedKelurahan.id || (p.nama && selectedKelurahan.nama && p.nama.toLowerCase().trim() === selectedKelurahan.nama.toLowerCase().trim()))) {
+          targetLayer = l;
+        }
+      });
+      if (targetLayer) {
+        map.fitBounds(targetLayer.getBounds(), { padding: [60, 60], maxZoom: 15.5 });
+        targetLayer.openPopup();
+      }
+    } else if (selectedKecFilter && selectedKecFilter !== 'Semua Kecamatan') {
       const bounds = geoLayer.getBounds();
       if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15.5 });
+        map.fitBounds(bounds, { padding: [35, 35], maxZoom: 14.5 });
       }
-      geoLayer.eachLayer((l) => {
-        l.openPopup();
-      });
     }
   }, [activeGeoJson, activeLayer, selectedKecFilter, selectedKelurahan]);
 

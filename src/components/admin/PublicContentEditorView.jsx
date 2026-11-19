@@ -104,7 +104,7 @@ export default function PublicContentEditorView({ onNavigate }) {
     setContent((prev) => ({
       ...prev,
       [section]: {
-        ...prev[section],
+        ...(prev[section] || {}),
         [field]: value
       }
     }));
@@ -1115,17 +1115,114 @@ export default function PublicContentEditorView({ onNavigate }) {
         {activeTab === 'sections' && (
           <div style={{ display: 'grid', gap: 24 }}>
             <div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>Judul &amp; Subjudul Bagian Peta &amp; Indikator</h3>
-              <p style={{ fontSize: 13.5, color: '#64748b', margin: 0 }}>Sesuaikan judul bab yang membimbing warga saat meninjau peta spasial dan tabel data kependudukan.</p>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 4px' }}>Judul, Subjudul &amp; Keterangan Halaman Beranda</h3>
+              <p style={{ fontSize: 13.5, color: '#64748b', margin: 0 }}>
+                Kelola teks judul, subjudul, dan label keterangan pada tiap seksi halaman. Jika dikosongkan, keterangan/label tersebut tidak akan ditampilkan di halaman publik.
+              </p>
             </div>
 
+            {/* 1. Kategori Pemetaan Utama (Overview Cards) */}
             <div style={{ display: 'grid', gap: 16, border: '1px solid #e2e8f0', padding: 18, borderRadius: 10, background: '#fafafa' }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>Bagian Peta Spasial Beranda</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>1. Bagian Kategori Pemetaan (Overview 3 Pilar)</span>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Label Eyebrow Kategori</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: KATEGORI PEMETAAN UTAMA (kosongkan jika tidak ingin ditampilkan)"
+                  value={content.overviewSection?.eyebrow || ''}
+                  onChange={(e) => updateField('overviewSection', 'eyebrow', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Judul Bagian</label>
+                <input
+                  type="text"
+                  value={content.overviewSection?.title || ''}
+                  onChange={(e) => updateField('overviewSection', 'title', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
+                />
+              </div>
+            </div>
+
+            {/* 2. Galeri Dokumentasi Lapangan */}
+            <div style={{ display: 'grid', gap: 16, border: '1px solid #e2e8f0', padding: 18, borderRadius: 10, background: '#fafafa' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>2. Bagian Galeri Dokumentasi Lapangan</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'grid', gap: 6 }}>
+                  <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Pill Kategori</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Dokumentasi Terpadu (kosongkan jika tidak ingin ditampilkan)"
+                    value={content.gallerySection?.pill || ''}
+                    onChange={(e) => updateField('gallerySection', 'pill', e.target.value)}
+                    style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                  />
+                </div>
+                <div style={{ display: 'grid', gap: 6 }}>
+                  <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Badge Status/Jumlah</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 6 Dokumentasi Terpantau (kosongkan jika tidak ingin ditampilkan)"
+                    value={content.gallerySection?.badgeText || ''}
+                    onChange={(e) => updateField('gallerySection', 'badgeText', e.target.value)}
+                    style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Judul Galeri Dokumentasi</label>
+                <input
+                  type="text"
+                  value={content.gallerySection?.title || ''}
+                  onChange={(e) => updateField('gallerySection', 'title', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Subjudul / Narasi Galeri</label>
+                <input
+                  type="text"
+                  placeholder="Kosongkan jika tidak ingin menampilkan subjudul keterangan"
+                  value={content.gallerySection?.subtitle || ''}
+                  onChange={(e) => updateField('gallerySection', 'subtitle', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                />
+              </div>
+            </div>
+
+            {/* 3. Matriks Komparasi 6 Kecamatan */}
+            <div style={{ display: 'grid', gap: 16, border: '1px solid #e2e8f0', padding: 18, borderRadius: 10, background: '#fafafa' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>3. Bagian Matriks Komparasi 6 Kecamatan</span>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Judul Matriks</label>
+                <input
+                  type="text"
+                  value={content.matrixSection?.title || ''}
+                  onChange={(e) => updateField('matrixSection', 'title', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Subjudul / Panduan Interaksi Matriks</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Pilih kecamatan untuk fokus ke titik koordinat peta... (kosongkan jika tidak ingin ditampilkan)"
+                  value={content.matrixSection?.subtitle || ''}
+                  onChange={(e) => updateField('matrixSection', 'subtitle', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                />
+              </div>
+            </div>
+
+            {/* 4. Peta Spasial */}
+            <div style={{ display: 'grid', gap: 16, border: '1px solid #e2e8f0', padding: 18, borderRadius: 10, background: '#fafafa' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>4. Bagian Peta Spasial Beranda</span>
               <div style={{ display: 'grid', gap: 6 }}>
                 <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Judul Peta Spasial</label>
                 <input
                   type="text"
-                  value={content.spatialSection.title}
+                  value={content.spatialSection?.title || ''}
                   onChange={(e) => updateField('spatialSection', 'title', e.target.value)}
                   style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
                 />
@@ -1134,20 +1231,22 @@ export default function PublicContentEditorView({ onNavigate }) {
                 <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Subjudul Narasi Peta</label>
                 <input
                   type="text"
-                  value={content.spatialSection.subtitle}
+                  placeholder="Kosongkan jika tidak ingin menampilkan subjudul"
+                  value={content.spatialSection?.subtitle || ''}
                   onChange={(e) => updateField('spatialSection', 'subtitle', e.target.value)}
                   style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
                 />
               </div>
             </div>
 
+            {/* 5. Tabel Indikator Kota */}
             <div style={{ display: 'grid', gap: 16, border: '1px solid #e2e8f0', padding: 18, borderRadius: 10, background: '#fafafa' }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase' }}>Bagian Tabel Indikator Kota</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase' }}>5. Bagian Tabel Indikator Kota</span>
               <div style={{ display: 'grid', gap: 6 }}>
                 <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Judul Tabel Indikator</label>
                 <input
                   type="text"
-                  value={content.indicatorSection.title}
+                  value={content.indicatorSection?.title || ''}
                   onChange={(e) => updateField('indicatorSection', 'title', e.target.value)}
                   style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
                 />
@@ -1156,8 +1255,43 @@ export default function PublicContentEditorView({ onNavigate }) {
                 <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Subjudul Tabel Indikator</label>
                 <input
                   type="text"
-                  value={content.indicatorSection.subtitle}
+                  placeholder="Kosongkan jika tidak ingin menampilkan subjudul"
+                  value={content.indicatorSection?.subtitle || ''}
                   onChange={(e) => updateField('indicatorSection', 'subtitle', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                />
+              </div>
+            </div>
+
+            {/* 6. Sumber Data Resmi */}
+            <div style={{ display: 'grid', gap: 16, border: '1px solid #e2e8f0', padding: 18, borderRadius: 10, background: '#fafafa' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>6. Bagian Sumber Data Resmi (Daftar Lembaga)</span>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Tag / Badge Sumber Data</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: TRANSPARANSI DATA & AKUNTABILITAS (kosongkan jika tidak ingin ditampilkan)"
+                  value={content.methodologySection?.tag || ''}
+                  onChange={(e) => updateField('methodologySection', 'tag', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Judul Bagian Sumber Data</label>
+                <input
+                  type="text"
+                  value={content.methodologySection?.title || ''}
+                  onChange={(e) => updateField('methodologySection', 'title', e.target.value)}
+                  style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 14, fontWeight: 700 }}
+                />
+              </div>
+              <div style={{ display: 'grid', gap: 6 }}>
+                <label style={{ fontSize: 12.5, fontWeight: 700, color: '#334155' }}>Subjudul / Narasi Sumber Data</label>
+                <input
+                  type="text"
+                  placeholder="Kosongkan jika tidak ingin menampilkan subjudul"
+                  value={content.methodologySection?.subtitle || ''}
+                  onChange={(e) => updateField('methodologySection', 'subtitle', e.target.value)}
                   style={{ padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1', fontSize: 13.5 }}
                 />
               </div>

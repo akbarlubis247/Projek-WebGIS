@@ -317,25 +317,26 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
       <div
         className="dash-cms-banner"
         style={{
-          marginTop: 24,
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-          borderRadius: 12,
-          padding: '20px 24px',
+          marginTop: 20,
+          background: 'linear-gradient(135deg, #1E2A3A 0%, #263548 100%)',
+          borderRadius: 10,
+          padding: '18px 22px',
           color: '#ffffff',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: 16,
-          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.15)'
+          boxShadow: '0 2px 8px rgba(15, 23, 42, 0.15)',
+          border: '1px solid rgba(255,255,255,0.07)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ background: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: 10, borderRadius: 10 }}>
-            <FileEdit size={24} color="#38bdf8" />
+          <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: 10, borderRadius: 8 }}>
+            <FileEdit size={24} color="#34D399" />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#ffffff' }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em' }}>
               Kelola Foto &amp; Konten Publik Halaman Warga (CMS)
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: 13, color: '#94a3b8' }}>
@@ -351,15 +352,15 @@ export default function DashboardView({ onNavigate, onSelectKecamatan }) {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            padding: '10px 18px',
-            background: '#047857',
+            padding: '9px 18px',
+            background: '#0F7A55',
             color: '#ffffff',
             border: 'none',
-            borderRadius: 8,
-            fontSize: 13.5,
-            fontWeight: 800,
+            borderRadius: 7,
+            fontSize: 13,
+            fontWeight: 700,
             cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(4, 120, 87, 0.3)'
+            boxShadow: '0 2px 6px rgba(15, 122, 85, 0.3)'
           }}
         >
           <Camera size={16} /> Buka Editor Foto &amp; Konten
