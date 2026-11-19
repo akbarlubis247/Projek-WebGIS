@@ -283,7 +283,6 @@ export default function App() {
             isOpen={isLoginModalOpen}
             onClose={() => setIsLoginModalOpen(false)}
             onLoginSuccess={handleLoginSuccess}
-            adminsList={adminsList}
           />
         </div>
       </div>
