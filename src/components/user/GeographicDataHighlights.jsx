@@ -11,7 +11,7 @@ export default function GeographicDataHighlights() {
       value: KECAMATAN_KOTA_BOGOR.length, // 6
       unit: 'Kecamatan',
       label: 'Wilayah Administratif',
-      desc: 'B. Tengah, Utara, Selatan, Timur, Barat, T. Sareal',
+      desc: 'Bogor Tengah, Bogor Utara, Bogor Selatan, Bogor Timur, Bogor Barat, Tanah Sareal',
       icon: MapPin
     },
     {

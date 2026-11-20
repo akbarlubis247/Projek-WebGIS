@@ -5,6 +5,8 @@ import Sidebar from './components/common/Sidebar';
 import Header from './components/common/Header';
 import LoginModal from './components/common/LoginModal';
 import IntroOverlay from './components/common/IntroOverlay';
+import CustomCursorFollower from './components/common/CustomCursorFollower';
+import { useInteractiveMotion } from './hooks/useInteractiveMotion';
 
 // User / Public Views
 import LandingPageView from './components/user/LandingPageView';
@@ -27,6 +29,9 @@ import SuperAdminView from './components/superadmin/SuperAdminView';
 import { clearStoredToken, fetchMeApi, getStoredToken } from './services/api';
 
 export default function App() {
+  // Activate subtle 3D Tilt, Radial Spotlight & Magnetic Buttons across interactive elements
+  useInteractiveMotion();
+
   // Intro Screen State: Putar 1x per sesi browser (maksimal 5 detik sinematik)
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -225,6 +230,9 @@ export default function App() {
 
   return (
     <>
+      {/* 0. DESKTOP CUSTOM CURSOR FOLLOWER (Fine Pointer & Reduced-Motion Aware) */}
+      <CustomCursorFollower />
+
       {/* 1. OVERLAY CINEMATIC DOCUMENTARY INTRO SCREEN */}
       {showIntro && (
         <IntroOverlay onFinish={handleFinishIntro} />

@@ -10000,6 +10000,29 @@ body>*:not(#root):not(script):not(style):not(#recharts_measurement_span) {
   padding-right: 34px;
 }
 
+.kecamatan-select-box .search-icon {
+  pointer-events: none;
+}
+
+.kecamatan-select-box select {
+  width: 100%;
+  padding: 9px 18px 9px 38px;
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  background: #FFFFFF;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kecamatan-select-box select:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
 .search-clear-btn {
   position: absolute;
   right: 10px;
@@ -10601,5 +10624,483 @@ body>*:not(#root):not(script):not(style):not(#recharts_measurement_span) {
   .export-modal-footer {
     padding-left: 16px;
     padding-right: 16px;
+  }
+}
+
+/* ==========================================================================
+   NUTRIMAP ADVANCED INTERACTIVE MOTION ENHANCEMENTS
+   1. Custom Cursor Follower
+   2. 3D Tilt & Radial Spotlight Bento Grid
+   3. ScrollTrigger Horizontal Documentary Showcase
+   4. Magnetic Buttons & Icons
+   ========================================================================== */
+
+/* Use overflow-x: clip so sticky showcase works natively while preventing horizontal page overflow */
+.landing-single-page {
+  overflow-x: clip !important;
+}
+
+/* --- 1. CUSTOM CURSOR FOLLOWER (Desktop Fine Pointer Only) --- */
+.nutrimap-cursor-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10090;
+  overflow: hidden;
+}
+
+.nutrimap-cursor-dot,
+.nutrimap-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, width, height, opacity, background-color, border-color;
+}
+
+.nutrimap-cursor-dot {
+  width: 7px;
+  height: 7px;
+  background: #C9B98E;
+  box-shadow: 0 0 0 1px rgba(23, 40, 32, 0.45);
+  transition:
+    width 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.22s ease,
+    background-color 0.22s ease;
+}
+
+.nutrimap-cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1.25px solid rgba(184, 157, 98, 0.52);
+  background: rgba(201, 185, 142, 0.04);
+  transition:
+    width 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease,
+    background-color 0.24s ease,
+    border-color 0.24s ease;
+}
+
+.nutrimap-cursor-dot.is-visible {
+  opacity: 0.92;
+}
+
+.nutrimap-cursor-ring.is-visible {
+  opacity: 0.78;
+}
+
+/* Suppress smoothly over WebGIS Map & Form Inputs */
+.nutrimap-cursor-dot.is-suppressed,
+.nutrimap-cursor-ring.is-suppressed {
+  opacity: 0 !important;
+}
+
+/* State: Button Hover */
+.nutrimap-cursor-ring[data-state="button"] {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(184, 157, 98, 0.82);
+  background: rgba(201, 185, 142, 0.11);
+}
+
+.nutrimap-cursor-dot[data-state="button"] {
+  width: 5px;
+  height: 5px;
+  background: #DFCFA3;
+}
+
+/* State: Link / Nav Item Hover */
+.nutrimap-cursor-ring[data-state="link"] {
+  width: 42px;
+  height: 42px;
+  border-color: rgba(130, 151, 131, 0.85);
+  background: rgba(130, 151, 131, 0.10);
+}
+
+.nutrimap-cursor-dot[data-state="link"] {
+  width: 8px;
+  height: 8px;
+  background: #829783;
+}
+
+/* State: Interactive Card Hover */
+.nutrimap-cursor-ring[data-state="card"] {
+  width: 44px;
+  height: 44px;
+  border-color: rgba(184, 157, 98, 0.65);
+  background: rgba(201, 185, 142, 0.07);
+}
+
+/* Pressed feedback */
+.nutrimap-cursor-ring.is-pressed {
+  width: 28px !important;
+  height: 28px !important;
+  border-color: rgba(184, 157, 98, 0.95);
+}
+
+/* --- 2. 3D TILT & RADIAL SPOTLIGHT BENTO GRID --- */
+.editorial-kpi-item,
+.info-overview-editorial-card,
+.ladang-pillar-card,
+.gallery-card-item,
+.insight-summary-card,
+.food-bento-card,
+.stunting-metric-card,
+.pdam-metric-item,
+.source-item-link,
+.about-info-panel,
+.about-contact-panel {
+  position: relative;
+  overflow: hidden;
+  --spotlight-x: 50%;
+  --spotlight-y: 50%;
+  --spotlight-opacity: 0;
+  --tilt-rx: 0deg;
+  --tilt-ry: 0deg;
+  --tilt-shift-x: 0px;
+  --tilt-shift-y: 0px;
+  --tilt-shadow-x: 0px;
+  --tilt-shadow-y: 12px;
+  transform: perspective(820px) rotateX(0deg) rotateY(0deg) translate3d(0, 0, 0) scale3d(1, 1, 1);
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+  will-change: transform, box-shadow;
+}
+
+/* Override any leftover GSAP inline transform or :hover translateY rule when actively tilting */
+.editorial-kpi-item.is-tilting,
+.editorial-kpi-item.is-tilting:hover,
+.info-overview-editorial-card.is-tilting,
+.info-overview-editorial-card.is-tilting:hover,
+.ladang-pillar-card.is-tilting,
+.ladang-pillar-card.is-tilting:hover,
+.gallery-card-item.is-tilting,
+.gallery-card-item.is-tilting:hover,
+.insight-summary-card.is-tilting,
+.insight-summary-card.is-tilting:hover,
+.food-bento-card.is-tilting,
+.food-bento-card.is-tilting:hover,
+.stunting-metric-card.is-tilting,
+.stunting-metric-card.is-tilting:hover,
+.pdam-metric-item.is-tilting,
+.pdam-metric-item.is-tilting:hover,
+.source-item-link.is-tilting,
+.source-item-link.is-tilting:hover,
+.about-info-panel.is-tilting,
+.about-info-panel.is-tilting:hover,
+.about-contact-panel.is-tilting,
+.about-contact-panel.is-tilting:hover {
+  transform: perspective(820px) rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg)) translate3d(0, -4px, 0) scale3d(1.012, 1.012, 1) !important;
+  box-shadow:
+    var(--tilt-shadow-x, 0px) var(--tilt-shadow-y, 16px) 32px -12px rgba(23, 40, 32, 0.12),
+    0 0 0 1px rgba(184, 157, 98, 0.28) !important;
+  border-color: rgba(130, 151, 131, 0.45) !important;
+  transition:
+    transform 0.1s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    border-color 0.2s ease !important;
+  z-index: 3;
+}
+
+/* Primary Radial Spotlight Glow Overlay (Warm Linen, Muted Gold & Soft Sage) */
+.editorial-kpi-item::after,
+.info-overview-editorial-card::after,
+.ladang-pillar-card::after,
+.gallery-card-item::after,
+.insight-summary-card::after,
+.food-bento-card::after,
+.stunting-metric-card::after,
+.pdam-metric-item::after,
+.source-item-link::after,
+.about-info-panel::after,
+.about-contact-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: var(--spotlight-opacity, 0);
+  background:
+    radial-gradient(
+      340px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+      rgba(201, 185, 142, 0.14) 0%,
+      rgba(130, 151, 131, 0.07) 42%,
+      transparent 78%
+    );
+  transition: opacity 0.3s ease;
+}
+
+/* Inner 3D Parallax Depth Shift on Card Contents when tilting */
+.info-overview-editorial-card.is-tilting .card-editorial-img {
+  transform: translate3d(var(--tilt-shift-x, 0px), var(--tilt-shift-y, 0px), 16px) scale(1.06) !important;
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.info-overview-editorial-card.is-tilting .card-tag-pill {
+  transform: translate3d(calc(var(--tilt-shift-x, 0px) * -0.5), calc(var(--tilt-shift-y, 0px) * -0.5), 12px);
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.source-item-link.is-tilting .source-info {
+  transform: translate3d(calc(var(--tilt-shift-x, 0px) * 0.45), calc(var(--tilt-shift-y, 0px) * 0.45), 10px);
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.source-item-link.is-tilting .source-ext-icon {
+  transform: translate3d(calc(var(--tilt-shift-x, 0px) * 0.8), calc(var(--tilt-shift-y, 0px) * 0.8), 14px) scale(1.12);
+  color: #047857;
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), color 0.2s ease;
+}
+
+.ladang-pillar-card.is-tilting .pillar-icon-box,
+.insight-summary-card.is-tilting .insight-card-icon,
+.editorial-kpi-item.is-tilting .kpi-serif-number {
+  transform: translate3d(calc(var(--tilt-shift-x, 0px) * 0.55), calc(var(--tilt-shift-y, 0px) * 0.55), 12px) scale(1.03);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- 3. GALERI DOKUMENTASI LAPANGAN HORIZONTAL SCROLLTRIGGER (3 CARDS VISIBLE, NO EXTRA SPACE) --- */
+.gallery-scroll-stage {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+.gallery-scroll-sticky {
+  position: relative;
+  width: 100%;
+}
+
+.gallery-scroll-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.gallery-scroll-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gallery-scroll-hint {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.h-showcase-progress-track {
+  width: 96px;
+  height: 5px;
+  border-radius: 9999px;
+  background: #E8E2D8;
+  overflow: hidden;
+}
+
+.h-showcase-progress-fill {
+  width: 16%;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #20372A 0%, #829783 60%, #B89D62 100%);
+  transition: width 0.08s linear;
+}
+
+.gallery-horizontal-viewport {
+  width: 100%;
+  overflow: hidden;
+  margin-top: 16px;
+  padding: 4px 2px;
+  cursor: grab;
+  user-select: none;
+}
+
+.gallery-scroll-stage.is-dragging .gallery-horizontal-viewport,
+.gallery-scroll-stage.is-dragging .gallery-card-item {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+.gallery-horizontal-track {
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  width: 100%;
+  will-change: transform;
+}
+
+/* Exactly 3 cards visible at a time inside the gallery viewport on desktop */
+.gallery-horizontal-track > .gallery-card-item {
+  flex: 0 0 calc((100% - 36px) / 3);
+  max-width: calc((100% - 36px) / 3);
+}
+
+/* --- 4. MAGNETIC BUTTONS & ICONS --- */
+.nav-item-link,
+.nav-login-btn,
+.card-action-editorial-btn,
+.btn-focus-map,
+.btn-view-full-map,
+.ladang-btn-export,
+.sumber-data-link {
+  --mag-x: 0px;
+  --mag-y: 0px;
+  --mag-icon-x: 0px;
+  --mag-icon-y: 0px;
+  transform: translate3d(var(--mag-x, 0px), var(--mag-y, 0px), 0);
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+  will-change: transform;
+}
+
+.nav-login-btn:hover,
+.btn-view-full-map:hover,
+.ladang-btn-export:hover,
+.sumber-data-link:hover {
+  transform: translate3d(var(--mag-x, 0px), calc(var(--mag-y, 0px) - 1px), 0);
+}
+
+.hero-edge-nav-btn {
+  --mag-x: 0px;
+  --mag-y: 0px;
+  --mag-icon-x: 0px;
+  --mag-icon-y: 0px;
+  transform: translate3d(var(--mag-x, 0px), calc(-50% + var(--mag-y, 0px)), 0);
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+  will-change: transform;
+}
+
+.hero-edge-nav-btn:hover {
+  transform: translate3d(var(--mag-x, 0px), calc(-50% + var(--mag-y, 0px)), 0) scale(1.06);
+}
+
+.nav-item-link.is-magnetic-active,
+.nav-login-btn.is-magnetic-active,
+.hero-edge-nav-btn.is-magnetic-active,
+.card-action-editorial-btn.is-magnetic-active,
+.btn-focus-map.is-magnetic-active,
+.btn-view-full-map.is-magnetic-active,
+.ladang-btn-export.is-magnetic-active,
+.sumber-data-link.is-magnetic-active {
+  transition:
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.nav-item-link svg,
+.nav-login-btn svg,
+.hero-edge-nav-btn svg,
+.card-action-editorial-btn svg,
+.btn-focus-map svg,
+.btn-view-full-map svg,
+.ladang-btn-export svg,
+.sumber-data-link svg {
+  transform: translate3d(var(--mag-icon-x, 0px), var(--mag-icon-y, 0px), 0);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- RESPONSIVE & ACCESSIBILITY FALLBACKS --- */
+@media (max-width: 959px) {
+  .gallery-scroll-stage {
+    height: auto !important;
+  }
+
+  .gallery-scroll-sticky {
+    position: static !important;
+  }
+
+  .gallery-scroll-progress-wrap {
+    display: none !important;
+  }
+
+  .gallery-horizontal-viewport {
+    overflow: visible !important;
+  }
+
+  .gallery-horizontal-track {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    transform: none !important;
+  }
+
+  .gallery-horizontal-track > .gallery-card-item {
+    flex: unset !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .nutrimap-cursor-layer {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nutrimap-cursor-layer {
+    display: none !important;
+  }
+
+  .gallery-scroll-stage {
+    height: auto !important;
+  }
+
+  .gallery-scroll-sticky {
+    position: static !important;
+  }
+
+  .gallery-horizontal-track {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+    transform: none !important;
+  }
+
+  .gallery-horizontal-track > .gallery-card-item {
+    flex: unset !important;
+    max-width: 100% !important;
+  }
+
+  .editorial-kpi-item,
+  .info-overview-editorial-card,
+  .ladang-pillar-card,
+  .gallery-card-item,
+  .insight-summary-card,
+  .food-bento-card,
+  .stunting-metric-card,
+  .source-item-link,
+  .about-info-panel,
+  .about-contact-panel,
+  .nav-item-link,
+  .nav-login-btn,
+  .card-action-editorial-btn,
+  .btn-focus-map,
+  .btn-view-full-map,
+  .ladang-btn-export,
+  .sumber-data-link {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .hero-edge-nav-btn {
+    transform: translateY(-50%) !important;
+    transition: none !important;
   }
 }

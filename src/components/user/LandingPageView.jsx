@@ -125,6 +125,10 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
 
   // GSAP Root Container Ref
   const landingRef = useRef(null);
+  // Gallery Horizontal ScrollTrigger Refs
+  const showcaseStageRef = useRef(null);
+  const showcaseTrackRef = useRef(null);
+  const showcaseProgressRef = useRef(null);
 
   // CountUp Refs: 4 Pilar Cards
   const ikpCountRef = useRef(null);
@@ -150,15 +154,14 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
 
   // Filtered Table Data for Data Indikator Section
   const filteredData = kecamatanList.filter((item) => {
-    const matchSearch =
-      item.nama.toLowerCase().includes(searchTable.toLowerCase()) ||
-      item.pusat.toLowerCase().includes(searchTable.toLowerCase());
+    const matchSearch = !searchTable || item.nama === searchTable;
     const matchStatus = filterStatus === 'Semua Status' || item.panganStatus === filterStatus;
     return matchSearch && matchStatus;
   });
 
   // GSAP Smooth Modern Entrance & Scroll Animations
   useEffect(() => {
+    let cleanupGalleryWheel = null;
     const ctx = gsap.context(() => {
       // 1. Hero Entrance Timeline (Loads when page opens)
       const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -323,6 +326,69 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
           startCountUp(foodPasarCountRef, 4, { duration: 1.0, suffix: ' Pasar' });
         }
       });
+
+      // -- Galeri Dokumentasi Lapangan Left-Click Mouse Drag Horizontal Glide (3 visible cards, hold left-click & drag left/right) --
+      const stageEl = showcaseStageRef.current;
+      const trackEl = showcaseTrackRef.current;
+
+      if (stageEl && trackEl && typeof window !== 'undefined') {
+        let currentOffset = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startOffset = 0;
+
+        const getMaxScroll = () => {
+          const viewportEl = trackEl.parentElement;
+          if (!viewportEl) return 0;
+          return Math.max(0, trackEl.scrollWidth - viewportEl.clientWidth);
+        };
+
+        const updateGalleryProgress = (offset, maxDist) => {
+          if (!showcaseProgressRef.current) return;
+          const pct = maxDist > 0 ? Math.min(100, Math.max(16, (offset / maxDist) * 100)) : 100;
+          showcaseProgressRef.current.style.width = `${pct.toFixed(1)}%`;
+        };
+
+        const handleMouseDown = (e) => {
+          if (e.button !== 0 || window.innerWidth < 960) return;
+          const maxDist = getMaxScroll();
+          if (maxDist <= 2) return;
+          isDragging = true;
+          startX = e.clientX;
+          startOffset = currentOffset;
+          stageEl.classList.add('is-dragging');
+        };
+
+        const handleMouseMove = (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+          const maxDist = getMaxScroll();
+          const deltaX = startX - e.clientX;
+          currentOffset = Math.max(0, Math.min(maxDist, startOffset + deltaX * 1.15));
+          gsap.to(trackEl, {
+            x: -currentOffset,
+            duration: 0.25,
+            ease: 'power3.out',
+            overwrite: 'auto'
+          });
+          updateGalleryProgress(currentOffset, maxDist);
+        };
+
+        const handleMouseUp = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          stageEl.classList.remove('is-dragging');
+        };
+
+        stageEl.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        cleanupGalleryWheel = () => {
+          stageEl.removeEventListener('mousedown', handleMouseDown);
+          window.removeEventListener('mousemove', handleMouseMove);
+          window.removeEventListener('mouseup', handleMouseUp);
+        };
+      }
 
       // 4. Comparison Table Card Reveal
       gsap.fromTo(
@@ -498,7 +564,10 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
       );
     }, landingRef);
 
-    return () => ctx.revert();
+    return () => {
+      if (cleanupGalleryWheel) cleanupGalleryWheel();
+      ctx.revert();
+    };
   }, []);
 
   // Side Panel CountUp: re-animate whenever user selects a different kecamatan or views all
@@ -916,7 +985,6 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 </div>
               </div>
 
-
               <div className="stunting-footer-row">
                 <span className="stunting-source-text">{content.spotlightStunting.sourceText}</span>
               </div>
@@ -995,90 +1063,6 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
             </div>
           </div>
         </div>
-
-        {/* SECTION: FIELD DOCUMENTATION GALLERY (GALERI FOTO DOKUMENTASI LAPANGAN) */}
-        {content.gallery && content.gallery.length > 0 && (
-          <div className="ladang-card-box gallery-spotlight-box gsap-gallery-box" style={{ marginTop: 24, marginBottom: 24 }}>
-            <div className="ladang-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                {content.gallerySection?.pill && (
-                  <span className="editorial-pill" style={{ marginBottom: 6, display: 'inline-block' }}>
-                    {content.gallerySection.pill}
-                  </span>
-                )}
-                <h3 className="ladang-card-title" style={{ fontSize: 20, fontWeight: 800 }}>
-                  {content.gallerySection?.title || 'Galeri Dokumentasi Lapangan Pemkot Bogor'}
-                </h3>
-                {content.gallerySection?.subtitle && (
-                  <p className="ladang-card-desc" style={{ marginTop: 4 }}>
-                    {content.gallerySection.subtitle}
-                  </p>
-                )}
-              </div>
-              {content.gallerySection?.badgeText && (
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', background: '#f0fdfa', padding: '5px 12px', borderRadius: 9999, border: '1px solid #ccfbf1' }}>
-                  {content.gallerySection.badgeText}
-                </span>
-              )}
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 18, marginTop: 16 }}>
-              {content.gallery.map((item, idx) => (
-                <div
-                  key={item.id || idx}
-                  className="gallery-card-item"
-                  style={{
-                    background: '#ffffff',
-                    borderRadius: 12,
-                    border: '1px solid #e2e8f0',
-                    overflow: 'hidden',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s, box-shadow 0.2s'
-                  }}
-                >
-                  <div style={{ position: 'relative', height: 180, background: '#0f172a', overflow: 'hidden' }}>
-                    <img
-                      src={item.url}
-                      alt={item.title}
-                      loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    {item.category && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: 10,
-                          left: 10,
-                          background: 'rgba(15, 23, 42, 0.75)',
-                          color: '#ffffff',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: 4,
-                          backdropFilter: 'blur(4px)'
-                        }}
-                      >
-                        {item.category}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <h4 style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>
-                        {item.title}
-                      </h4>
-                      <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Overview 6 Kecamatan (Clean Editorial Table) */}
         <div className="ladang-card-box overview-kecamatan-card gsap-table-box">
@@ -1971,30 +1955,24 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
           </h2>
         </div>
 
-        {/* Data Filter & Search Toolbar */}
+        {/* Data Filter Toolbar */}
         <div className="ladang-card-box toolbar-card gsap-data-section">
           <div className="filter-controls-row">
-            {/* Search Input */}
-            <div className="search-input-box">
-              <Search size={16} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Cari kecamatan atau pusat administrasi..."
+            {/* Kecamatan Dropdown Select */}
+            <div className="search-input-box kecamatan-select-box" title="Pilih kecamatan di Kota Bogor">
+              <MapPin size={16} className="search-icon" />
+              <select
                 value={searchTable}
                 onChange={(e) => setSearchTable(e.target.value)}
-                aria-label="Cari kecamatan atau pusat administrasi"
-              />
-              {searchTable && (
-                <button
-                  type="button"
-                  className="search-clear-btn"
-                  onClick={() => setSearchTable('')}
-                  title="Hapus pencarian"
-                  aria-label="Hapus pencarian"
-                >
-                  <X size={14} />
-                </button>
-              )}
+                aria-label="Pilih kecamatan di Kota Bogor"
+              >
+                <option value="">Semua Kecamatan — Kota Bogor ({kecamatanList.length} Kecamatan)</option>
+                {kecamatanList.map((kec) => (
+                  <option key={kec.id || kec.nama} value={kec.nama}>
+                    Kecamatan {kec.nama} (Pusat: {kec.pusat})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Status Ketahanan Pangan Select */}
@@ -2029,8 +2007,8 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
               <div className="filter-active-chips">
                 {searchTable.trim() !== '' && (
                   <span className="filter-chip">
-                    Pencarian: &ldquo;{searchTable.trim()}&rdquo;
-                    <button type="button" onClick={() => setSearchTable('')} aria-label="Hapus filter pencarian">
+                    Kecamatan: {searchTable}
+                    <button type="button" onClick={() => setSearchTable('')} aria-label="Hapus filter kecamatan">
                       <X size={12} />
                     </button>
                   </span>
@@ -2159,8 +2137,8 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
               <Filter size={28} />
               <h4>Tidak ada kecamatan yang cocok</h4>
               <p>
-                Tidak ditemukan data kecamatan untuk
-                {searchTable.trim() ? ` kata kunci "${searchTable.trim()}"` : ''}
+                Tidak ditemukan data untuk
+                {searchTable.trim() ? ` Kecamatan ${searchTable.trim()}` : ' kecamatan'}
                 {searchTable.trim() && filterStatus !== 'Semua Status' ? ' dengan' : ''}
                 {filterStatus !== 'Semua Status' ? ` status pangan "${filterStatus}"` : ''}.
               </p>
@@ -2272,6 +2250,100 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
 
       {/* 5. DATA SOURCE & METHODOLOGY */}
       <DataSourceMethodology methodologySection={content.methodologySection} />
+
+      {/* GALERI DOKUMENTASI LAPANGAN PEMKOT BOGOR (Ditempatkan tepat di atas Tentang NutriMap, geser dengan tahan klik kiri mouse) */}
+      {content.gallery && content.gallery.length > 0 && (
+        <section className="single-page-section" style={{ paddingTop: 28, paddingBottom: 0 }}>
+          <div className="gallery-scroll-stage" ref={showcaseStageRef}>
+            <div className="gallery-scroll-sticky">
+              <div className="ladang-card-box gallery-spotlight-box gsap-gallery-box">
+                <div className="ladang-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    {content.gallerySection?.pill && (
+                      <span className="editorial-pill" style={{ marginBottom: 6, display: 'inline-block' }}>
+                        {content.gallerySection.pill}
+                      </span>
+                    )}
+                    <h3 className="ladang-card-title" style={{ fontSize: 20, fontWeight: 800 }}>
+                      {content.gallerySection?.title || 'Galeri Dokumentasi Lapangan Pemkot Bogor'}
+                    </h3>
+                    {content.gallerySection?.subtitle && (
+                      <p className="ladang-card-desc" style={{ marginTop: 4 }}>
+                        {content.gallerySection.subtitle}
+                      </p>
+                    )}
+                  </div>
+
+                  {content.gallerySection?.badgeText && (
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#0f766e', background: '#f0fdfa', padding: '5px 12px', borderRadius: 9999, border: '1px solid #ccfbf1' }}>
+                      {content.gallerySection.badgeText}
+                    </span>
+                  )}
+                </div>
+
+                <div className="gallery-horizontal-viewport">
+                  <div className="gallery-horizontal-track" ref={showcaseTrackRef}>
+                    {content.gallery.map((item, idx) => (
+                      <div
+                        key={item.id || idx}
+                        className="gallery-card-item"
+                        style={{
+                          background: '#ffffff',
+                          borderRadius: 12,
+                          border: '1px solid #e2e8f0',
+                          overflow: 'hidden',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'transform 0.2s, box-shadow 0.2s'
+                        }}
+                      >
+                        <div style={{ position: 'relative', height: 265, background: '#0f172a', overflow: 'hidden' }}>
+                          <img
+                            src={item.url}
+                            alt={item.title}
+                            loading="lazy"
+                            draggable={false}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', userSelect: 'none' }}
+                          />
+                          {item.category && (
+                            <span
+                              style={{
+                                position: 'absolute',
+                                top: 10,
+                                left: 10,
+                                background: 'rgba(15, 23, 42, 0.75)',
+                                color: '#ffffff',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                padding: '3px 8px',
+                                borderRadius: 4,
+                                backdropFilter: 'blur(4px)'
+                              }}
+                            >
+                              {item.category}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ padding: '18px 20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                          <div>
+                            <h4 style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 800, color: '#0f172a', lineHeight: 1.4 }}>
+                              {item.title}
+                            </h4>
+                            <p style={{ margin: 0, fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* SECTION 6: TENTANG NUTRIMAP & MITRA RESMI */}
       <section id="tentang-nutrimap" className="single-page-section">
