@@ -1,10 +1,19 @@
+# Dependencies
 node_modules
+backend-webgis/node_modules/
 dist
 .DS_Store
 *.local
+
+# Environment
+.env
+.env.*
+*.env
+backend-webgis/.env
+backend-webgis/.env.*
+
+# Media / Assets
 animasi muncul.png
 gambar awal.png
 foto info/
-
 *.backup.png
-

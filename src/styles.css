@@ -7102,25 +7102,55 @@ a {
   align-items: center;
 }
 
-.modern-et-search input {
+.modern-et-search input,
+.modern-et-search select,
+.modern-et-search .kecamatan-map-select {
   width: 100%;
-  padding: 10px 16px 10px 42px;
-  border-radius: 20px;
+  height: 40px;
+  padding: 8px 36px 8px 42px;
+  border-radius: 9999px;
   border: 1px solid #cbd5e1;
-  font-size: 0.88rem;
-  transition: all 0.2s;
+  background-color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
 }
 
-.modern-et-search input:focus {
+.modern-et-search input:hover,
+.modern-et-search select:hover,
+.modern-et-search .kecamatan-map-select:hover {
   border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-  outline: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+}
+
+.modern-et-search input:focus,
+.modern-et-search select:focus,
+.modern-et-search .kecamatan-map-select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
 }
 
 .modern-et-search .icon {
   position: absolute;
-  left: 14px;
-  color: #94a3b8;
+  left: 15px;
+  color: #10b981;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.modern-et-search .select-chevron {
+  position: absolute;
+  right: 14px;
+  color: #64748b;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .clear-search-btn {
@@ -7139,28 +7169,55 @@ a {
   gap: 10px;
 }
 
-.modern-select-pill select {
-  padding: 8px 16px 8px 36px;
-  border-radius: 20px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-}
-
 .modern-select-pill {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.modern-select-pill svg {
+.modern-select-pill select {
+  height: 40px;
+  padding: 8px 34px 8px 38px;
+  border-radius: 9999px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.modern-select-pill select:hover {
+  border-color: #10b981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+}
+
+.modern-select-pill select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+}
+
+.modern-select-pill svg.filter-icon,
+.modern-select-pill svg:first-child {
   position: absolute;
-  left: 12px;
+  left: 14px;
+  color: #10b981;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.modern-select-pill svg.chevron-icon {
+  position: absolute;
+  right: 12px;
   color: #64748b;
   pointer-events: none;
+  z-index: 2;
 }
 
 .modern-pill-btn {

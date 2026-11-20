@@ -14,7 +14,8 @@ import {
   HeartPulse,
   Sparkles,
   ArrowLeft,
-  Home
+  Home,
+  ChevronDown
 } from 'lucide-react';
 import MapView from '../common/MapView';
 import { getIndicatorClassification } from '../../data/indicatorStandards';
@@ -92,7 +93,7 @@ export default function MapExplorerView({ onNavigate }) {
         </motion.button>
 
         <div className="et-search modern-et-search">
-          <Building2 size={18} className="icon text-emerald" />
+          <Building2 size={17} className="icon text-emerald" />
           <select
             className="kecamatan-map-select font-bold"
             value={selectedKel ? selectedKel.id : ''}
@@ -112,7 +113,7 @@ export default function MapExplorerView({ onNavigate }) {
             }}
           >
             <option value="">
-              📍 {selectedKecamatanFilter === 'Semua Kecamatan' ? 'Semua Kelurahan (Kota Bogor)' : `Semua Kelurahan (${selectedKecamatanFilter})`}
+              {selectedKecamatanFilter === 'Semua Kecamatan' ? 'Semua Kelurahan (Kota Bogor)' : `Semua Kelurahan (${selectedKecamatanFilter})`}
             </option>
             {filteredList.map((kel) => (
               <option key={kel.id} value={kel.id}>
@@ -120,11 +121,12 @@ export default function MapExplorerView({ onNavigate }) {
               </option>
             ))}
           </select>
+          <ChevronDown size={15} className="select-chevron" />
         </div>
 
         <div className="et-filters modern-et-filters">
           <label className="filter-select modern-select-pill">
-            <Filter size={15} />
+            <Filter size={15} className="filter-icon" />
             <select
               value={selectedKecamatanFilter}
               onChange={(e) => {
@@ -139,6 +141,7 @@ export default function MapExplorerView({ onNavigate }) {
                 </option>
               ))}
             </select>
+            <ChevronDown size={14} className="chevron-icon" />
           </label>
 
           <motion.button

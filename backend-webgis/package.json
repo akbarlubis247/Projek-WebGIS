@@ -1,0 +1,35 @@
+{
+  "name": "backend-webgis",
+  "version": "1.0.0",
+  "description": "REST API NutriMap Bogor (Express + PostGIS)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "generate:dummy": "node scripts/generate-dummy-geojson.js",
+    "db:init": "node scripts/db-init.js",
+    "db:import": "node scripts/import-geojson.js",
+    "db:import:sig": "node scripts/import-sig.js",
+    "db:import:facilities": "node scripts/import-facilities-shp.js",
+    "test": "node --test test/api.test.js",
+    "db:configure": "node scripts/configure-db.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0",
+    "pg": "^8.23.0",
+    "wellknown": "^0.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
