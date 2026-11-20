@@ -27,7 +27,10 @@ import {
   FileEdit,
   Clock,
   MapPinned,
-  ArrowUpRight
+  ArrowUpRight,
+  X,
+  RotateCcw,
+  Download
 } from 'lucide-react';
 import {
   BarChart,
@@ -73,6 +76,32 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
   const [panelKelSearch, setPanelKelSearch] = useState('');
   const [searchTable, setSearchTable] = useState('');
   const [filterStatus, setFilterStatus] = useState('Semua Status');
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportLevel, setExportLevel] = useState('kecamatan'); // 'kecamatan' | 'kelurahan'
+  const [exportScope, setExportScope] = useState('filtered'); // 'filtered' | 'all' | 'custom'
+  const [selectedExportKec, setSelectedExportKec] = useState([]);
+  const [exportToast, setExportToast] = useState('');
+  const [exportColumns, setExportColumns] = useState({
+    nama: true,
+    pusat: true,
+    jumlahKelurahan: true,
+    panganStatus: true,
+    panganSkor: true,
+    kerentananPangan: false,
+    airBersih: true,
+    stunting: true,
+    kemiskinan: true,
+    prioritas: true,
+  });
+  const [exportKelColumns, setExportKelColumns] = useState({
+    nama: true,
+    kecamatan: true,
+    panganSkor: true,
+    kerentananPangan: true,
+    airBersih: true,
+    stunting: true,
+    kemiskinan: true,
+  });
   const [activeChartMetric, setActiveChartMetric] = useState('panganSkor');
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
@@ -532,18 +561,144 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
     }
   };
 
-  const handleExportCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,ID,Nama Kecamatan,Pusat,Penduduk,Status Pangan,Skor IKP,Air Bersih (%),Stunting (%),Kemiskinan,Faskes\n";
-    filteredData.forEach(row => {
-      csvContent += `${row.id},"${row.nama}","${row.pusat}",${row.penduduk},"${row.panganStatus}",${row.panganSkor},${row.airBersih},${row.stunting},"${row.tingkatKemiskinan}",${row.faskes}\n`;
-    });
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `NutriMap_Kota_Bogor_${new Date().toISOString().slice(0,10)}.csv`);
+  // Daftar kolom yang bisa diekspor (Per Kecamatan & Per Kelurahan)
+  const EXPORT_KEC_COLUMN_DEFS = [
+    { key: 'nama',             label: 'Nama Kecamatan',          required: true  },
+    { key: 'pusat',            label: 'Pusat Administrasi',      required: false },
+    { key: 'jumlahKelurahan',  label: 'Jumlah Kelurahan',        required: false },
+    { key: 'panganStatus',     label: 'Status Ketahanan Pangan', required: false },
+    { key: 'panganSkor',       label: 'Skor IKP (0-100)',        required: false },
+    { key: 'kerentananPangan', label: 'Kerentanan Pangan (%)',   required: false },
+    { key: 'airBersih',        label: 'Akses Air Bersih (%)',    required: false },
+    { key: 'stunting',         label: 'Prevalensi Stunting (%)', required: false },
+    { key: 'kemiskinan',       label: 'Tingkat Kemiskinan (%)',  required: false },
+    { key: 'prioritas',        label: 'Prioritas Intervensi',    required: false },
+  ];
+
+  const EXPORT_KEL_COLUMN_DEFS = [
+    { key: 'nama',             label: 'Nama Kelurahan',          required: true  },
+    { key: 'kecamatan',        label: 'Kecamatan',               required: false },
+    { key: 'panganSkor',       label: 'Skor IKP (0-100)',        required: false },
+    { key: 'kerentananPangan', label: 'Kerentanan Pangan (%)',   required: false },
+    { key: 'airBersih',        label: 'Akses Air Bersih (%)',    required: false },
+    { key: 'stunting',         label: 'Prevalensi Stunting (%)', required: false },
+    { key: 'kemiskinan',       label: 'Tingkat Kemiskinan (%)',  required: false },
+  ];
+
+  const isFilterActive = searchTable.trim() !== '' || filterStatus !== 'Semua Status';
+
+  const statusCounts = ['Sangat Aman', 'Aman', 'Waspada', 'Rentan'].reduce((acc, st) => {
+    acc[st] = kecamatanList.filter((item) => item.panganStatus === st).length;
+    return acc;
+  }, {});
+
+  // Dynamic 3 Key Insights Summary computed from active filtered data (fallback to all if 0)
+  const insightSource = filteredData.length > 0 ? filteredData : kecamatanList;
+  const topIkpKec = insightSource.length > 0
+    ? [...insightSource].sort((a, b) => Number(b.panganSkor || 0) - Number(a.panganSkor || 0))[0]
+    : null;
+  const sortedStunting = [...insightSource].sort((a, b) => Number(b.stunting || 0) - Number(a.stunting || 0));
+  const avgAirBersih = insightSource.length > 0
+    ? (insightSource.reduce((sum, item) => sum + Number(item.airBersih || 0), 0) / insightSource.length).toFixed(1)
+    : '0.0';
+  const topAirKec = insightSource.length > 0
+    ? [...insightSource].sort((a, b) => Number(b.airBersih || 0) - Number(a.airBersih || 0))[0]
+    : null;
+  const maxStuntingVal = insightSource.reduce((max, item) => Math.max(max, Number(item.stunting || 0)), 0);
+
+  const handleOpenExportModal = () => {
+    if (selectedExportKec.length === 0 && kecamatanList.length > 0) {
+      setSelectedExportKec(kecamatanList.map((k) => k.nama));
+    }
+    setExportScope(isFilterActive ? 'filtered' : 'all');
+    setShowExportModal(true);
+  };
+
+  const toggleCustomExportKec = (kecName) => {
+    setSelectedExportKec((prev) =>
+      prev.includes(kecName) ? prev.filter((k) => k !== kecName) : [...prev, kecName]
+    );
+  };
+
+  const getExportTargetRows = () => {
+    let targetKecs = kecamatanList;
+    if (exportScope === 'filtered') {
+      targetKecs = filteredData;
+    } else if (exportScope === 'custom') {
+      targetKecs = kecamatanList.filter((k) => selectedExportKec.includes(k.nama));
+    }
+
+    if (exportLevel === 'kecamatan') {
+      return targetKecs;
+    }
+
+    const allowedKecNames = new Set(targetKecs.map((k) => String(k.nama || '').trim().toLowerCase()));
+    return kelurahanList
+      .filter((kel) => allowedKecNames.has(String(kel.kecamatan || '').trim().toLowerCase()))
+      .map((kel) => ({
+        ...kel,
+        panganSkor: Number((100 - Number(kel.kerentananPangan || 0)).toFixed(1)),
+      }));
+  };
+
+  const activeExportColDefs = exportLevel === 'kecamatan' ? EXPORT_KEC_COLUMN_DEFS : EXPORT_KEL_COLUMN_DEFS;
+  const activeExportColMap = exportLevel === 'kecamatan' ? exportColumns : exportKelColumns;
+  const exportPreviewRows = showExportModal ? getExportTargetRows() : [];
+  const activeExportColCount = activeExportColDefs.filter((c) => activeExportColMap[c.key]).length;
+
+  const handleDoExportCSV = () => {
+    const sourceData = getExportTargetRows();
+    const activeCols = activeExportColDefs.filter((c) => activeExportColMap[c.key]);
+    if (!sourceData.length || !activeCols.length) return;
+
+    const escapeCsv = (val) => {
+      if (val === undefined || val === null) return '""';
+      return `"${String(val).replace(/"/g, '""')}"`;
+    };
+
+    const header = activeCols.map((c) => escapeCsv(c.label)).join(',');
+    const rows = sourceData.map((row) =>
+      activeCols.map((c) => escapeCsv(row[c.key])).join(',')
+    );
+    const csvBody = '\uFEFF' + [header, ...rows].join('\r\n');
+    const blob = new Blob([csvBody], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const levelSlug = exportLevel === 'kelurahan' ? 'Kelurahan' : 'Kecamatan';
+    link.setAttribute('href', url);
+    link.setAttribute('download', `NutriMap_${levelSlug}_Kota_Bogor_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setShowExportModal(false);
+    setExportToast(`Berhasil mengekspor ${sourceData.length} data ${exportLevel} (${activeCols.length} kolom) ke CSV.`);
+    setTimeout(() => setExportToast(''), 4000);
+  };
+
+  const toggleExportCol = (key) => {
+    if (exportLevel === 'kecamatan') {
+      setExportColumns((prev) => ({ ...prev, [key]: !prev[key] }));
+    } else {
+      setExportKelColumns((prev) => ({ ...prev, [key]: !prev[key] }));
+    }
+  };
+
+  const setAllExportCols = (checked) => {
+    const next = Object.fromEntries(
+      activeExportColDefs.map((c) => [c.key, c.required ? true : checked])
+    );
+    if (exportLevel === 'kecamatan') {
+      setExportColumns(next);
+    } else {
+      setExportKelColumns(next);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSearchTable('');
+    setFilterStatus('Semua Status');
   };
 
   return (
@@ -1814,9 +1969,6 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
           <h2>
             {content.indicatorSection?.title || 'Data Indikator Kota Bogor'}
           </h2>
-          {content.indicatorSection?.subtitle && (
-            <p>{content.indicatorSection.subtitle}</p>
-          )}
         </div>
 
         {/* Data Filter & Search Toolbar */}
@@ -1830,57 +1982,84 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 placeholder="Cari kecamatan atau pusat administrasi..."
                 value={searchTable}
                 onChange={(e) => setSearchTable(e.target.value)}
+                aria-label="Cari kecamatan atau pusat administrasi"
               />
+              {searchTable && (
+                <button
+                  type="button"
+                  className="search-clear-btn"
+                  onClick={() => setSearchTable('')}
+                  title="Hapus pencarian"
+                  aria-label="Hapus pencarian"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
 
-            {/* Status Select */}
-            <div className="filter-select-box">
+            {/* Status Ketahanan Pangan Select */}
+            <div className="filter-select-box" title="Filter kecamatan berdasarkan status Indeks Ketahanan Pangan (IKP)">
               <Filter size={14} className="filter-icon" />
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                <option>Semua Status</option>
-                {FOOD_SECURITY_CATEGORIES.map((c) => (
-                  <option key={c.label} value={c.label}>
-                    {c.label}
-                  </option>
-                ))}
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                aria-label="Filter berdasarkan status ketahanan pangan"
+              >
+                <option value="Semua Status">Semua Status Pangan ({kecamatanList.length})</option>
+                <option value="Sangat Aman">Status: Sangat Aman ({statusCounts['Sangat Aman'] || 0})</option>
+                <option value="Aman">Status: Aman ({statusCounts['Aman'] || 0})</option>
+                <option value="Waspada">Status: Waspada ({statusCounts['Waspada'] || 0})</option>
+                <option value="Rentan">Status: Rentan ({statusCounts['Rentan'] || 0})</option>
               </select>
             </div>
 
             {/* Export CSV Button */}
-            <button className="ladang-btn-export" onClick={handleExportCSV}>
+            <button type="button" className="ladang-btn-export" onClick={handleOpenExportModal}>
               <FileSpreadsheet size={15} />
               <span>Ekspor Data CSV</span>
             </button>
           </div>
+
+          {/* Active Filter Status & Quick Reset Bar */}
+          {isFilterActive && (
+            <div className="filter-active-bar">
+              <span className="filter-active-summary">
+                Menampilkan <strong>{filteredData.length}</strong> dari <strong>{kecamatanList.length}</strong> kecamatan
+              </span>
+              <div className="filter-active-chips">
+                {searchTable.trim() !== '' && (
+                  <span className="filter-chip">
+                    Pencarian: &ldquo;{searchTable.trim()}&rdquo;
+                    <button type="button" onClick={() => setSearchTable('')} aria-label="Hapus filter pencarian">
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+                {filterStatus !== 'Semua Status' && (
+                  <span className="filter-chip">
+                    Status Pangan: {filterStatus}
+                    <button type="button" onClick={() => setFilterStatus('Semua Status')} aria-label="Hapus filter status">
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
+                <button type="button" className="filter-reset-btn" onClick={handleResetFilters}>
+                  <RotateCcw size={12} />
+                  <span>Reset Filter</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {exportToast && (
+            <div className="export-toast-banner" role="status">
+              <CheckCircle2 size={15} />
+              <span>{exportToast}</span>
+            </div>
+          )}
         </div>
 
-        {/* 4. DATA INSIGHT: METADATA BANNER & KEY INSIGHT CARDS */}
-        <div className="data-insight-meta-bar gsap-data-section">
-          <div className="dim-item">
-            <span className="dim-label">Indikator Terpilih</span>
-            <span className="dim-val">
-              {activeChartMetric === 'panganSkor' && 'Indeks Ketahanan Pangan (IKP)'}
-              {activeChartMetric === 'airBersih' && 'Akses Air Bersih Layak'}
-              {activeChartMetric === 'stunting' && 'Prevalensi Stunting Balita'}
-            </span>
-          </div>
-          <div className="dim-item">
-            <span className="dim-label">Satuan Pengukuran</span>
-            <span className="dim-val">
-              {activeChartMetric === 'panganSkor' ? 'Skor Indeks (0 – 100)' : 'Persentase Populasi (%)'}
-            </span>
-          </div>
-          <div className="dim-item">
-            <span className="dim-label">Sumber Data Resmi</span>
-            <span className="dim-val">Satu Peta, Bappeda, DKP, Dinkes, BPS</span>
-          </div>
-          <div className="dim-item">
-            <span className="dim-label">Periode Pemutakhiran</span>
-            <span className="dim-val">Semester II Tahun 2024</span>
-          </div>
-        </div>
-
-        {/* 3 Key Insights Summary Cards */}
+        {/* 3 Key Insights Summary Cards (Dinamis mengikuti data aktual / filter) */}
         <div className="data-insight-cards-row gsap-data-section">
           <div className="insight-summary-card">
             <div className="insight-card-icon icon-pangan">
@@ -1888,8 +2067,12 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
             </div>
             <div className="insight-card-content">
               <span className="ic-title">Skor IKP Tertinggi</span>
-              <span className="ic-val">Bogor Tengah (91.4)</span>
-              <span className="ic-note">Kemandirian pangan sangat stabil</span>
+              <span className="ic-val">
+                {topIkpKec ? `${topIkpKec.nama} (${topIkpKec.panganSkor})` : '-'}
+              </span>
+              <span className="ic-note">
+                {topIkpKec ? `Status ketahanan pangan: ${topIkpKec.panganStatus}` : 'Tidak ada data'}
+              </span>
             </div>
           </div>
 
@@ -1899,7 +2082,13 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
             </div>
             <div className="insight-card-content">
               <span className="ic-title">Fokus Intervensi Stunting</span>
-              <span className="ic-val">Bogor Barat (22.8%) &amp; Selatan (21.4%)</span>
+              <span className="ic-val">
+                {sortedStunting.length >= 2
+                  ? `${sortedStunting[0].nama} (${sortedStunting[0].stunting}%) & ${sortedStunting[1].nama.replace('Bogor ', '')} (${sortedStunting[1].stunting}%)`
+                  : sortedStunting.length === 1
+                    ? `${sortedStunting[0].nama} (${sortedStunting[0].stunting}%)`
+                    : '-'}
+              </span>
               <span className="ic-note">Prioritas pemberian PMT &amp; sanitasi</span>
             </div>
           </div>
@@ -1910,8 +2099,12 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
             </div>
             <div className="insight-card-content">
               <span className="ic-title">Rata-rata Akses Air Bersih</span>
-              <span className="ic-val">89.6% Kota Bogor</span>
-              <span className="ic-note">Bogor Tengah (94.2%) tertinggi pipa PDAM</span>
+              <span className="ic-val">
+                {avgAirBersih}% {isFilterActive && filteredData.length > 0 ? `(${filteredData.length} Kecamatan)` : 'Kota Bogor'}
+              </span>
+              <span className="ic-note">
+                {topAirKec ? `${topAirKec.nama} (${topAirKec.airBersih}%) tertinggi akses air layak` : 'Tidak ada data'}
+              </span>
             </div>
           </div>
         </div>
@@ -1926,13 +2119,16 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 {activeChartMetric === 'stunting' && 'Prevalensi Stunting Balita (%) per Kecamatan'}
               </h3>
               <p className="chart-subtitle">
-                Grafik perbandingan skor indikator pada seluruh kecamatan di Kota Bogor.
+                {isFilterActive
+                  ? `Menampilkan ${filteredData.length} dari ${kecamatanList.length} kecamatan sesuai filter aktif.`
+                  : 'Grafik perbandingan skor indikator pada seluruh kecamatan di Kota Bogor.'}
               </p>
             </div>
 
             {/* Chart Metric Switcher Tabs */}
             <div className="chart-tab-group">
               <button
+                type="button"
                 className={`chart-tab ${activeChartMetric === 'panganSkor' ? 'active' : ''}`}
                 onClick={() => setActiveChartMetric('panganSkor')}
               >
@@ -1940,6 +2136,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 <span>Skor IKP</span>
               </button>
               <button
+                type="button"
                 className={`chart-tab ${activeChartMetric === 'airBersih' ? 'active' : ''}`}
                 onClick={() => setActiveChartMetric('airBersih')}
               >
@@ -1947,6 +2144,7 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
                 <span>Air Bersih</span>
               </button>
               <button
+                type="button"
                 className={`chart-tab ${activeChartMetric === 'stunting' ? 'active' : ''}`}
                 onClick={() => setActiveChartMetric('stunting')}
               >
@@ -1956,101 +2154,119 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
             </div>
           </div>
 
-          <div style={{ width: '100%', height: isMobile ? 310 : 380, marginTop: 20 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={kecamatanList}
-                margin={isMobile ? { top: 28, right: 8, left: -22, bottom: 25 } : { top: 28, right: 25, left: -5, bottom: 20 }}
-              >
-                <defs>
-                  <linearGradient id="barGradientIKP" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#20372A" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#172820" stopOpacity={0.95} />
-                  </linearGradient>
-                  <linearGradient id="barGradientAir" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#829783" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#5D755E" stopOpacity={0.95} />
-                  </linearGradient>
-                  <linearGradient id="barGradientStunting" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#C9B98E" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#B39F6D" stopOpacity={0.95} />
-                  </linearGradient>
-                  <linearGradient id="barGradientStuntingHigh" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#C86446" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#A8452B" stopOpacity={0.95} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBE5DC" />
-                <XAxis
-                  dataKey="nama"
-                  tick={{ fontSize: isMobile ? 10 : 13, fill: '#3E3431', fontWeight: 700 }}
-                  tickLine={false}
-                  axisLine={{ stroke: '#E8E2D8' }}
-                  dy={isMobile ? 2 : 6}
-                  interval={0}
-                  angle={isMobile ? -25 : 0}
-                  textAnchor={isMobile ? 'end' : 'middle'}
-                  height={isMobile ? 45 : 30}
-                />
-                <YAxis
-                  tick={{ fontSize: isMobile ? 10 : 12, fill: '#8C827A', fontWeight: 500 }}
-                  tickLine={false}
-                  axisLine={false}
-                  domain={[0, activeChartMetric === 'stunting' ? 8 : 115]}
-                />
-                <Tooltip
-                  cursor={{ fill: 'rgba(45, 90, 60, 0.05)', radius: 10 }}
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      let label = 'Skor IKP';
-                      let val = data.panganSkor + ' / 100';
-                      if (activeChartMetric === 'airBersih') {
-                        label = 'Akses Air Bersih';
-                        val = data.airBersih + '%';
-                      } else if (activeChartMetric === 'stunting') {
-                        label = 'Prevalensi Stunting';
-                        val = data.stunting + '%';
-                      }
-                      return (
-                        <div className="ladang-chart-tooltip">
-                          <span className="tt-kec">Kecamatan {data.nama}</span>
-                          <span className="tt-val">{label}: <b>{val}</b></span>
-                          <span className="tt-sub">Pusat: {data.pusat}</span>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Bar
-                  dataKey={activeChartMetric}
-                  radius={[isMobile ? 8 : 12, isMobile ? 8 : 12, 0, 0]}
-                  barSize={isMobile ? 32 : 68}
-                  maxBarSize={isMobile ? 42 : 80}
+          {filteredData.length === 0 ? (
+            <div className="chart-empty-state">
+              <Filter size={28} />
+              <h4>Tidak ada kecamatan yang cocok</h4>
+              <p>
+                Tidak ditemukan data kecamatan untuk
+                {searchTable.trim() ? ` kata kunci "${searchTable.trim()}"` : ''}
+                {searchTable.trim() && filterStatus !== 'Semua Status' ? ' dengan' : ''}
+                {filterStatus !== 'Semua Status' ? ` status pangan "${filterStatus}"` : ''}.
+              </p>
+              <button type="button" className="filter-reset-btn-lg" onClick={handleResetFilters}>
+                <RotateCcw size={14} />
+                <span>Reset Semua Filter</span>
+              </button>
+            </div>
+          ) : (
+            <div style={{ width: '100%', height: isMobile ? 310 : 380, marginTop: 20 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={filteredData}
+                  margin={isMobile ? { top: 28, right: 8, left: -22, bottom: 25 } : { top: 28, right: 25, left: -5, bottom: 20 }}
                 >
-                  <LabelList
-                    dataKey={activeChartMetric}
-                    position="top"
-                    formatter={(val) => {
-                      if (activeChartMetric === 'panganSkor') return `${val}`;
-                      return `${val}%`;
-                    }}
-                    style={{ fill: '#241D1B', fontSize: isMobile ? 10 : 13, fontWeight: 800 }}
-                    offset={isMobile ? 6 : 10}
+                  <defs>
+                    <linearGradient id="barGradientIKP" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#20372A" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#172820" stopOpacity={0.95} />
+                    </linearGradient>
+                    <linearGradient id="barGradientAir" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#829783" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#5D755E" stopOpacity={0.95} />
+                    </linearGradient>
+                    <linearGradient id="barGradientStunting" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#C9B98E" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#B39F6D" stopOpacity={0.95} />
+                    </linearGradient>
+                    <linearGradient id="barGradientStuntingHigh" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#C86446" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#A8452B" stopOpacity={0.95} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBE5DC" />
+                  <XAxis
+                    dataKey="nama"
+                    tick={{ fontSize: isMobile ? 10 : 13, fill: '#3E3431', fontWeight: 700 }}
+                    tickLine={false}
+                    axisLine={{ stroke: '#E8E2D8' }}
+                    dy={isMobile ? 2 : 6}
+                    interval={0}
+                    angle={isMobile ? -25 : 0}
+                    textAnchor={isMobile ? 'end' : 'middle'}
+                    height={isMobile ? 45 : 30}
                   />
-                  {kecamatanList.map((entry, index) => {
-                    let fill = 'url(#barGradientIKP)';
-                    if (activeChartMetric === 'airBersih') fill = 'url(#barGradientAir)';
-                    if (activeChartMetric === 'stunting') {
-                      fill = entry.stunting >= 3.2 ? 'url(#barGradientStuntingHigh)' : 'url(#barGradientStunting)';
-                    }
-                    return <Cell key={`cell-${index}`} fill={fill} />;
-                  })}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+                  <YAxis
+                    tick={{ fontSize: isMobile ? 10 : 12, fill: '#8C827A', fontWeight: 500 }}
+                    tickLine={false}
+                    axisLine={false}
+                    domain={[0, activeChartMetric === 'stunting' ? Math.max(8, Math.ceil(maxStuntingVal * 1.25)) : 115]}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(45, 90, 60, 0.05)', radius: 10 }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        let label = 'Skor IKP';
+                        let val = data.panganSkor + ' / 100';
+                        if (activeChartMetric === 'airBersih') {
+                          label = 'Akses Air Bersih';
+                          val = data.airBersih + '%';
+                        } else if (activeChartMetric === 'stunting') {
+                          label = 'Prevalensi Stunting';
+                          val = data.stunting + '%';
+                        }
+                        return (
+                          <div className="ladang-chart-tooltip">
+                            <span className="tt-kec">Kecamatan {data.nama}</span>
+                            <span className="tt-val">{label}: <b>{val}</b></span>
+                            <span className="tt-sub">Status Pangan: <b>{data.panganStatus}</b> · Prioritas: <b>{data.prioritas}</b></span>
+                            <span className="tt-sub">Pusat: {data.pusat}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar
+                    dataKey={activeChartMetric}
+                    radius={[isMobile ? 8 : 12, isMobile ? 8 : 12, 0, 0]}
+                    barSize={isMobile ? 32 : 68}
+                    maxBarSize={isMobile ? 42 : 80}
+                  >
+                    <LabelList
+                      dataKey={activeChartMetric}
+                      position="top"
+                      formatter={(val) => {
+                        if (activeChartMetric === 'panganSkor') return `${val}`;
+                        return `${val}%`;
+                      }}
+                      style={{ fill: '#241D1B', fontSize: isMobile ? 10 : 13, fontWeight: 800 }}
+                      offset={isMobile ? 6 : 10}
+                    />
+                    {filteredData.map((entry, index) => {
+                      let fill = 'url(#barGradientIKP)';
+                      if (activeChartMetric === 'airBersih') fill = 'url(#barGradientAir)';
+                      if (activeChartMetric === 'stunting') {
+                        fill = entry.stunting >= 3.2 ? 'url(#barGradientStuntingHigh)' : 'url(#barGradientStunting)';
+                      }
+                      return <Cell key={`cell-${entry.id || index}`} fill={fill} />;
+                    })}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </section>
 
@@ -2191,6 +2407,207 @@ export default function LandingPageView({ onOpenLogin, onSelectKecamatan, curren
 
       {/* 6. PROFESSIONAL INSTITUTIONAL FOOTER — ELEMEN PALING BELAKANG / AKHIR */}
       <Footer onNavigate={onNavigate} />
+
+      {/* EXPORT MODAL */}
+      {showExportModal && (
+        <div className="export-modal-overlay" onClick={() => setShowExportModal(false)}>
+          <div className="export-modal-box" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="export-modal-heading">
+            {/* Header */}
+            <div className="export-modal-header">
+              <div className="export-modal-title-row">
+                <div className="export-modal-icon">
+                  <FileSpreadsheet size={18} />
+                </div>
+                <div>
+                  <h3 id="export-modal-heading">Ekspor Data Indikator CSV</h3>
+                  <p className="export-modal-subtitle">Pilih tingkat wilayah, cakupan data, dan indikator yang ingin diunduh.</p>
+                </div>
+              </div>
+              <button type="button" className="export-modal-close" onClick={() => setShowExportModal(false)} aria-label="Tutup dialog ekspor">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="export-modal-body">
+              {/* 1. Data Level Selector */}
+              <div className="export-modal-section">
+                <p className="export-modal-label">1. Tingkat Data Wilayah</p>
+                <div className="export-level-tabs">
+                  <button
+                    type="button"
+                    className={`export-level-tab${exportLevel === 'kecamatan' ? ' active' : ''}`}
+                    onClick={() => setExportLevel('kecamatan')}
+                  >
+                    <Building2 size={15} />
+                    <div>
+                      <strong>Ringkasan Kecamatan</strong>
+                      <span>Agregat {kecamatanList.length} kecamatan</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    className={`export-level-tab${exportLevel === 'kelurahan' ? ' active' : ''}`}
+                    onClick={() => setExportLevel('kelurahan')}
+                  >
+                    <MapPinned size={15} />
+                    <div>
+                      <strong>Detail Kelurahan</strong>
+                      <span>Data {kelurahanList.length} kelurahan</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Scope Selector */}
+              <div className="export-modal-section">
+                <p className="export-modal-label">2. Cakupan Wilayah</p>
+                <div className="export-scope-row">
+                  <label className={`export-scope-pill${exportScope === 'filtered' ? ' active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="exportScope"
+                      value="filtered"
+                      checked={exportScope === 'filtered'}
+                      onChange={() => setExportScope('filtered')}
+                    />
+                    <span>Sesuai Filter Aktif</span>
+                    <span className="scope-count">{filteredData.length} kec</span>
+                  </label>
+                  <label className={`export-scope-pill${exportScope === 'all' ? ' active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="exportScope"
+                      value="all"
+                      checked={exportScope === 'all'}
+                      onChange={() => setExportScope('all')}
+                    />
+                    <span>Semua Wilayah</span>
+                    <span className="scope-count">{kecamatanList.length} kec</span>
+                  </label>
+                  <label className={`export-scope-pill${exportScope === 'custom' ? ' active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="exportScope"
+                      value="custom"
+                      checked={exportScope === 'custom'}
+                      onChange={() => setExportScope('custom')}
+                    />
+                    <span>Pilih Kecamatan</span>
+                    <span className="scope-count">{selectedExportKec.length} dipilih</span>
+                  </label>
+                </div>
+
+                {/* Custom Kecamatan Selector Chips */}
+                {exportScope === 'custom' && (
+                  <div className="export-custom-kec-box">
+                    <div className="export-col-header-row">
+                      <span className="export-helper-text">Centang kecamatan yang ingin disertakan:</span>
+                      <div className="export-col-shortcuts">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedExportKec(kecamatanList.map((k) => k.nama))}
+                          className="export-shortcut-btn"
+                        >
+                          Semua
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedExportKec([])}
+                          className="export-shortcut-btn"
+                        >
+                          Kosongkan
+                        </button>
+                      </div>
+                    </div>
+                    <div className="export-custom-kec-grid">
+                      {kecamatanList.map((kec) => {
+                        const checked = selectedExportKec.includes(kec.nama);
+                        return (
+                          <button
+                            key={kec.nama}
+                            type="button"
+                            className={`export-kec-chip${checked ? ' checked' : ''}`}
+                            onClick={() => toggleCustomExportKec(kec.nama)}
+                          >
+                            <span>{kec.nama}</span>
+                            <small>{kec.panganStatus}</small>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Column / Indicator Selector */}
+              <div className="export-modal-section">
+                <div className="export-col-header-row">
+                  <p className="export-modal-label">3. Pilih Indikator / Kolom</p>
+                  <div className="export-col-shortcuts">
+                    <button type="button" onClick={() => setAllExportCols(true)} className="export-shortcut-btn">
+                      Pilih Semua
+                    </button>
+                    <button type="button" onClick={() => setAllExportCols(false)} className="export-shortcut-btn">
+                      Reset
+                    </button>
+                  </div>
+                </div>
+                <div className="export-cols-grid">
+                  {activeExportColDefs.map((col) => (
+                    <label
+                      key={col.key}
+                      className={`export-col-item${activeExportColMap[col.key] ? ' checked' : ''}${col.required ? ' required' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(activeExportColMap[col.key])}
+                        disabled={col.required}
+                        onChange={() => !col.required && toggleExportCol(col.key)}
+                      />
+                      <span>{col.label}</span>
+                      {col.required && <span className="col-required-badge">Wajib</span>}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Export Preview Summary */}
+              <div className={`export-preview-bar${exportPreviewRows.length === 0 ? ' warning' : ''}`}>
+                {exportPreviewRows.length > 0 ? (
+                  <>
+                    <CheckCircle2 size={15} />
+                    <span>
+                      Siap mengunduh <strong>{exportPreviewRows.length} baris</strong> ({exportLevel}) ×{' '}
+                      <strong>{activeExportColCount} kolom</strong> dalam format <strong>CSV (UTF-8 Excel)</strong>.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Info size={15} />
+                    <span>Tidak ada data yang cocok dengan cakupan terpilih. Ubah pilihan wilayah terlebih dahulu.</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Footer buttons */}
+            <div className="export-modal-footer">
+              <button type="button" className="export-btn-cancel" onClick={() => setShowExportModal(false)}>
+                Batal
+              </button>
+              <button
+                type="button"
+                className="export-btn-download"
+                onClick={handleDoExportCSV}
+                disabled={exportPreviewRows.length === 0 || activeExportColCount === 0}
+              >
+                <Download size={15} />
+                <span>Unduh CSV ({exportPreviewRows.length} Data)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

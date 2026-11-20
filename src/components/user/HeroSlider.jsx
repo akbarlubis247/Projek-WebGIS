@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { MountSalakSilhouette } from '../common/BogorDecorations';
 
 import slideBogorAerial from '../../assets/slide-bogor-aerial.jpg';
 import slideRiceFields from '../../assets/slide-rice-fields.jpg';
@@ -208,12 +207,6 @@ export default function HeroSlider({ onActionClick }) {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* 6. ELEMEN DEKORATIF IDENTITAS BOGOR: SILUET GUNUNG SALAK */}
-        <div className="hero-salak-ornament" aria-hidden="true">
-          <MountSalakSilhouette width={160} height={52} color="#C9B98E" opacity={0.32} />
-          <span className="hero-salak-label">GUNUNG SALAK • 2.211 MDPL</span>
         </div>
       </div>
     </div>

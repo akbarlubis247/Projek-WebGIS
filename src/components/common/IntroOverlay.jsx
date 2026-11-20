@@ -21,12 +21,10 @@ import slideBogorAerial from '../../assets/slide-bogor-aerial.jpg';
 export default function IntroOverlay({ onFinish }) {
   const overlayRef = useRef(null);
   const bgImgRef = useRef(null);
-  const topBarRef = useRef(null);
   const bottomBarRef = useRef(null);
   const identityClusterRef = useRef(null);
   const brandClusterRef = useRef(null);
   const progressFillRef = useRef(null);
-  const skipBtnRef = useRef(null);
 
   const isExiting = useRef(false);
   const tlRef = useRef(null);
@@ -77,12 +75,7 @@ export default function IntroOverlay({ onFinish }) {
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // 3. Focus skip button for keyboard navigation accessibility
-    if (skipBtnRef.current) {
-      skipBtnRef.current.focus();
-    }
-
-    // 4. GSAP Cinematic Documentary Timeline (Total Durasi: 5.00 Detik)
+    // 3. GSAP Cinematic Documentary Timeline (Total Durasi: 5.00 Detik)
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         onComplete: () => {
@@ -113,13 +106,15 @@ export default function IntroOverlay({ onFinish }) {
         0
       );
 
-      // 0.40 - 1.10s: Top Bar & Bottom Coordinates Fade-In
-      tl.fromTo(
-        [topBarRef.current, bottomBarRef.current],
-        { opacity: 0, y: (i) => (i === 0 ? -10 : 10) },
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' },
-        0.4
-      );
+      // 0.40 - 1.10s: Bottom Timeline Bar Fade-In
+      if (bottomBarRef.current) {
+        tl.fromTo(
+          bottomBarRef.current,
+          { opacity: 0, y: 10 },
+          { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out' },
+          0.4
+        );
+      }
 
       // 0.90 - 2.00s: Geographic Identity (Mount Salak silhouette & Eyebrow text)
       tl.fromTo(
@@ -168,6 +163,8 @@ export default function IntroOverlay({ onFinish }) {
       role="dialog"
       aria-label="Pengantar Sinematik NutriMap Kota Bogor"
       aria-modal="true"
+      onClick={handleSkip}
+      title="Klik mouse kiri untuk melewati intro"
     >
       {/* 1. Cinematic Background Layer with Ken Burns slow zoom */}
       <div className="cinematic-bg-wrap">
@@ -189,32 +186,7 @@ export default function IntroOverlay({ onFinish }) {
         <div className="cinematic-reticle-corner bottom-right" />
       </div>
 
-      {/* 3. Top Institutional Coordinates Header Bar */}
-      <header className="cinematic-top-bar" ref={topBarRef}>
-        <div className="cinematic-top-left">
-          <span className="cinematic-coord-badge">
-            <span className="coord-dot" />
-            KOTA BOGOR · 6° 35′ 47″ LS &nbsp;106° 47′ 54″ BT
-          </span>
-          <span className="cinematic-elev-badge">ELEVASI 265 — 2.211 MDPL</span>
-        </div>
-
-        {/* Skip Intro Button */}
-        <div className="cinematic-top-right">
-          <button
-            type="button"
-            className="cinematic-skip-btn"
-            onClick={handleSkip}
-            ref={skipBtnRef}
-            aria-label="Lewati Intro (Tekan tombol Escape)"
-          >
-            <span>Lewati Intro</span>
-            <span className="skip-kbd-hint">Esc</span>
-          </button>
-        </div>
-      </header>
-
-      {/* 4. Center Documentary Content Container */}
+      {/* 3. Center Documentary Content Container */}
       <main className="cinematic-center-stage">
         {/* Identity Crest: Siluet Gunung Salak & Eyebrow */}
         <div className="cinematic-identity-cluster" ref={identityClusterRef}>
@@ -244,9 +216,6 @@ export default function IntroOverlay({ onFinish }) {
 
       {/* 5. Bottom Timeline / Elapsed 5-Second Bar */}
       <footer className="cinematic-bottom-bar" ref={bottomBarRef}>
-        <div className="cinematic-meta-tag">
-          <span>PEMERINTAH KOTA BOGOR · SATU DATA SPASIAL</span>
-        </div>
         <div className="cinematic-progress-track" aria-hidden="true">
           <div className="cinematic-progress-fill" ref={progressFillRef} />
         </div>

@@ -155,7 +155,7 @@ export const DEFAULT_PUBLIC_CONTENT = {
   },
   indicatorSection: {
     title: "Data Indikator Kota Bogor",
-    subtitle: "Tabel interaktif kependudukan dan komparasi grafis indikator ketahanan pangan lintas kecamatan.",
+    subtitle: "",
   },
   methodologySection: {
     tag: "",
@@ -198,9 +198,9 @@ export function getPublicContent() {
       ? parsed.spatialSection.subtitle
       : DEFAULT_PUBLIC_CONTENT.spatialSection.subtitle;
 
-    const indicatorSubtitle = (parsed.indicatorSection?.subtitle && parsed.indicatorSection.subtitle.trim() !== "")
+    const indicatorSubtitle = (parsed.indicatorSection?.subtitle && parsed.indicatorSection.subtitle.trim() !== "" && !parsed.indicatorSection.subtitle.includes("Tabel interaktif kependudukan"))
       ? parsed.indicatorSection.subtitle
-      : DEFAULT_PUBLIC_CONTENT.indicatorSection.subtitle;
+      : "";
 
     const methodologyTitle = parsed.methodologySection?.title === "Sumber Data & Metodologi Pemetaan"
       ? DEFAULT_PUBLIC_CONTENT.methodologySection.title
